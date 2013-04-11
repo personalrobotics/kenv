@@ -5,8 +5,10 @@
     <review status="unreviewed" notes=""/>
     <license></license>
     <url></url>
-    <export>
-        <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lros"/>
-    </export>
+    <rosdep name="eigen"/>
+    <rosdep name="yaml-cpp"/>
     <depend package="openrave"/>
+    <export>
+        <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lkenv"/>
+    </export>
 </package>
