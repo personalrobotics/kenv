@@ -1,0 +1,12 @@
+<package>
+    <description brief="kenv">
+    </description>
+    <author>Michael Koval</author>
+    <review status="unreviewed" notes=""/>
+    <license></license>
+    <url></url>
+    <export>
+        <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lros"/>
+    </export>
+    <depend package="openrave"/>
+</package>
