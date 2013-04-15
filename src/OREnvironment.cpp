@@ -1,6 +1,8 @@
 #include <fstream>
+#include <boost/algorithm/string.hpp>
 #include <boost/assert.hpp>
 #include <boost/assign/std/vector.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <boost/foreach.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/typeof/typeof.hpp>
@@ -254,14 +256,39 @@ void OREnvironment::addType(std::string const &type, std::string const &path)
     }
 }
 
-void OREnvironment::loadTypes(std::string const &path)
+void OREnvironment::loadTypes()
 {
-    std::ifstream stream(path.c_str());
-    YAML::Parser parser(stream);
+    // Read the search path from OPENRAVE_DATA.
+    std::vector<std::string> paths;
+    std::string const &all_paths = std::getenv("OPENRAVE_DATA");
+    boost::split(paths, all_paths, boost::is_any_of(":"));
 
+    // Search for the .types.yaml extension in each path.
+    BOOST_FOREACH (std::string const &search_path, paths) {
+        if (search_path.empty()) {
+            continue;
+        }
+
+        boost::filesystem::directory_iterator it_start(search_path), it_end;
+        BOOST_FOREACH (boost::filesystem::path const &path, std::make_pair(it_start, it_end)) {
+            if (boost::algorithm::ends_with(path.filename(), ".kenv.yaml")
+             && boost::filesystem::is_regular_file(path)) {
+                std::cout << "Loading " << path << std::endl;
+                loadTypes(path);
+            }
+        }
+    }
+}
+
+void OREnvironment::loadTypes(boost::filesystem::path const &path)
+{
+    boost::filesystem::ifstream stream(path);
+    YAML::Parser parser(stream);
     YAML::Node root;
-    bool const is_valid = parser.GetNextDocument(root);
-    BOOST_ASSERT(is_valid);
+    if (!parser.GetNextDocument(root)) {
+        // TODO: Throw a more appropriate type of exception.
+        throw std::runtime_error(boost::str(boost::format("Unable to load types from '%s'.") % path.string()));
+    }
 
     for (YAML::Iterator it = root.begin(); it != root.end(); ++it) {
         std::string type, path;

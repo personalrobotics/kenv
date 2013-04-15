@@ -2,6 +2,7 @@
 #define ORENVIRONMENT_H_
 
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/filesystem.hpp>
 #include <openrave/openrave.h>
 #include <kenv/Environment.h>
 
@@ -137,7 +138,8 @@ public:
                               float point_size, Eigen::Vector4d const &color);
 
     void addType(std::string const &type, std::string const &kinbody_path);
-    void loadTypes(std::string const &path);
+    void loadTypes();
+    void loadTypes(boost::filesystem::path const &path);
 
     ORViewer::Ptr attachViewer(void);
 
