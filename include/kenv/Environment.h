@@ -81,6 +81,7 @@ public:
 
     virtual boost::shared_ptr<Environment> getEnvironment(void) const = 0;
     virtual std::string getName(void) const = 0;
+    virtual std::string getType(void) const = 0;
     virtual std::string getKinematicsGeometryHash(void) const = 0;
 
     virtual void enable(bool flag) = 0;

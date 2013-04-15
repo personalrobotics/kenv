@@ -58,12 +58,14 @@ public:
     typedef boost::shared_ptr<ORObject> Ptr;
     typedef boost::shared_ptr<ORObject const> ConstPtr;
 
-    ORObject(boost::weak_ptr<OREnvironment> parent, OpenRAVE::KinBodyPtr kinbody);
+    ORObject(boost::weak_ptr<OREnvironment> parent, OpenRAVE::KinBodyPtr kinbody,
+             std::string const &type);
     virtual void initialize(void);
     OpenRAVE::KinBodyPtr getKinBody(void) const;
 
     virtual Environment::Ptr getEnvironment(void) const;
     virtual std::string getName(void) const;
+    virtual std::string getType(void) const;
     virtual std::string getKinematicsGeometryHash(void) const;
 
     virtual bool checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts = NULL,
@@ -94,6 +96,7 @@ private:
     boost::weak_ptr<OREnvironment> parent_;
     OpenRAVE::KinBodyPtr kinbody_;
     std::map<std::string, ORLink::Ptr> links_;
+    std::string type_;
 };
 
 class ORRobot : public ORObject, public virtual Robot {
@@ -101,7 +104,8 @@ public:
     typedef boost::shared_ptr<ORRobot> Ptr;
     typedef boost::shared_ptr<ORRobot const> ConstPtr;
 
-    ORRobot(boost::weak_ptr<OREnvironment> parent, OpenRAVE::RobotBasePtr kinbody);
+    ORRobot(boost::weak_ptr<OREnvironment> parent, OpenRAVE::RobotBasePtr kinbody,
+            std::string const &type);
     OpenRAVE::RobotBasePtr getORRobot(void) const;
 
 private:

@@ -87,7 +87,8 @@ Object::Ptr OREnvironment::getObject(std::string const &name)
     if (kinbody) {
         BOOST_AUTO(result, objects_.insert(std::make_pair(kinbody, ORObject::Ptr())));
         if (result.second) {
-            result.first->second = boost::make_shared<ORObject>(shared_from_this(), kinbody);
+            // TODO: Use a special name for "unknown" types.
+            result.first->second = boost::make_shared<ORObject>(shared_from_this(), kinbody, "");
         }
         return result.first->second;
     }
@@ -128,7 +129,7 @@ Object::Ptr OREnvironment::createObject(std::string const &type, std::string con
 
     ORObject::Ptr object;
     try {
-        object = boost::make_shared<ORObject>(shared_from_this(), kinbody);
+        object = boost::make_shared<ORObject>(shared_from_this(), kinbody, type);
         object->initialize();
     } catch (OpenRAVE::openrave_exception const &e) {
         RAVELOG_ERROR("Unable to add object to the environment.\n");
@@ -163,7 +164,7 @@ Robot::Ptr OREnvironment::createRobot(std::string const &type, std::string const
 
     ORRobot::Ptr robot;
     try {
-        robot = boost::make_shared<ORRobot>(shared_from_this(), or_robot);
+        robot = boost::make_shared<ORRobot>(shared_from_this(), or_robot, type);
         robot->initialize();
     } catch (OpenRAVE::openrave_exception const &e) {
         RAVELOG_ERROR("Unable to add object to the environment.\n");
@@ -283,12 +284,15 @@ void ORViewer::redraw(void)
 /*
  * ORObject
  */
-ORObject::ORObject(boost::weak_ptr<OREnvironment> parent, OpenRAVE::KinBodyPtr kinbody)
+ORObject::ORObject(boost::weak_ptr<OREnvironment> parent, OpenRAVE::KinBodyPtr kinbody,
+                   std::string const &type)
     : parent_(parent)
     , kinbody_(kinbody)
+    , type_(type)
 {
     BOOST_ASSERT(!parent_.expired());
     BOOST_ASSERT(kinbody_);
+    BOOST_ASSERT(!type.empty());
 }
 
 void ORObject::initialize(void)
@@ -309,6 +313,11 @@ Environment::Ptr ORObject::getEnvironment(void) const {
 std::string ORObject::getName(void) const
 {
     return kinbody_->GetName();
+}
+
+std::string ORObject::getType(void) const
+{
+    return type_;
 }
 
 std::string ORObject::getKinematicsGeometryHash(void) const
@@ -502,8 +511,9 @@ void ORObject::setDOFValues(Eigen::VectorXd const &dof_values)
 /*
  * ORRobot
  */
-ORRobot::ORRobot(boost::weak_ptr<OREnvironment> parent, OpenRAVE::RobotBasePtr robot)
-    : ORObject(parent, robot)
+ORRobot::ORRobot(boost::weak_ptr<OREnvironment> parent, OpenRAVE::RobotBasePtr robot,
+                 std::string const &type)
+    : ORObject(parent, robot, type)
     , robot_(robot)
 {
     BOOST_ASSERT(robot_);
