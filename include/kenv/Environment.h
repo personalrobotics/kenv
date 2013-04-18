@@ -10,6 +10,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include "eigen_serialization.h"
+#include <boost/multi_array.hpp>
 
 namespace kenv {
 
@@ -132,6 +133,9 @@ public:
                              double width, Eigen::Vector4d const &color) = 0;
     virtual Handle drawPoints(std::vector<Eigen::Vector3d> const &points,
                               float point_size, Eigen::Vector4d const &color) = 0;
+
+    virtual Handle drawPlane( const Eigen::Affine3d& origin, float width, float height,
+    						const boost::multi_array<float,3>& texture)=0;
 };
 
 }

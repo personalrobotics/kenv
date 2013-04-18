@@ -139,6 +139,9 @@ public:
     virtual Handle drawPoints(std::vector<Eigen::Vector3d> const &points,
                               float point_size, Eigen::Vector4d const &color);
 
+    virtual Handle drawPlane( const Eigen::Affine3d& origin, float width, float height,
+    						const boost::multi_array<float,3>& texture);
+
     void addType(std::string const &type, std::string const &kinbody_path);
     void loadTypes();
     void loadTypes(boost::filesystem::path const &path);
