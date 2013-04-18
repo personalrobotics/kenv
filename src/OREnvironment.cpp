@@ -70,8 +70,8 @@ Eigen::Affine3d ORLink::getTransform(void) const
     return kenv::toEigen(or_tf);
 }
 
-Eigen::AlignedBox3d ORLink::computeLocalAABB() {
-	OpenRAVE::AABB aabb = this->link_->ComputeLocalAABB();
+AlignedBox3d ORLink::computeLocalAABB() {
+	OpenRAVE::AABB aabb = link_->ComputeLocalAABB();
 	Eigen::Vector3d minpt, maxpt;
 	minpt << aabb.pos.x-aabb.extents.x,
 				aabb.pos.y-aabb.extents.y,
@@ -80,7 +80,7 @@ Eigen::AlignedBox3d ORLink::computeLocalAABB() {
 			 aabb.pos.y+aabb.extents.y,
 			 aabb.pos.z+aabb.extents.z;
 
-	return	Eigen::AlignedBox3d(minpt, maxpt);
+	return AlignedBox3d(minpt, maxpt);
 }
 
 /*
@@ -357,7 +357,6 @@ ORObject::ORObject(boost::weak_ptr<OREnvironment> parent, OpenRAVE::KinBodyPtr k
 {
     BOOST_ASSERT(!parent_.expired());
     BOOST_ASSERT(kinbody_);
-    BOOST_ASSERT(!type.empty());
 }
 
 void ORObject::initialize(void)

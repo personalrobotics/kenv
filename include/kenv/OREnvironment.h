@@ -49,7 +49,7 @@ public:
     virtual std::string getName(void) const;
     virtual Eigen::Affine3d getTransform(void) const;
 
-    Eigen::AlignedBox3d computeLocalAABB();
+    AlignedBox3d computeLocalAABB();
 
 private:
     boost::weak_ptr<ORObject> object_;
