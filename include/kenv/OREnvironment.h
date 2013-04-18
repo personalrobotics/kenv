@@ -49,6 +49,8 @@ public:
     virtual std::string getName(void) const;
     virtual Eigen::Affine3d getTransform(void) const;
 
+    Eigen::AlignedBox3d computeLocalAABB();
+
 private:
     boost::weak_ptr<ORObject> object_;
     OpenRAVE::KinBody::LinkPtr link_;
@@ -142,6 +144,7 @@ public:
     void loadTypes(boost::filesystem::path const &path);
 
     ORViewer::Ptr attachViewer(void);
+
 
 private:
     OpenRAVE::EnvironmentBasePtr env_;

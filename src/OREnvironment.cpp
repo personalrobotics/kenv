@@ -70,6 +70,19 @@ Eigen::Affine3d ORLink::getTransform(void) const
     return kenv::toEigen(or_tf);
 }
 
+Eigen::AlignedBox3d ORLink::computeLocalAABB() {
+	OpenRAVE::AABB aabb = this->link_->ComputeLocalAABB();
+	Eigen::Vector3d minpt, maxpt;
+	minpt << aabb.pos.x-aabb.extents.x,
+				aabb.pos.y-aabb.extents.y,
+				aabb.pos.z-aabb.extents.z;
+	maxpt << aabb.pos.x+aabb.extents.x,
+			 aabb.pos.y+aabb.extents.y,
+			 aabb.pos.z+aabb.extents.z;
+
+	return	Eigen::AlignedBox3d(minpt, maxpt);
+}
+
 /*
  * OREnvironment
  */
@@ -238,7 +251,6 @@ boost::shared_ptr<void> OREnvironment::drawPoints(std::vector<Eigen::Vector3d> c
         raw_points[3 * i + 1] = points[i][1];
         raw_points[3 * i + 2] = points[i][2];
     }
-
     int const num_points = static_cast<int>(points.size());
     return env_->plot3(&raw_points.front(), num_points, 3 * sizeof(float), point_size, toOR(color));
 }
@@ -582,3 +594,4 @@ void ORViewer::mainLoop(OpenRAVE::EnvironmentBasePtr or_env)
 }
 
 }
+

@@ -72,6 +72,8 @@ public:
 
     virtual std::string getName(void) const = 0;
     virtual Eigen::Affine3d getTransform(void) const = 0;
+
+    virtual Eigen::AlignedBox3d computeLocalAABB()=0;
 };
 
 class Object : private boost::noncopyable {
