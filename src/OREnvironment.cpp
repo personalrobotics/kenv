@@ -255,29 +255,19 @@ boost::shared_ptr<void> OREnvironment::drawPoints(std::vector<Eigen::Vector3d> c
     return env_->plot3(&raw_points.front(), num_points, 3 * sizeof(float), point_size, toOR(color));
 }
 
-boost::shared_ptr<void>  OREnvironment::drawPlane(const Eigen::Affine3d& origin, float width,
-		float height, const boost::multi_array<float, 3>& texture) {
+boost::shared_ptr<void> OREnvironment::drawPlane(Eigen::Affine3d const &origin,
+                                                 float width, float height,
+                                                 boost::multi_array<float, 3> const &texture)
+{
+    // Eigen::AngleAxisd(M_PI_2, O.row(2)) * 
+	Eigen::Quaterniond const q(origin.rotation());
+    OpenRAVE::Vector const trans = toOR(origin.translation());
+    OpenRAVE::Vector const rot(q.w(), q.x(), q.y(), q.z());
+    OpenRAVE::Transform const or_origin(rot, trans);
 
-	OpenRAVE::RaveVector<float> trans, rot, extents;
-	trans.x= origin.translation()[0];
-	trans.y= origin.translation()[1];
-	trans.z= origin.translation()[2];
-	Eigen::Quaternionf q;
-	Eigen::Matrix3f tfr = origin.rotation().matrix().cast<float>();
-	q =  tfr;
-	//rotate it so that the texture coordinates are such
-	//that 0,0 of the texture matrix corresponds to the lower left
-	//hand corner of the plane when viewed from above
-
-	q= Eigen::AngleAxisf(M_PI, tfr.row(2)) *q;
-	rot.x = q.x();
-	rot.y = q.y();
-	rot.z = q.z();
-	rot.w = q.w();
-
-	extents.x=width;
-	extents.y = height;
-	return env_->drawplane(OpenRAVE::RaveTransform<float> ( rot, trans), extents, texture);
+    // OpenRAVE expects half extents, not extents.
+    OpenRAVE::Vector const extents(0.5 * width, 0.5 * height, 0);
+	return env_->drawplane(or_origin, extents, texture);
 }
 
 

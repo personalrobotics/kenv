@@ -2,6 +2,8 @@
 #define OR_CONVERSIONS_H_
 
 #include <boost/assign/std/vector.hpp>
+#include <boost/format.hpp>
+#include <boost/static_assert.hpp>
 #include <Eigen/Dense>
 #include <openrave/openrave.h>
 
@@ -25,14 +27,19 @@ inline Eigen::Affine3d toEigen(OpenRAVE::Transform const &or_tf)
     return eigen_tf;
 }
 
-inline OpenRAVE::Vector toOR(Eigen::Vector3d const &eigen_v)
+template <typename Derived>
+inline OpenRAVE::Vector toOR(Derived const &eigen_v)
 {
-    return OpenRAVE::Vector(eigen_v[0], eigen_v[1], eigen_v[2]);
-}
-
-inline OpenRAVE::Vector toOR(Eigen::Vector4d const &eigen_v)
-{
-    return OpenRAVE::Vector(eigen_v[0], eigen_v[1], eigen_v[2], eigen_v[3]);
+    BOOST_STATIC_ASSERT(Derived::IsVectorAtCompileTime);
+    if (eigen_v.size() == 3) {
+        return OpenRAVE::Vector(eigen_v[0], eigen_v[1], eigen_v[2]);
+    } else if (eigen_v.size() == 4) {
+        return OpenRAVE::Vector(eigen_v[0], eigen_v[1], eigen_v[2], eigen_v[3]);
+    } else {
+        throw std::invalid_argument(boost::str(
+            boost::format("Expected a three or four element vector; got a %d elements.")
+                % eigen_v.size()));
+    }
 }
 
 inline OpenRAVE::GraphHandlePtr plot3(OpenRAVE::EnvironmentBasePtr env,
