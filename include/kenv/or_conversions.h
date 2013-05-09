@@ -42,6 +42,21 @@ inline OpenRAVE::Vector toOR(Derived const &eigen_v)
     }
 }
 
+template <typename Derived>
+inline OpenRAVE::Transform toOR(Eigen::Transform<Derived, 3, Eigen::Affine> const &tf)
+{
+    OpenRAVE::TransformMatrix or_matrix;
+    or_matrix.rotfrommat(
+        tf.matrix()(0, 0), tf.matrix()(0, 1), tf.matrix()(0, 2),
+        tf.matrix()(1, 0), tf.matrix()(1, 1), tf.matrix()(1, 2),
+        tf.matrix()(2, 0), tf.matrix()(2, 1), tf.matrix()(2, 2)
+    );
+    or_matrix.trans.x = tf(0, 3);
+    or_matrix.trans.y = tf(1, 3);
+    or_matrix.trans.z = tf(2, 3);
+    return or_matrix;
+}
+
 inline OpenRAVE::GraphHandlePtr plot3(OpenRAVE::EnvironmentBasePtr env,
                                std::vector<Eigen::Vector3d> const &points,
                                float point_size, Eigen::Vector4d const &color)

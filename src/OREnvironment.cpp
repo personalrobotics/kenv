@@ -465,18 +465,10 @@ Eigen::Affine3d ORObject::getTransform(void) const
 
 void ORObject::setTransform(Eigen::Affine3d const &tf)
 {
-    OpenRAVE::TransformMatrix or_matrix;
-    or_matrix.rotfrommat(
-        tf.matrix()(0, 0), tf.matrix()(0, 1), tf.matrix()(0, 2),
-        tf.matrix()(1, 0), tf.matrix()(1, 1), tf.matrix()(1, 2),
-        tf.matrix()(2, 0), tf.matrix()(2, 1), tf.matrix()(2, 2)
-    );
-    or_matrix.trans.x = tf(0, 3);
-    or_matrix.trans.y = tf(1, 3);
-    or_matrix.trans.z = tf(2, 3);
+    OpenRAVE::TransformMatrix or_matrix = toOR(tf);
 
     OpenRAVE::Transform or_tf(or_matrix);
-    // FIXME: This is ahack that should not be necessary.
+    // FIXME: This is a hack that should not be necessary.
     if (or_tf.rot.lengthsqr4() == 0) {
         or_tf.rot.y = or_tf.rot.z = or_tf.rot.w = 0.0;
         or_tf.rot.x = 1.0;
