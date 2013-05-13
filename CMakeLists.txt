@@ -21,5 +21,5 @@ find_package(Eigen REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIRS})
 add_definitions(${EIGEN_DEFINITIONS})
 
-rosbuild_add_library(kenv src/Environment.cpp src/OREnvironment.cpp src/CollisionChecker.cpp)
-target_link_libraries(kenv yaml-cpp)
+rosbuild_add_library(or_kenv src/OREnvironment.cpp)
+target_link_libraries(or_kenv yaml-cpp)

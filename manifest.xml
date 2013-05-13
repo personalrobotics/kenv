@@ -1,14 +1,14 @@
 <package>
-    <description brief="kenv">
+    <description brief="kenv bindings for OpenRAVE">
     </description>
     <author>Michael Koval</author>
     <review status="unreviewed" notes=""/>
     <license></license>
     <url></url>
-    <rosdep name="eigen"/>
     <rosdep name="yaml-cpp"/>
+    <depend package="kenv"/>
     <depend package="openrave"/>
     <export>
-        <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lkenv"/>
+        <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lor_kenv"/>
     </export>
 </package>
