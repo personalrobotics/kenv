@@ -301,7 +301,6 @@ void OREnvironment::loadTypes()
         BOOST_FOREACH (boost::filesystem::path const &path, std::make_pair(it_start, it_end)) {
         	if (boost::algorithm::ends_with(path.filename().c_str(), ".kenv.yaml" )
              && boost::filesystem::is_regular_file(path)) {
-                std::cout << "Loading " << path << std::endl;
                 loadTypes(path);
             }
         }
