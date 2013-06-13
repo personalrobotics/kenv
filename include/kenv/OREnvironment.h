@@ -94,6 +94,9 @@ protected:
     bool checkCollisionImpl(Object::ConstPtr entity, std::vector<Contact> *contacts,
                             OpenRAVE::KinBody::LinkConstPtr *link1,
                             OpenRAVE::KinBody::LinkConstPtr *link2) const;
+    static OpenRAVE::CollisionAction checkCollisionCallback(OpenRAVE::CollisionReportPtr report,
+                                                            bool is_physics,
+                                                            std::vector<kenv::Contact> *contacts);
 
 private:
     boost::weak_ptr<OREnvironment> parent_;

@@ -419,23 +419,18 @@ bool ORObject::checkCollisionImpl(Object::ConstPtr entity, std::vector<Contact> 
     OpenRAVE::CollisionCheckerBasePtr collision_checker = env->GetCollisionChecker();
     OpenRAVE::CollisionOptionsStateSaver collision_saver(collision_checker, collision_options);
 
+    // Register a callback to record the contacts. This is necessary to get
+    // OpenRAVE to return all contacts without short-circuiting after finding
+    // the first collision.
+    OpenRAVE::UserDataPtr cb_handle = env->RegisterCollisionCallback(
+        boost::bind(&ORObject::checkCollisionCallback, _1, _2, contacts));
+
     ORObject::ConstPtr or_entity = boost::dynamic_pointer_cast<ORObject const>(entity);
     BOOST_ASSERT(or_entity);
     BOOST_ASSERT(kinbody_->GetEnv() == or_entity->kinbody_->GetEnv());
 
     OpenRAVE::CollisionReportPtr report = boost::make_shared<OpenRAVE::CollisionReport>();
     bool const is_collision = env->CheckCollision(kinbody_, or_entity->kinbody_, report);
-
-    size_t const num_contacts = report->contacts.size();
-    if (is_collision && num_contacts > 0 && contacts) {
-        contacts->resize(num_contacts);
-        for (size_t i = 0; i < num_contacts; ++i) {
-            OpenRAVE::CollisionReport::CONTACT const &or_contact = report->contacts[i];
-            Contact &contact = (*contacts)[i];
-            contact.position = toEigen3(or_contact.pos);
-            contact.normal = toEigen3(or_contact.norm);
-        }
-    }
 
     if (link1) {
         *link1 = report->plink1;
@@ -445,6 +440,24 @@ bool ORObject::checkCollisionImpl(Object::ConstPtr entity, std::vector<Contact> 
     }
     return is_collision;
 } 
+
+OpenRAVE::CollisionAction ORObject::checkCollisionCallback(
+        OpenRAVE::CollisionReportPtr report, bool is_physics,
+        std::vector<kenv::Contact> *contacts)
+{
+    if (contacts && !is_physics) {
+        contacts->reserve(contacts->size() + report->contacts.size());
+        BOOST_FOREACH (OpenRAVE::CollisionReport::CONTACT const &or_contact, report->contacts) {
+            Contact contact;
+            contact.position = toEigen3(or_contact.pos);
+            contact.normal = toEigen3(or_contact.norm);
+            contacts->push_back(contact);
+        }
+        return OpenRAVE::CA_Ignore;
+    } else {
+        return OpenRAVE::CA_DefaultAction;
+    }
+}
 
 void ORObject::enable(bool flag)
 {
