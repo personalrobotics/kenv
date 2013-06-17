@@ -400,34 +400,7 @@ OpenRAVE::KinBodyPtr ORObject::getKinBody(void) const
 }
 
 bool ORObject::checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts,
-                              Link::Ptr *link1, Link::Ptr *link2) const
-{
-    OpenRAVE::KinBody::LinkConstPtr or_link1, or_link2;
-    bool const is_collision = checkCollisionImpl(entity, contacts, &or_link1, &or_link2);
-
-    // FIXME: This is a very inefficient way of doing the lookup.
-    if (link1) {
-        if (is_collision && or_link1) {
-            *link1 = getLink(or_link1->GetName());
-            BOOST_ASSERT(*link1);
-        } else {
-            *link1 = Link::Ptr();
-        }
-    }
-    if (link2) {
-        if (is_collision && or_link2) {
-            *link2 = getLink(or_link2->GetName());
-            BOOST_ASSERT(*link2);
-        } else {
-            *link2 = Link::Ptr();
-        }
-    }
-    return is_collision;
-}
-
-bool ORObject::checkCollisionImpl(Object::ConstPtr entity, std::vector<Contact> *contacts,
-                                  OpenRAVE::KinBody::LinkConstPtr *link1,
-                                  OpenRAVE::KinBody::LinkConstPtr *link2) const
+                              std::vector<std::pair<Link::Ptr, Link::Ptr> > *links) const
 {
     ORObject::ConstPtr or_entity = boost::dynamic_pointer_cast<ORObject const>(entity);
     BOOST_ASSERT(or_entity);
@@ -435,68 +408,51 @@ bool ORObject::checkCollisionImpl(Object::ConstPtr entity, std::vector<Contact> 
     OpenRAVE::EnvironmentBasePtr env = kinbody_->GetEnv();
     OpenRAVE::KinBodyConstPtr other_kinbody = or_entity->kinbody_;
 
-    // Run a simple collision check if we don't care about the contacts.
-    if (!contacts) {
+    // Run a simple collision check if we don't care about the contacts or the
+    // full set of pairwise link collisions.
+    if (!contacts && !links) {
         OpenRAVE::CollisionReportPtr report = boost::make_shared<OpenRAVE::CollisionReport>();
-        bool const is_collision = env->CheckCollision(kinbody_, other_kinbody, report);
-
-        if (link1) {
-            *link1 = report->plink1;
-        }
-        if (link2) {
-            *link2 = report->plink1;
-        }
-        return is_collision;
+        return env->CheckCollision(kinbody_, other_kinbody, report);
     }
 
-    // Otherwise, we'll request contacts.
-    contacts->clear();
+    // Request contacts if necessary.
+    int const collision_options = (contacts) ? OpenRAVE::CO_Contacts : 0;
     OpenRAVE::CollisionCheckerBasePtr collision_checker = env->GetCollisionChecker();
-    OpenRAVE::CollisionOptionsStateSaver collision_saver(collision_checker, OpenRAVE::CO_Contacts);
+    OpenRAVE::CollisionOptionsStateSaver collision_saver(collision_checker, collision_options);
+    if (contacts) {
+        contacts->clear();
+    }
 
     // ODE short-circuits and only returns contacts for the first pair of
     // colliding links that it detects. We'll work around that by running a
     // separate collision check for each pair of links. See OpenRAVE bug #266.
     if (collision_checker->GetXMLId() == "ode") {
-        std::vector<std::pair<OpenRAVE::KinBody::LinkConstPtr,
-                              OpenRAVE::KinBody::LinkConstPtr> > colliding_links;
-
+        bool is_collision = false;
         BOOST_FOREACH (OpenRAVE::KinBody::LinkConstPtr link1, kinbody_->GetLinks())
         BOOST_FOREACH (OpenRAVE::KinBody::LinkConstPtr link2, other_kinbody->GetLinks()) {
             OpenRAVE::CollisionReportPtr report = boost::make_shared<OpenRAVE::CollisionReport>();
-            bool const is_collision = env->CheckCollision(link1, link2, report);
+            bool const is_link_collision = env->CheckCollision(link1, link2, report);
+            is_collision = is_collision || is_link_collision;
 
             // Build a list of colliding links.
-            if (is_collision) {
-                colliding_links.push_back(std::make_pair(report->plink1, report->plink2));
+            if (is_link_collision && links) {
+                Link::Ptr link1 = getLink(report->plink1->GetName());
+                Link::Ptr link2 = getLink(report->plink2->GetName());
+                links->push_back(std::make_pair(link1, link2));
             }
 
             // Add the contacts to the list.
-            contacts->reserve(contacts->size() + report->contacts.size());
-            BOOST_FOREACH (OpenRAVE::CollisionReport::CONTACT const &or_contact, report->contacts) {
-                Contact contact;
-                contact.position = toEigen3(or_contact.pos);
-                contact.normal = toEigen3(or_contact.norm);
-                contacts->push_back(contact);
+            if (contacts) {
+                contacts->reserve(contacts->size() + report->contacts.size());
+                BOOST_FOREACH (OpenRAVE::CollisionReport::CONTACT const &or_contact, report->contacts) {
+                    Contact contact;
+                    contact.position = toEigen3(or_contact.pos);
+                    contact.normal = toEigen3(or_contact.norm);
+                    contacts->push_back(contact);
+                }
             }
         }
-
-        // Set the output to an arbitrary pair of colliding links. Default to
-        // NULL if there is no collision.
-        std::pair<OpenRAVE::KinBody::LinkConstPtr, OpenRAVE::KinBody::LinkConstPtr> output_links;
-        if (!colliding_links.empty()) {
-            output_links = colliding_links.front();
-        }
-
-        if (link1) {
-            *link1 = output_links.first;
-        }
-        if (link2) {
-            *link2 = output_links.second;
-        }
-
-        // Return a boolean collision flag.
-        return !colliding_links.empty();
+        return is_collision;
     } else {
         // TODO: There's no reason not to support PQP here.
         throw std::runtime_error("Only ODE is supported when requesting contacts.");

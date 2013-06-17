@@ -71,7 +71,7 @@ public:
     virtual std::string getKinematicsGeometryHash(void) const;
 
     virtual bool checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts = NULL,
-                                Link::Ptr *link1 = NULL, Link::Ptr *link2 = NULL) const;
+                                std::vector<std::pair<Link::Ptr, Link::Ptr> > *links = NULL) const;
 
     virtual std::vector<Link::Ptr> getLinks(void) const;
     virtual Link::Ptr getLink(std::string const name) const;
@@ -88,11 +88,6 @@ public:
 
     virtual void setColor(Eigen::Vector4d const &color);
     virtual void setTransparency(double p);
-
-protected:
-    bool checkCollisionImpl(Object::ConstPtr entity, std::vector<Contact> *contacts,
-                            OpenRAVE::KinBody::LinkConstPtr *link1,
-                            OpenRAVE::KinBody::LinkConstPtr *link2) const;
 
 private:
     boost::weak_ptr<OREnvironment> parent_;
