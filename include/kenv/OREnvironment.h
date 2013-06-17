@@ -131,6 +131,8 @@ public:
 
     virtual Handle drawLine(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
                             double width, Eigen::Vector4d const &color);
+    virtual Handle drawLineList(std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d> > const &lines,
+                                double width, Eigen::Vector4d const &color);
     virtual Handle drawLineStrip(std::vector<Eigen::Vector3d> const &points,
                                  double width, Eigen::Vector4d const &color);
     virtual Handle drawArrow(Eigen::Vector3d const &start, Eigen::Vector3d const &end,

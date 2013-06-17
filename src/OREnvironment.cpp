@@ -235,6 +235,22 @@ boost::shared_ptr<void> OREnvironment::drawLineStrip(std::vector<Eigen::Vector3d
     return env_->drawlinestrip(&raw_points.front(), num_points, 3 * sizeof(float), width, kenv::toOR(color));
 }
 
+boost::shared_ptr<void> OREnvironment::drawLineList(std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d> > const &lines,
+                                                    double width, Eigen::Vector4d const &color)
+{
+    using namespace boost::assign;
+    
+    std::vector<float> raw_points;
+    Eigen::Vector3d point1, point2;
+    BOOST_FOREACH (boost::tie(point1, point2), lines) {
+        raw_points += point1[0], point1[1], point1[2];
+        raw_points += point2[0], point2[1], point2[2];
+    }
+
+    int const num_points = static_cast<int>(2 * lines.size());
+    return env_->drawlinelist(&raw_points.front(), num_points, 3 * sizeof(float), width, kenv::toOR(color));
+}
+
 
 boost::shared_ptr<void> OREnvironment::drawArrow(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
                                                  double width, Eigen::Vector4d const &color)
