@@ -47,6 +47,7 @@ public:
 
     virtual std::string getName(void) const;
     virtual Eigen::Affine3d getTransform(void) const;
+    virtual void enable(bool flag);
 
     AlignedBox3d computeLocalAABB();
 
@@ -94,6 +95,9 @@ private:
     OpenRAVE::KinBodyPtr kinbody_;
     std::map<std::string, ORLink::Ptr> links_;
     std::string type_;
+
+    OpenRAVE::CollisionAction checkCollisionCallback(OpenRAVE::CollisionReportPtr report, bool is_physics,
+                                                     std::vector<std::pair<Link::Ptr, Link::Ptr> > *links) const;
 };
 
 class ORRobot : public ORObject, public virtual Robot {

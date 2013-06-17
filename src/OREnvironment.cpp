@@ -70,6 +70,11 @@ Eigen::Affine3d ORLink::getTransform(void) const
     return kenv::toEigen(or_tf);
 }
 
+void ORLink::enable(bool flag)
+{
+    link_->Enable(flag);
+}
+
 AlignedBox3d ORLink::computeLocalAABB() {
 	OpenRAVE::AABB aabb = link_->ComputeLocalAABB();
 	Eigen::Vector3d minpt, maxpt;
@@ -419,14 +424,20 @@ bool ORObject::checkCollision(Object::ConstPtr entity, std::vector<Contact> *con
     int const collision_options = (contacts) ? OpenRAVE::CO_Contacts : 0;
     OpenRAVE::CollisionCheckerBasePtr collision_checker = env->GetCollisionChecker();
     OpenRAVE::CollisionOptionsStateSaver collision_saver(collision_checker, collision_options);
+
+    // Clear the output parameters.
     if (contacts) {
         contacts->clear();
+    }
+    if (links) {
+        links->clear();
     }
 
     // ODE short-circuits and only returns contacts for the first pair of
     // colliding links that it detects. We'll work around that by running a
     // separate collision check for each pair of links. See OpenRAVE bug #266.
-    if (collision_checker->GetXMLId() == "ode") {
+    std::string const collision_checker_type = collision_checker->GetXMLId();
+    if (collision_checker_type == "ode") {
         bool is_collision = false;
         BOOST_FOREACH (OpenRAVE::KinBody::LinkConstPtr link1, kinbody_->GetLinks())
         BOOST_FOREACH (OpenRAVE::KinBody::LinkConstPtr link2, other_kinbody->GetLinks()) {
@@ -453,11 +464,44 @@ bool ORObject::checkCollision(Object::ConstPtr entity, std::vector<Contact> *con
             }
         }
         return is_collision;
+    }
+    // PQP seems to return all of the contacts. However, the CollisionReport
+    // only contains one pair of links. We'll register a collision callback to
+    // catch the intermediate results.
+    else if (collision_checker_type == "pqp" || collision_checker_type == "bullet") {
+        OpenRAVE::CollisionReportPtr report = boost::make_shared<OpenRAVE::CollisionReport>();
+        OpenRAVE::UserDataPtr handle = env->RegisterCollisionCallback(
+            boost::bind(&ORObject::checkCollisionCallback, this, _1, _2, links));
+        bool const is_collision = env->CheckCollision(kinbody_, other_kinbody, report);
+
+        if (contacts) {
+            contacts->reserve(report->contacts.size());
+            BOOST_FOREACH (OpenRAVE::CollisionReport::CONTACT const &or_contact, report->contacts) {
+                Contact contact;
+                contact.position = toEigen3(or_contact.pos);
+                contact.normal = toEigen3(or_contact.norm);
+                contacts->push_back(contact);
+            }
+        }
     } else {
         // TODO: There's no reason not to support PQP here.
         throw std::runtime_error("Only ODE is supported when requesting contacts.");
     }
 } 
+
+OpenRAVE::CollisionAction ORObject::checkCollisionCallback(
+        OpenRAVE::CollisionReportPtr report, bool is_physics,
+        std::vector<std::pair<Link::Ptr, Link::Ptr> > *links) const
+{
+    if (is_physics || !links) {
+        return OpenRAVE::CA_DefaultAction;
+    } else if (report->plink1 && report->plink2) {
+        Link::Ptr link1 = getLink(report->plink1->GetName());
+        Link::Ptr link2 = getLink(report->plink2->GetName());
+        links->push_back(std::make_pair(link1, link2));
+    }
+    return OpenRAVE::CA_Ignore;
+}
 
 void ORObject::enable(bool flag)
 {
