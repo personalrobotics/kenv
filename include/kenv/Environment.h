@@ -84,6 +84,7 @@ public:
 
     virtual std::string getName(void) const = 0;
     virtual Eigen::Affine3d getTransform(void) const = 0;
+    virtual void enable(bool flag) = 0;
 
     virtual AlignedBox3d computeLocalAABB() = 0;
 };
@@ -102,7 +103,7 @@ public:
     virtual void setVisible(bool flag) = 0;
     virtual AlignedBox3d getAABB(void) const = 0;
     virtual bool checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts = NULL,
-                                Link::Ptr *link1 = NULL, Link::Ptr *link2 = NULL) const = 0;
+                                std::vector<std::pair<Link::Ptr, Link::Ptr> > *links = NULL) const = 0;
 
     virtual std::vector<Link::Ptr> getLinks(void) const = 0;
     virtual Link::Ptr getLink(std::string const name) const = 0;
