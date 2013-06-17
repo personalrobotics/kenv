@@ -21,6 +21,10 @@ typedef Eigen::AlignedBox<double, 3> AlignedBox3d;
 
 class Contact {
 public:
+    Contact() {}
+    Contact(Eigen::Vector3d const &position, Eigen::Vector3d const &normal)
+        : position(position), normal(normal) {}
+
     Eigen::Vector3d position;
     Eigen::Vector3d normal;
 
@@ -33,6 +37,13 @@ private:
 
     friend class boost::serialization::access;
 };
+
+template <typename Scalar>
+Contact operator*(Eigen::Transform<Scalar, 3, Eigen::Affine> const &transform,
+                  Contact const &contact)
+{
+    return Contact(transform * contact.position, transform.linear() * contact.normal);
+}
 
 class Logger : private boost::noncopyable {
 public:
@@ -129,6 +140,8 @@ public:
                             double width, Eigen::Vector4d const &color) = 0;
     virtual Handle drawLineStrip(std::vector<Eigen::Vector3d> const &points,
                                  double width, Eigen::Vector4d const &color) = 0;
+    virtual Handle drawLineList(std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d> > const &lines,
+                                double width, Eigen::Vector4d const &color) = 0;
     virtual Handle drawArrow(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
                              double width, Eigen::Vector4d const &color) = 0;
     virtual Handle drawPoints(std::vector<Eigen::Vector3d> const &points,
