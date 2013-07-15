@@ -483,6 +483,7 @@ bool ORObject::checkCollision(Object::ConstPtr entity, std::vector<Contact> *con
                 contacts->push_back(contact);
             }
         }
+        return is_collision;
     } else {
         // TODO: There's no reason not to support PQP here.
         throw std::runtime_error("Only ODE is supported when requesting contacts.");
@@ -606,7 +607,7 @@ void ORObject::setDOFValues(Eigen::VectorXd const &dof_values)
     for (int i = 0; i < dof_values.size(); ++i) {
         or_dof_values[i] = dof_values[i];
     }
-    kinbody_->SetDOFValues(or_dof_values);
+    kinbody_->SetDOFValues(or_dof_values, OpenRAVE::KinBody::CLA_Nothing);
 }
 
 
