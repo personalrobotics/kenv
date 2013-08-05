@@ -15,7 +15,6 @@
 namespace kenv {
 
 class Environment;
-class Robot;
 class Object;
 typedef Eigen::AlignedBox<double, 3> AlignedBox3d;
 
@@ -118,12 +117,6 @@ public:
     virtual void setTransparency(double p) = 0;
 };
 
-class Robot : virtual public Object {
-public:
-    typedef boost::shared_ptr<Robot> Ptr;
-    typedef boost::shared_ptr<Robot const> ConstPtr;
-};
-
 class Environment : private boost::noncopyable {
 public:
     typedef boost::shared_ptr<Environment> Ptr;
@@ -131,10 +124,7 @@ public:
     typedef boost::shared_ptr<void> Handle;
 
     virtual Object::Ptr getObject(std::string const &name) = 0;
-    virtual Robot::Ptr getRobot(std::string const &name) = 0;
-
     virtual Object::Ptr createObject(std::string const &type, std::string const &name, bool anonymous = false) = 0;
-    virtual Robot::Ptr createRobot(std::string const &type, std::string const name, bool anonymous = false) = 0;
     virtual void remove(Object::Ptr object) = 0;
 
     virtual Handle drawLine(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
