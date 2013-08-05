@@ -115,31 +115,19 @@ Object::Ptr OREnvironment::getObject(std::string const &name)
     return Object::Ptr();
 }
 
-Robot::Ptr OREnvironment::getRobot(std::string const &name)
-{
-    RAVELOG_ERROR("getRobot is not implemented");
-    return Robot::Ptr();
-}
-
 Object::Ptr OREnvironment::createObject(std::string const &type, std::string const &name, bool anonymous)
 {
-    BOOST_AUTO(it, types_.find(type));
-    if (it == types_.end()) {
-        RAVELOG_ERROR("Unknown type of object '%s'.\n", type.c_str());
-        return Object::Ptr();
-    }
-
     // Create the OpenRAVE object and add it to the environment.
     OpenRAVE::KinBodyPtr kinbody;
     try {
-        kinbody = env_->ReadKinBodyXMLFile(OpenRAVE::KinBodyPtr(), it->second);
+        kinbody = env_->ReadKinBodyXMLFile(OpenRAVE::KinBodyPtr(), type);
     } catch (OpenRAVE::openrave_exception const &e) {
-        RAVELOG_ERROR("Unable to create object of type '%s': %s\n", type.c_str(), e.what());
+        RAVELOG_ERROR("Unable to create object of type [%s]: %s\n", type.c_str(), e.what());
         return Object::Ptr();
     }
 
     if (!kinbody) {
-        RAVELOG_ERROR("Unable to create object of type '%s': An unknown error has occured.\n", type.c_str());
+        RAVELOG_ERROR("Unable to create object of type [%s]: An unknown error has occured.\n", type.c_str());
         return Object::Ptr();
     }
 
@@ -160,41 +148,6 @@ Object::Ptr OREnvironment::createObject(std::string const &type, std::string con
     std::string const actual_name = kinbody->GetName();
     objects_[kinbody] = object;
     return object;
-}
-
-Robot::Ptr OREnvironment::createRobot(std::string const &type, std::string const name, bool anonymous)
-{
-    BOOST_AUTO(it, types_.find(type));
-    if (it == types_.end()) {
-        RAVELOG_ERROR("Unknown type of robot '%s'.\n", type.c_str());
-        return Robot::Ptr();
-    }
-
-    OpenRAVE::RobotBasePtr or_robot;
-    try {
-        or_robot = env_->ReadRobotXMLFile(OpenRAVE::RobotBasePtr(), it->second);
-    } catch (OpenRAVE::openrave_exception const &e) {
-        RAVELOG_ERROR("Unable to create robot of type '%s': %s\n", type.c_str(), e.what());
-        return Robot::Ptr();
-    }
-
-    // Add the kinbody to the environment.
-    or_robot->SetName(name);
-    env_->Add(or_robot, anonymous);
-
-    ORRobot::Ptr robot;
-    try {
-        robot = boost::make_shared<ORRobot>(shared_from_this(), or_robot, type);
-        robot->initialize();
-    } catch (OpenRAVE::openrave_exception const &e) {
-        RAVELOG_ERROR("Unable to add object to the environment.\n");
-        return Robot::Ptr();
-    }
-
-    // The name might have changed if anonymous is true.
-    std::string const actual_name = or_robot->GetName();
-    objects_[or_robot] = robot;
-    return robot;
 }
 
 void OREnvironment::remove(Object::Ptr object)
@@ -303,47 +256,6 @@ void OREnvironment::addType(std::string const &type, std::string const &path)
     if (!it.second) {
         RAVELOG_ERROR("There is already a type named '%s'.\n", type.c_str());
     }
-}
-
-void OREnvironment::loadTypes()
-{
-    // Read the search path from OPENRAVE_DATA.
-    std::vector<std::string> paths;
-    std::string const &all_paths = std::getenv("OPENRAVE_DATA");
-    boost::split(paths, all_paths, boost::is_any_of(":"));
-
-    // Search for the .types.yaml extension in each path.
-    BOOST_FOREACH (std::string const &search_path, paths) {
-        if (search_path.empty()) {
-            continue;
-        }
-
-        boost::filesystem::directory_iterator it_start(search_path), it_end;
-        BOOST_FOREACH (boost::filesystem::path const &path, std::make_pair(it_start, it_end)) {
-        	if (boost::algorithm::ends_with(path.filename().c_str(), ".kenv.yaml" )
-             && boost::filesystem::is_regular_file(path)) {
-                loadTypes(path);
-            }
-        }
-    }
-}
-
-void OREnvironment::loadTypes(boost::filesystem::path const &path)
-{
-    boost::filesystem::ifstream stream(path);
-    YAML::Parser parser(stream);
-    YAML::Node root;
-    if (!parser.GetNextDocument(root)) {
-        // TODO: Throw a more appropriate type of exception.
-        throw std::runtime_error(boost::str(boost::format("Unable to load types from '%s'.") % path.string()));
-    }
-
-    for (YAML::Iterator it = root.begin(); it != root.end(); ++it) {
-        std::string type, path;
-        it.first() >> type;
-        it.second() >> path;
-        addType(type, path);
-    } 
 }
 
 ORViewer::Ptr OREnvironment::attachViewer(void)
@@ -610,22 +522,6 @@ void ORObject::setDOFValues(Eigen::VectorXd const &dof_values)
     kinbody_->SetDOFValues(or_dof_values, OpenRAVE::KinBody::CLA_Nothing);
 }
 
-
-/*
- * ORRobot
- */
-ORRobot::ORRobot(boost::weak_ptr<OREnvironment> parent, OpenRAVE::RobotBasePtr robot,
-                 std::string const &type)
-    : ORObject(parent, robot, type)
-    , robot_(robot)
-{
-    BOOST_ASSERT(robot_);
-}
-
-OpenRAVE::RobotBasePtr ORRobot::getORRobot(void) const
-{
-    return robot_;
-}
 
 /*
  * ORViewer

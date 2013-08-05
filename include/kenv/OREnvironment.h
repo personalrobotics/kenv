@@ -10,7 +10,6 @@ namespace kenv {
 
 class OREnvironment;
 class ORObject;
-class ORRobot;
 
 class ORViewer : private boost::noncopyable {
 public:
@@ -100,19 +99,6 @@ private:
                                                      std::vector<std::pair<Link::Ptr, Link::Ptr> > *links) const;
 };
 
-class ORRobot : public ORObject, public virtual Robot {
-public:
-    typedef boost::shared_ptr<ORRobot> Ptr;
-    typedef boost::shared_ptr<ORRobot const> ConstPtr;
-
-    ORRobot(boost::weak_ptr<OREnvironment> parent, OpenRAVE::RobotBasePtr kinbody,
-            std::string const &type);
-    OpenRAVE::RobotBasePtr getORRobot(void) const;
-
-private:
-    OpenRAVE::RobotBasePtr robot_;
-};
-
 class OREnvironment : public Environment, public boost::enable_shared_from_this<OREnvironment> {
 public:
     typedef boost::shared_ptr<OREnvironment> Ptr;
@@ -122,10 +108,8 @@ public:
     OREnvironment(OpenRAVE::EnvironmentBasePtr or_env);
     OpenRAVE::EnvironmentBasePtr getOREnvironment(void) const;
     virtual Object::Ptr getObject(std::string const &name);
-    virtual Robot::Ptr getRobot(std::string const &name);
 
     virtual Object::Ptr createObject(std::string const &type, std::string const &name, bool anonymous = false);
-    virtual Robot::Ptr createRobot(std::string const &type, std::string const name, bool anonymous = false);
     virtual void remove(Object::Ptr object);
 
     virtual Handle drawLine(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
@@ -143,8 +127,6 @@ public:
     						const boost::multi_array<float,3>& texture);
 
     void addType(std::string const &type, std::string const &kinbody_path);
-    void loadTypes();
-    void loadTypes(boost::filesystem::path const &path);
 
     ORViewer::Ptr attachViewer(void);
 
