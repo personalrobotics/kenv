@@ -143,13 +143,6 @@ bool QuasistaticPushingModel::pushObject(kenv::Object::Ptr hand, kenv::Object::P
     std::vector<kenv::Contact> contacts;
     collision_checker_->checkCollision(hand, object, &contacts);
 
-    std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d> > lines(contacts.size());
-    // FIXME: Why are the contact normals negated?
-    BOOST_FOREACH (kenv::Contact &contact, contacts) {
-        contact.normal *= -1;
-        lines.push_back(std::make_pair(contact.position, contact.position + 0.02 * contact.normal));
-    }
-
     // Use the limit surface to convert each contact into a twist.
     std::vector<Eigen::Vector3d> twists;
     BOOST_FOREACH (kenv::Contact const &contact, contacts) {
@@ -192,8 +185,6 @@ bool QuasistaticPushingModel::pushObject(kenv::Object::Ptr hand, kenv::Object::P
     object_pose.pretranslate(translation_step);
     object_pose.linear() = object_pose.linear() * rotation_step;
     object->setTransform(object_pose);
-
-    //handle = hand->getEnvironment()->drawLineList(lines, 2, Eigen::Vector4d(1, 1, 0, 1));
     return true;
 }
 
