@@ -1,0 +1,20 @@
+<package>
+    <description brief="2D kinematic simulation environment.">
+        Two-dimensional kinematic simulation environment where objects are
+        represented using GEOS geometry primitives. This code also supports the
+        analytic computation of a polyhedral approximation of C-space
+        obstacles.
+    </description>
+    <author>Michael Koval</author>
+    <rosdep name="eigen"/>
+    <rosdep name="geos"/>
+    <rosdep name="yaml-cpp"/>
+    <depend package="kenv"/>
+    <depend package="or_kenv"/>
+    <depend package="openrave"/>
+    <depend package="quasistatic_pushing"/>
+    <export>
+        <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lpolygonal_kenv"/>
+        <openrave plugins="${prefix}/lib"/>
+    </export>
+</package>
