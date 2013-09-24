@@ -14,6 +14,12 @@ namespace quasistatic_pushing {
 /*
  * Action
  */
+Action::Action()
+    : linear_velocity_(0, 0)
+    , angular_velocity_(0)
+{
+}
+
 Action::Action(Eigen::Vector2d const &linear_velocity, double const &angular_velocity)
     : linear_velocity_(linear_velocity)
     , angular_velocity_(angular_velocity)
@@ -53,6 +59,21 @@ void Action::set_angular_velocity(double angular_velocity)
     angular_velocity_ = angular_velocity;
 }
 
+void Action::Serialize(YAML::Emitter &emitter) const
+{
+    emitter << YAML::LocalTag("Action")
+            << YAML::BeginMap
+            << YAML::Key << "linear"  << YAML::Value << linear_velocity_
+            << YAML::Key << "angular" << YAML::Value << angular_velocity_
+            << YAML::EndMap;
+}
+
+void Action::Deserialize(YAML::Node const &node)
+{
+    node["linear"] >> linear_velocity_;
+    node["angular"] >> angular_velocity_;
+}
+
 Action &Action::operator*=(double scale)
 {
     linear_velocity_ *= scale;
@@ -81,6 +102,18 @@ Action operator*(double scale, Action const &action)
 Action operator/(Action const &action, double scale)
 {
     return Action(action) /= scale;
+}
+
+YAML::Emitter &operator<<(YAML::Emitter &emitter, Action const &action)
+{
+    action.Serialize(emitter);
+    return emitter;
+}
+
+YAML::Node const &operator>>(YAML::Node const &node, Action &action)
+{
+    action.Deserialize(node);
+    return node;
 }
 
 /*
