@@ -16,6 +16,9 @@
 
 class PolygonalViewer {
 public:
+    typedef boost::shared_ptr<PolygonalViewer> Ptr;
+    typedef boost::shared_ptr<PolygonalViewer const> ConstPtr;
+
     PolygonalViewer(kenv::PolygonalEnvironment::Ptr env, std::string const &name,
                     size_t const width = 800, size_t const height = 600,
                     double const scale = 1000,

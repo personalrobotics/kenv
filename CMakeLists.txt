@@ -18,7 +18,7 @@ include_directories(${EIGEN_INCLUDE_DIRS})
 add_definitions(${EIGEN_DEFINITIONS})
 
 add_definitions(-frounding-math)
-include_directories(${PROJECT_SOURCE_DIR}/include/polygon_kenv)
+include_directories(${PROJECT_SOURCE_DIR}/include/polygonal_kenv)
 
 #rosbuild_genmsg()
 #rosbuild_gensrv()
