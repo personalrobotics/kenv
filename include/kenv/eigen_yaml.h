@@ -2,9 +2,41 @@
 #define EIGEN_YAML_H_
 
 #include <boost/format.hpp>
+#include <boost/make_shared.hpp>
 #include <Eigen/Dense>
 #include <yaml-cpp/yaml.h>
 
+/*
+ * Custom type (de)serialization
+ */
+class YAMLSerializable {
+public:
+    virtual void Serialize(YAML::Emitter &emitter) const = 0;
+    virtual void Deserialize(YAML::Node const &node) = 0;
+};
+
+inline YAML::Emitter &operator<<(YAML::Emitter &emitter, YAMLSerializable const &node)
+{
+    node.Serialize(emitter);
+    return emitter;
+}
+
+inline void operator>>(YAML::Node const &node, YAMLSerializable &object)
+{
+    object.Deserialize(node);
+}
+
+template <class T>
+boost::shared_ptr<T> Deserialize(YAML::Node const &node)
+{
+    boost::shared_ptr<T> object = boost::make_shared<T>();
+    node >> *object;
+    return object;
+}
+
+/*
+ * Eigen (de)serialization
+ */
 template <class Derived>
 inline void operator>>(YAML::Node const &node, Eigen::MatrixBase<Derived> &matrix)
 {
