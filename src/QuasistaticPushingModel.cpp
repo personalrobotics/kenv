@@ -2,6 +2,7 @@
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/make_shared.hpp>
+#include <kenv/eigen_yaml.h>
 #include "QuasistaticPushingModel.h"
 
 inline Eigen::Vector3d to3D(Eigen::Vector2d const &x)
@@ -102,18 +103,6 @@ Action operator*(double scale, Action const &action)
 Action operator/(Action const &action, double scale)
 {
     return Action(action) /= scale;
-}
-
-YAML::Emitter &operator<<(YAML::Emitter &emitter, Action const &action)
-{
-    action.Serialize(emitter);
-    return emitter;
-}
-
-YAML::Node const &operator>>(YAML::Node const &node, Action &action)
-{
-    action.Deserialize(node);
-    return node;
 }
 
 /*

@@ -21,7 +21,7 @@ struct ContactMode {
 /*
  * Action
  */
-class Action {
+class Action : public virtual YAMLSerializable {
 public:
     Action();
     Action(Eigen::Vector2d const &linear_velocity, double const &angular_velocity);
@@ -35,8 +35,8 @@ public:
     double angular_velocity() const;
     void set_angular_velocity(double angular_velocity);
 
-    void Serialize(YAML::Emitter &emitter) const;
-    void Deserialize(YAML::Node const &node);
+    virtual void Serialize(YAML::Emitter &emitter) const;
+    virtual void Deserialize(YAML::Node const &node);
 
     Action &operator*=(double scale);
     Action &operator/=(double scale);
@@ -49,8 +49,6 @@ private:
 Action operator*(Action const &action, double scale);
 Action operator*(double scale, Action const &action);
 Action operator/(Action const &action, double scale);
-YAML::Emitter &operator<<(YAML::Emitter &emitter, Action const &action);
-YAML::Node const &operator>>(YAML::Node const &node, Action &action);
 
 /*
  * QuasistaticPushingModel
