@@ -127,11 +127,12 @@ void PolygonalViewer::Redraw()
         }
     }
 
-    geos::geom::Geometry const *custom_geom;
-    sf::Color custom_color;
-    BOOST_FOREACH (boost::tie(custom_geom, custom_color), custom_geometry_) {
+    static sf::Color const custom_color(0, 0, 255, 255);
+    std::vector<boost::shared_ptr<geos::geom::Geometry> > viz_geom = env_->getVisualizationGeometry();
+
+    BOOST_FOREACH (boost::shared_ptr<geos::geom::Geometry> custom_geom, viz_geom) {
         std::vector<sf::Drawable *> drawables;
-        FromGeometry(custom_geom, drawables, custom_color);
+        FromGeometry(custom_geom.get(), drawables, custom_color);
 
         BOOST_FOREACH (sf::Drawable *drawable, drawables) {
             window_->draw(*drawable);

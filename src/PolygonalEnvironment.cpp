@@ -3,6 +3,7 @@
 #include <boost/assign/std/vector.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/make_shared.hpp>
@@ -11,6 +12,7 @@
 #include <geos/geom/LineString.h>
 #include <geos/geom/MultiLineString.h>
 #include <geos/geom/Polygon.h>
+#include <geos/geom/Point.h>
 #include <geos/operation/union/CascadedPolygonUnion.h>
 #include "PolygonalEnvironment.h"
 
@@ -365,6 +367,12 @@ std::vector<geos::geom::Geometry *> PolygonalObject::getSensors() const
 /*
  * PolygonalEnvironment
  */
+PolygonalEnvironment::PolygonalEnvironment()
+    : geom_factory_(geos::geom::GeometryFactory::getDefaultInstance())
+    , coords_factory_(geom_factory_->getCoordinateSequenceFactory())
+{
+}
+
 Object::Ptr PolygonalEnvironment::getObject(std::string const &name)
 {
     BOOST_AUTO(it, objects_.find(name));
@@ -390,27 +398,40 @@ std::vector<Object::Ptr> PolygonalEnvironment::getObjects() const
 
 Object::Ptr PolygonalEnvironment::createObject(std::string const &type, std::string const &name, bool anonymous)
 {
-    if (objects_.find(name) != objects_.end()) {
-        throw std::runtime_error(boost::str(
-            boost::format("There is already an object named [%s].") % name));
+    if (anonymous) {
+        // Extract the current index from the desired name.
+        size_t last_index = name.find_last_not_of("0123456789");
+        if (last_index == std::string::npos) {
+            last_index  = 0;
+        } else {
+            last_index += 1;
+        }
+        std::string const base_name = name.substr(0, last_index);
+        std::string const old_index_str = name.substr(last_index);
+        size_t const old_index = (old_index_str.empty()) ? 1 : boost::lexical_cast<size_t>(old_index_str);
+
+        std::string unique_name = name;
+        for (size_t new_index = old_index; objects_.count(unique_name) != 0; new_index++) {
+            unique_name = boost::str(boost::format("%s%d") % base_name % new_index);
+        }
+        return createObject(type, unique_name, false);
+    } else {
+        std::ifstream fin(type.c_str());
+        YAML::Parser parser(fin);
+        YAML::Node document;
+        if (!parser.GetNextDocument(document)) {
+            throw std::runtime_error(boost::str(
+                boost::format("Unable to load YAML from [%s].") % type));
+        }
+
+        ::PolygonalLink::Ptr polygonal_link = boost::make_shared< ::PolygonalLink>();
+        polygonal_link->deserialize(document);
+        polygonal_link->update();
+
+        PolygonalObject::Ptr object = boost::make_shared<PolygonalObject>(type, name, shared_from_this(), polygonal_link);
+        objects_[name] = object;
+        return object;
     }
-
-    std::ifstream fin(type.c_str());
-    YAML::Parser parser(fin);
-    YAML::Node document;
-    if (!parser.GetNextDocument(document)) {
-        throw std::runtime_error(boost::str(
-            boost::format("Unable to load YAML from [%s].") % type));
-    }
-
-    ::PolygonalLink::Ptr polygonal_link = boost::make_shared< ::PolygonalLink>();
-    polygonal_link->deserialize(document);
-    polygonal_link->update();
-
-    PolygonalObject::Ptr object = boost::make_shared<PolygonalObject>(type, name, shared_from_this(), polygonal_link);
-    objects_[name] = object;
-    return object;
-
 }
 
 void PolygonalEnvironment::remove(Object::Ptr object)
@@ -422,22 +443,57 @@ void PolygonalEnvironment::remove(Object::Ptr object)
     }
 }
 
+Handle PolygonalEnvironment::drawGeometry(geos::geom::Geometry const &geom, Eigen::Vector4d const &color)
+{
+    boost::shared_ptr<geos::geom::Geometry> viz_geom(geom.clone());
+    visualization_.push_back(viz_geom);
+    return viz_geom;
+}
+
 Handle PolygonalEnvironment::drawLine(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
                                       double width, Eigen::Vector4d const &color)
 {
-    throw std::runtime_error("not implemented");
+    std::vector<Eigen::Vector3d> points;
+    points.push_back(start);
+    points.push_back(end);
+    return drawLineStrip(points, width, color);
 }
 
 Handle PolygonalEnvironment::drawLineStrip(std::vector<Eigen::Vector3d> const &points,
                                            double width, Eigen::Vector4d const &color)
 {
-    throw std::runtime_error("not implemented");
+    geos::geom::CoordinateSequence *coords = coords_factory_->create(points.size(), 2);
+    
+    for (size_t i = 0; i < points.size(); ++i) {
+        coords->setAt(toGeos2D(points[i]), i);
+    }
+
+    geos::geom::Geometry *viz_geom = geom_factory_->createLineString(coords);
+    Handle handle = drawGeometry(*viz_geom, color);
+    delete viz_geom;
+    return handle;
 }
 
 Handle PolygonalEnvironment::drawLineList(std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d> > const &lines,
                                           double width, Eigen::Vector4d const &color)
 {
-    throw std::runtime_error("not implemented");
+    std::vector<geos::geom::Geometry *> *line_geoms = new std::vector<geos::geom::Geometry *>;
+    line_geoms->reserve(lines.size());
+
+    typedef std::pair<Eigen::Vector3d, Eigen::Vector3d> EndPoints;
+    BOOST_FOREACH (EndPoints const &endpoints, lines) {
+        geos::geom::CoordinateSequence *coords = coords_factory_->create(2, 2);
+        coords->setAt(toGeos2D(endpoints.first), 0);
+        coords->setAt(toGeos2D(endpoints.second), 0);
+
+        geos::geom::LineString *line = geom_factory_->createLineString(coords);
+        line_geoms->push_back(line);
+    }
+
+    geos::geom::Geometry *viz_geom = geom_factory_->createMultiLineString(line_geoms);
+    Handle handle = drawGeometry(*viz_geom, color);
+    delete viz_geom;
+    return handle;
 }
 
 Handle PolygonalEnvironment::drawArrow(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
@@ -449,13 +505,49 @@ Handle PolygonalEnvironment::drawArrow(Eigen::Vector3d const &start, Eigen::Vect
 Handle PolygonalEnvironment::drawPoints(std::vector<Eigen::Vector3d> const &points,
                                         float point_size, Eigen::Vector4d const &color)
 {
-    throw std::runtime_error("not implemented");
+    std::vector<geos::geom::Geometry *> *point_geoms = new std::vector<geos::geom::Geometry *>;
+    point_geoms->reserve(points.size());
+
+    BOOST_FOREACH (Eigen::Vector3d const &point, points) {
+        geos::geom::Point *point_geom = geom_factory_->createPoint(toGeos2D(point));
+        point_geoms->push_back(point_geom);
+    }
+
+    geos::geom::Geometry *viz_geom = geom_factory_->createMultiPoint(point_geoms);
+    Handle handle = drawGeometry(*viz_geom, color);
+    delete viz_geom;
+    return handle;
 }
 
 Handle PolygonalEnvironment::drawPlane(Eigen::Affine3d const &origin, float width, float height,
                                        boost::multi_array<float,3> const &texture)
 {
     throw std::runtime_error("not implemented");
+}
+
+geos::geom::Coordinate PolygonalEnvironment::toGeos2D(Eigen::Vector3d const &point) const
+{
+    BOOST_ASSERT(point[2] == 0);
+    return geos::geom::Coordinate(point[0], point[1]);
+}
+
+std::vector<boost::shared_ptr<geos::geom::Geometry> > PolygonalEnvironment::getVisualizationGeometry()
+{
+    std::vector<boost::weak_ptr<geos::geom::Geometry> > new_visualization;
+    std::vector<boost::shared_ptr<geos::geom::Geometry> > geoms;
+    geoms.reserve(visualization_.size());
+    new_visualization.reserve(visualization_.size());
+
+    for (size_t i = 0; i < visualization_.size(); ++i) {
+        boost::shared_ptr<geos::geom::Geometry> geom = visualization_[i].lock();
+        if (geom) {
+            geoms.push_back(geom);
+            new_visualization.push_back(geom);
+        }
+    }
+
+    visualization_ = new_visualization;
+    return geoms;
 }
 
 }

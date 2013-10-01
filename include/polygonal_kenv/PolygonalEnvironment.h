@@ -2,6 +2,8 @@
 #define POLYGONALOBJECT_H_
 
 #include <kenv/Environment.h>
+#include <geos/geom/CoordinateSequenceFactory.h>
+#include <geos/geom/MultiPoint.h>
 #include "PolygonalLink.h"
 
 namespace kenv {
@@ -87,11 +89,14 @@ public:
     typedef boost::shared_ptr<PolygonalEnvironment const> ConstPtr;
     typedef boost::shared_ptr<void> Handle;
 
+    PolygonalEnvironment();
+
     virtual Object::Ptr getObject(std::string const &name);
     virtual std::vector<Object::Ptr> getObjects() const;
     virtual Object::Ptr createObject(std::string const &type, std::string const &name, bool anonymous = false);
     virtual void remove(Object::Ptr object);
 
+    virtual Handle drawGeometry(geos::geom::Geometry const &geom, Eigen::Vector4d const &color);
     virtual Handle drawLine(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
                             double width, Eigen::Vector4d const &color);
     virtual Handle drawLineStrip(std::vector<Eigen::Vector3d> const &points,
@@ -105,8 +110,15 @@ public:
     virtual Handle drawPlane(Eigen::Affine3d const &origin, float width, float height,
     						boost::multi_array<float,3> const &texture);
 
+    std::vector<boost::shared_ptr<geos::geom::Geometry> > getVisualizationGeometry();
+
 private:
     std::map<std::string, PolygonalObject::Ptr> objects_;
+    geos::geom::GeometryFactory const *geom_factory_;
+    geos::geom::CoordinateSequenceFactory const *coords_factory_;
+    std::vector<boost::weak_ptr<geos::geom::Geometry> > visualization_;
+
+    geos::geom::Coordinate toGeos2D(Eigen::Vector3d const &point) const;
 };
 
 }
