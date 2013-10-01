@@ -5,6 +5,8 @@
 #include <geos/geom/GeometryFactory.h>
 #include "PolygonalViewer.h"
 
+namespace kenv {
+
 PolygonalViewer::PolygonalViewer(kenv::PolygonalEnvironment::Ptr env, std::string const &name,
                                  size_t const width, size_t const height, double const scale,
                                  Eigen::Vector2d const &origin)
@@ -127,12 +129,10 @@ void PolygonalViewer::Redraw()
         }
     }
 
-    static sf::Color const custom_color(0, 0, 255, 255);
-    std::vector<boost::shared_ptr<geos::geom::Geometry> > viz_geom = env_->getVisualizationGeometry();
-
-    BOOST_FOREACH (boost::shared_ptr<geos::geom::Geometry> custom_geom, viz_geom) {
+    std::vector<ColoredGeometry::Ptr> viz_geom = env_->getVisualizationGeometry();
+    BOOST_FOREACH (ColoredGeometry::Ptr custom_geom, viz_geom) {
         std::vector<sf::Drawable *> drawables;
-        FromGeometry(custom_geom.get(), drawables, custom_color);
+        FromGeometry(custom_geom->geom, drawables, toSFMLColor(custom_geom->color));
 
         BOOST_FOREACH (sf::Drawable *drawable, drawables) {
             window_->draw(*drawable);
@@ -141,22 +141,6 @@ void PolygonalViewer::Redraw()
     }
 
     window_->display();
-}
-
-void PolygonalViewer::AddCustomGeometry(geos::geom::Geometry const *geom, Eigen::Vector4d const &color)
-{
-    sf::Color sfml_color;
-    sfml_color.r = static_cast<uint8_t>(255 * color[0]);
-    sfml_color.g = static_cast<uint8_t>(255 * color[1]);
-    sfml_color.b = static_cast<uint8_t>(255 * color[2]);
-    sfml_color.a = static_cast<uint8_t>(255 * color[3]);
-    custom_geometry_.push_back(std::make_pair(geom, sfml_color));
-}
-
-void PolygonalViewer::ClearCustomGeometry()
-{
-    custom_geometry_.clear();
-    // TODO: this leaks memory.
 }
 
 void PolygonalViewer::FromGeometry(geos::geom::Geometry const *geom, std::vector<sf::Drawable *> &shapes,
@@ -258,4 +242,16 @@ geos::geom::Point *PolygonalViewer::Reproject(sf::Vector2f const &p) const
     coord.x = (p.x - window_size.x / 2) / scale_ + origin_[0];
     coord.y = (p.y - window_size.y / 2) / scale_ + origin_[1];
     return geom_factory->createPoint(coord);
+}
+
+sf::Color PolygonalViewer::toSFMLColor(Eigen::Vector4d const &color) const
+{
+    sf::Color sfml_color;
+    sfml_color.r = static_cast<uint8_t>(255 * color[0]);
+    sfml_color.g = static_cast<uint8_t>(255 * color[1]);
+    sfml_color.b = static_cast<uint8_t>(255 * color[2]);
+    sfml_color.a = static_cast<uint8_t>(255 * color[3]);
+    return sfml_color;
+}
+
 }

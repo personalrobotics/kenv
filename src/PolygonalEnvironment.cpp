@@ -443,9 +443,9 @@ void PolygonalEnvironment::remove(Object::Ptr object)
     }
 }
 
-Handle PolygonalEnvironment::drawGeometry(geos::geom::Geometry const &geom, Eigen::Vector4d const &color)
+Handle PolygonalEnvironment::drawGeometry(geos::geom::Geometry *geom, Eigen::Vector4d const &color)
 {
-    boost::shared_ptr<geos::geom::Geometry> viz_geom(geom.clone());
+    boost::shared_ptr<ColoredGeometry> viz_geom = boost::make_shared<ColoredGeometry>(geom, color);
     visualization_.push_back(viz_geom);
     return viz_geom;
 }
@@ -467,11 +467,7 @@ Handle PolygonalEnvironment::drawLineStrip(std::vector<Eigen::Vector3d> const &p
     for (size_t i = 0; i < points.size(); ++i) {
         coords->setAt(toGeos2D(points[i]), i);
     }
-
-    geos::geom::Geometry *viz_geom = geom_factory_->createLineString(coords);
-    Handle handle = drawGeometry(*viz_geom, color);
-    delete viz_geom;
-    return handle;
+    return drawGeometry(geom_factory_->createLineString(coords), color);
 }
 
 Handle PolygonalEnvironment::drawLineList(std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d> > const &lines,
@@ -489,11 +485,7 @@ Handle PolygonalEnvironment::drawLineList(std::vector<std::pair<Eigen::Vector3d,
         geos::geom::LineString *line = geom_factory_->createLineString(coords);
         line_geoms->push_back(line);
     }
-
-    geos::geom::Geometry *viz_geom = geom_factory_->createMultiLineString(line_geoms);
-    Handle handle = drawGeometry(*viz_geom, color);
-    delete viz_geom;
-    return handle;
+    return drawGeometry(geom_factory_->createMultiLineString(line_geoms), color);
 }
 
 Handle PolygonalEnvironment::drawArrow(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
@@ -512,11 +504,7 @@ Handle PolygonalEnvironment::drawPoints(std::vector<Eigen::Vector3d> const &poin
         geos::geom::Point *point_geom = geom_factory_->createPoint(toGeos2D(point));
         point_geoms->push_back(point_geom);
     }
-
-    geos::geom::Geometry *viz_geom = geom_factory_->createMultiPoint(point_geoms);
-    Handle handle = drawGeometry(*viz_geom, color);
-    delete viz_geom;
-    return handle;
+    return drawGeometry(geom_factory_->createMultiPoint(point_geoms), color);
 }
 
 Handle PolygonalEnvironment::drawPlane(Eigen::Affine3d const &origin, float width, float height,
@@ -531,15 +519,15 @@ geos::geom::Coordinate PolygonalEnvironment::toGeos2D(Eigen::Vector3d const &poi
     return geos::geom::Coordinate(point[0], point[1]);
 }
 
-std::vector<boost::shared_ptr<geos::geom::Geometry> > PolygonalEnvironment::getVisualizationGeometry()
+std::vector<ColoredGeometry::Ptr> PolygonalEnvironment::getVisualizationGeometry()
 {
-    std::vector<boost::weak_ptr<geos::geom::Geometry> > new_visualization;
-    std::vector<boost::shared_ptr<geos::geom::Geometry> > geoms;
+    std::vector<ColoredGeometry::WeakPtr> new_visualization;
+    std::vector<ColoredGeometry::Ptr> geoms;
     geoms.reserve(visualization_.size());
     new_visualization.reserve(visualization_.size());
 
     for (size_t i = 0; i < visualization_.size(); ++i) {
-        boost::shared_ptr<geos::geom::Geometry> geom = visualization_[i].lock();
+        ColoredGeometry::Ptr geom = visualization_[i].lock();
         if (geom) {
             geoms.push_back(geom);
             new_visualization.push_back(geom);

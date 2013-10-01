@@ -10,6 +10,28 @@ namespace kenv {
 
 class PolygonalEnvironment;
 
+class ColoredGeometry {
+public:
+    typedef boost::shared_ptr<ColoredGeometry> Ptr;
+    typedef boost::shared_ptr<ColoredGeometry const> ConstPtr;
+    typedef boost::weak_ptr<ColoredGeometry> WeakPtr;
+    typedef boost::weak_ptr<ColoredGeometry const> WeakConstPtr;
+
+    ColoredGeometry(geos::geom::Geometry *geom,
+                    Eigen::Vector4d const &color)
+        : geom(geom)
+        , color(color)
+    {}
+
+    virtual ~ColoredGeometry()
+    {
+        delete geom;
+    }
+
+    geos::geom::Geometry *geom;
+    Eigen::Vector4d color;
+};
+
 class PolygonalLink : public virtual kenv::Link {
 public:
     typedef boost::shared_ptr<PolygonalLink> Ptr;
@@ -96,7 +118,7 @@ public:
     virtual Object::Ptr createObject(std::string const &type, std::string const &name, bool anonymous = false);
     virtual void remove(Object::Ptr object);
 
-    virtual Handle drawGeometry(geos::geom::Geometry const &geom, Eigen::Vector4d const &color);
+    virtual Handle drawGeometry(geos::geom::Geometry *geom, Eigen::Vector4d const &color);
     virtual Handle drawLine(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
                             double width, Eigen::Vector4d const &color);
     virtual Handle drawLineStrip(std::vector<Eigen::Vector3d> const &points,
@@ -110,13 +132,13 @@ public:
     virtual Handle drawPlane(Eigen::Affine3d const &origin, float width, float height,
     						boost::multi_array<float,3> const &texture);
 
-    std::vector<boost::shared_ptr<geos::geom::Geometry> > getVisualizationGeometry();
+    std::vector<ColoredGeometry::Ptr> getVisualizationGeometry();
 
 private:
     std::map<std::string, PolygonalObject::Ptr> objects_;
     geos::geom::GeometryFactory const *geom_factory_;
     geos::geom::CoordinateSequenceFactory const *coords_factory_;
-    std::vector<boost::weak_ptr<geos::geom::Geometry> > visualization_;
+    std::vector<ColoredGeometry::WeakPtr> visualization_;
 
     geos::geom::Coordinate toGeos2D(Eigen::Vector3d const &point) const;
 };

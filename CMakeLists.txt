@@ -36,7 +36,3 @@ rosbuild_link_boost(polygonal_kenv system)
 rosbuild_add_executable(planarize src/planarize.cpp)
 rosbuild_link_boost(planarize program_options)
 target_link_libraries(planarize polygonal_kenv yaml-cpp)
-
-rosbuild_add_executable(test_polygonal src/test_polygonal.cpp)
-rosbuild_link_boost(test_polygonal program_options thread)
-target_link_libraries(test_polygonal polygonal_kenv geos yaml-cpp)

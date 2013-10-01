@@ -14,6 +14,8 @@
 #include <SFML/Window.hpp>
 #include "PolygonalEnvironment.h"
 
+namespace kenv {
+
 class PolygonalViewer {
 public:
     typedef boost::shared_ptr<PolygonalViewer> Ptr;
@@ -33,15 +35,11 @@ public:
     void Select(sf::Vector2f const &point_screen);
     void Drag(sf::Vector2f const &cursor_curr);
 
-    void AddCustomGeometry(geos::geom::Geometry const *geom, Eigen::Vector4d const &color);
-    void ClearCustomGeometry();
-
 private:
     kenv::PolygonalEnvironment::Ptr env_;
     boost::shared_ptr<sf::RenderWindow> window_;
     double scale_;
     Eigen::Vector2d origin_;
-    std::vector<std::pair<geos::geom::Geometry const *, sf::Color> > custom_geometry_;
 
     std::set<kenv::Object::Ptr> selection_;
     bool dragging_;
@@ -62,6 +60,9 @@ private:
 
     sf::Vector2f Project(geos::geom::Coordinate const &coord) const;
     geos::geom::Point *Reproject(sf::Vector2f const &p) const;
+    sf::Color toSFMLColor(Eigen::Vector4d const &color) const;
 };
+
+}
 
 #endif
