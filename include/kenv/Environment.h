@@ -16,7 +16,9 @@ namespace kenv {
 
 class Environment;
 class Object;
+
 typedef Eigen::AlignedBox<double, 3> AlignedBox3d;
+typedef boost::shared_ptr<void> Handle;
 
 class Contact {
 public:
@@ -100,6 +102,7 @@ public:
 
     virtual void enable(bool flag) = 0;
     virtual void setVisible(bool flag) = 0;
+
     virtual AlignedBox3d getAABB(void) const = 0;
     virtual bool checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts = NULL,
                                 std::vector<std::pair<Link::Ptr, Link::Ptr> > *links = NULL) const = 0;
@@ -121,7 +124,6 @@ class Environment : private boost::noncopyable {
 public:
     typedef boost::shared_ptr<Environment> Ptr;
     typedef boost::shared_ptr<Environment const> ConstPtr;
-    typedef boost::shared_ptr<void> Handle;
 
     virtual Object::Ptr getObject(std::string const &name) = 0;
     virtual Object::Ptr createObject(std::string const &type, std::string const &name, bool anonymous = false) = 0;
