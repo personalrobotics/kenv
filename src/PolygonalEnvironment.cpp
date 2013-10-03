@@ -263,7 +263,14 @@ std::vector<Link::Ptr> PolygonalObject::getLinks(void) const
 
 Link::Ptr PolygonalObject::getLink(std::string const name) const
 {
-    throw std::runtime_error("not implemented");
+    // TODO: Use std::map instead of a linear search.
+    BOOST_FOREACH (PolygonalLink::Ptr link, links_) {
+        if (link->getName() == name) {
+            return link;
+        }
+    }
+    throw std::runtime_error(boost::str(
+        boost::format("There is no link named [%s].") % name));
 }
 
 Eigen::Affine3d PolygonalObject::getTransform(void) const
