@@ -118,6 +118,8 @@ void PolygonalViewer::Redraw()
         boost::optional<sf::Color> color;
         if (selection_.count(object) > 0) {
             color.reset(sf::Color(255, 0, 0, 255));
+        } else {
+            color.reset(toSFMLColor(polygonal_object->getColor()));
         }
 
         std::vector<sf::Drawable *> drawables;
