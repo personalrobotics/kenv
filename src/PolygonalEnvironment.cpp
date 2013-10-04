@@ -54,7 +54,7 @@ std::string PolygonalLink::getName(void) const
     return internal_link_->name();
 }
 
-boost::shared_ptr<geos::geom::Geometry> PolygonalLink::getGeometry() const
+boost::shared_ptr<geos::geom::Geometry const> PolygonalLink::getGeometry() const
 {
     return internal_link_->geometry();
 }
@@ -160,8 +160,8 @@ bool PolygonalObject::checkCollision(Object::ConstPtr entity, std::vector<Contac
     PolygonalObject::ConstPtr other = boost::dynamic_pointer_cast<PolygonalObject const>(entity);
     BOOST_ASSERT(other);
 
-    boost::shared_ptr<geos::geom::Geometry> geom1 = getGeometry();
-    boost::shared_ptr<geos::geom::Geometry> geom2 = other->getGeometry();
+    boost::shared_ptr<geos::geom::Geometry const> geom1 = getGeometry();
+    boost::shared_ptr<geos::geom::Geometry const> geom2 = other->getGeometry();
 
     if (links) {
         links->clear();
@@ -173,10 +173,10 @@ bool PolygonalObject::checkCollision(Object::ConstPtr entity, std::vector<Contac
         BOOST_FOREACH (kenv::Link::Ptr link2, links2) {
             PolygonalLink::Ptr polygonal_link1 = boost::dynamic_pointer_cast<PolygonalLink>(link1);
             PolygonalLink::Ptr polygonal_link2 = boost::dynamic_pointer_cast<PolygonalLink>(link2);
-            geos::geom::Geometry *geom_link1 = polygonal_link1->getGeometry();
-            geos::geom::Geometry *geom_link2 = polygonal_link2->getGeometry();
+            boost::shared_ptr<geos::geom::Geometry const> geom_link1 = polygonal_link1->getGeometry();
+            boost::shared_ptr<geos::geom::Geometry const> geom_link2 = polygonal_link2->getGeometry();
 
-            if (geom_link1->intersects(geom_link2)) {
+            if (geom_link1->intersects(geom_link2.get())) {
                 links->push_back(std::make_pair(link1, link2));
             }
         }
@@ -186,7 +186,7 @@ bool PolygonalObject::checkCollision(Object::ConstPtr entity, std::vector<Contac
         std::vector<geos::geom::LineString const *> linestrings;
 
         // Compute the intersection line(s).
-        geos::geom::Geometry *boundary = geom1->getBoundary()->intersection(geom2);
+        geos::geom::Geometry *boundary = geom1->getBoundary()->intersection(geom2.get());
         if (boundary->isEmpty()) {
             return false;
         }
@@ -241,7 +241,7 @@ bool PolygonalObject::checkCollision(Object::ConstPtr entity, std::vector<Contac
     }
     // Just check for collision. We don't need to compute any intermediate results.
     else {
-        return geom1->intersects(geom2);
+        return geom1->intersects(geom2.get());
     }
 }
 
@@ -333,7 +333,7 @@ double PolygonalObject::getTransparency() const
     return base_link_;
 }
 
-boost::shared_ptr<geos::geom::Geometry> PolygonalObject::getGeometry() const
+boost::shared_ptr<geos::geom::Geometry const> PolygonalObject::getGeometry() const
 {
     geos::geom::GeometryFactory const *geom_factory = geos::geom::GeometryFactory::getDefaultInstance();
     std::vector<geos::geom::Geometry *> *geoms = new std::vector<geos::geom::Geometry *>;
@@ -342,28 +342,14 @@ boost::shared_ptr<geos::geom::Geometry> PolygonalObject::getGeometry() const
         PolygonalLink::Ptr polygonal_link = boost::dynamic_pointer_cast<PolygonalLink>(link);
         BOOST_ASSERT(polygonal_link);
 
-        geos::geom::Geometry *geom = polygonal_link->getGeometry();
-        geoms->push_back(geom);
+        boost::shared_ptr<geos::geom::Geometry const> geom = polygonal_link->getGeometry();
+        geoms->push_back(geom->clone());
     }
 
     geos::geom::GeometryCollection *geom_collection = geom_factory->createGeometryCollection(geoms);
-    return geom_collection->buffer(0);
-    // TODO: Does this leak memory?
-}
-
-std::vector<geos::geom::Geometry *> PolygonalObject::getSensors() const
-{
-    std::vector<geos::geom::Geometry *> object_sensors;
-
-    BOOST_FOREACH (Link::Ptr link, getLinks()) {
-        PolygonalLink::Ptr polygonal_link = boost::dynamic_pointer_cast<PolygonalLink>(link);
-        BOOST_ASSERT(polygonal_link);
-
-        std::vector<geos::geom::Geometry *> link_sensors = polygonal_link->getSensors();
-        object_sensors.insert(object_sensors.end(), link_sensors.begin(), link_sensors.end());
-    }
-
-    return object_sensors;
+    boost::shared_ptr<geos::geom::Geometry> geom_buffered(geom_collection->buffer(0));
+    delete geom_collection;
+    return geom_buffered;
 }
 
 /*

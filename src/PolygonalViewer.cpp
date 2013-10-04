@@ -75,7 +75,7 @@ void PolygonalViewer::Select(sf::Vector2f const &point_screen)
     selection_.clear();
     BOOST_FOREACH (kenv::Object::Ptr object, env_->getObjects()) {
         kenv::PolygonalObject::Ptr polygonal_object = boost::dynamic_pointer_cast<kenv::PolygonalObject>(object);
-        geos::geom::Geometry *geom = polygonal_object->getGeometry();
+        boost::shared_ptr<geos::geom::Geometry const> geom = polygonal_object->getGeometry();
 
         if (geom->intersects(point)) {
             selection_.insert(object);
@@ -113,7 +113,7 @@ void PolygonalViewer::Redraw()
 
     BOOST_FOREACH (kenv::Object::Ptr object, env_->getObjects()) {
         kenv::PolygonalObject::Ptr polygonal_object = boost::dynamic_pointer_cast<kenv::PolygonalObject>(object);
-        geos::geom::Geometry *geom = polygonal_object->getGeometry();
+        boost::shared_ptr<geos::geom::Geometry const> geom = polygonal_object->getGeometry();
 
         boost::optional<sf::Color> color;
         if (selection_.count(object) > 0) {
@@ -123,7 +123,7 @@ void PolygonalViewer::Redraw()
         }
 
         std::vector<sf::Drawable *> drawables;
-        FromGeometry(geom, drawables, color);
+        FromGeometry(geom.get(), drawables, color);
 
         BOOST_FOREACH (sf::Drawable *drawable, drawables) {
             window_->draw(*drawable);

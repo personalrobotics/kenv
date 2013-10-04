@@ -53,8 +53,8 @@ static geos::geom::Polygon *CGALToGEOS(CGAL::Polygon_2<Kernel> const &cgal_polyg
     return geom_factory->createPolygon(linear_ring, holes);
 }
 
-geos::geom::Geometry *ComputeCSpaceObstacle(geos::geom::Geometry *robot,
-                                            geos::geom::Geometry *obstacle)
+geos::geom::Geometry *ComputeCSpaceObstacle(geos::geom::Geometry const *robot,
+                                            geos::geom::Geometry const *obstacle)
 {
     typedef CGAL::Quotient<CGAL::MP_Float>              Number_type;
     typedef CGAL::Cartesian<Number_type>                Kernel;
@@ -68,8 +68,8 @@ geos::geom::Geometry *ComputeCSpaceObstacle(geos::geom::Geometry *robot,
     } else if (obstacle->getGeometryTypeId() != geos::geom::GEOS_POLYGON) {
         throw std::runtime_error("Obstacle is not a polygon.");
     }
-    geos::geom::Polygon *geos_robot = dynamic_cast<geos::geom::Polygon *>(robot);
-    geos::geom::Polygon *geos_obstacle = dynamic_cast<geos::geom::Polygon *>(obstacle);
+    geos::geom::Polygon const *geos_robot = dynamic_cast<geos::geom::Polygon const *>(robot);
+    geos::geom::Polygon const *geos_obstacle = dynamic_cast<geos::geom::Polygon const *>(obstacle);
     BOOST_ASSERT(geos_robot && geos_obstacle);
 
     // Convert from GEOS to CGAL.

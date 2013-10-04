@@ -44,8 +44,7 @@ public:
     virtual Eigen::Affine3d getTransform(void) const;
     virtual void enable(bool flag);
 
-    virtual boost::shared_ptr<geos::geom::Geometry> getGeometry() const;
-    virtual std::vector<geos::geom::Geometry *> getSensors() const;
+    virtual boost::shared_ptr<geos::geom::Geometry const> getGeometry() const;
 
     virtual AlignedBox3d computeLocalAABB();
 
@@ -90,8 +89,7 @@ public:
     virtual double getTransparency() const;
 
     ::PolygonalLink::Ptr getBaseLink() const;
-    virtual boost::shared_ptr<geos::geom::Geometry> getGeometry() const;
-    virtual std::vector<geos::geom::Geometry *> getSensors() const;
+    virtual boost::shared_ptr<geos::geom::Geometry const> getGeometry() const;
 
 private:
     std::string type_;
