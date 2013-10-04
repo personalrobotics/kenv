@@ -33,9 +33,7 @@ public:
     std::string name() const;
     std::vector<boost::shared_ptr<PolygonalJoint> > joints() const;
     std::vector<PolygonalLink::Ptr> children() const;
-
-    geos::geom::Geometry *geometry() const;
-    std::vector<geos::geom::Geometry *> sensors() const;
+    boost::shared_ptr<geos::geom::Geometry const> geometry() const;
 
     boost::shared_ptr<PolygonalJoint> AddJoint(std::string const &name, PolygonalLink::Ptr child_link,
                                                Eigen::Vector2d const &origin, int direction);
@@ -47,9 +45,10 @@ private:
     std::string name_;
     Eigen::Affine2d pose_;
     Eigen::Affine2d relative_pose_;
-    geos::geom::Geometry *relative_geometry_;
-    std::vector<geos::geom::Geometry *> relative_sensors_;
     std::vector<boost::shared_ptr<PolygonalJoint> > joints_;
+
+    boost::shared_ptr<geos::geom::Geometry> relative_geometry_;
+    mutable boost::shared_ptr<geos::geom::Geometry> absolute_geometry_;
 
     friend class PolygonalJoint;
 };

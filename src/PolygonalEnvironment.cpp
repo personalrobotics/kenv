@@ -54,14 +54,9 @@ std::string PolygonalLink::getName(void) const
     return internal_link_->name();
 }
 
-geos::geom::Geometry *PolygonalLink::getGeometry() const
+boost::shared_ptr<geos::geom::Geometry> PolygonalLink::getGeometry() const
 {
     return internal_link_->geometry();
-}
-
-std::vector<geos::geom::Geometry *> PolygonalLink::getSensors() const
-{
-    return internal_link_->sensors();
 }
 
 Eigen::Affine3d PolygonalLink::getTransform(void) const
@@ -165,8 +160,8 @@ bool PolygonalObject::checkCollision(Object::ConstPtr entity, std::vector<Contac
     PolygonalObject::ConstPtr other = boost::dynamic_pointer_cast<PolygonalObject const>(entity);
     BOOST_ASSERT(other);
 
-    geos::geom::Geometry *geom1 = getGeometry();
-    geos::geom::Geometry *geom2 = other->getGeometry();
+    boost::shared_ptr<geos::geom::Geometry> geom1 = getGeometry();
+    boost::shared_ptr<geos::geom::Geometry> geom2 = other->getGeometry();
 
     if (links) {
         links->clear();
@@ -338,7 +333,7 @@ double PolygonalObject::getTransparency() const
     return base_link_;
 }
 
-geos::geom::Geometry *PolygonalObject::getGeometry() const
+boost::shared_ptr<geos::geom::Geometry> PolygonalObject::getGeometry() const
 {
     geos::geom::GeometryFactory const *geom_factory = geos::geom::GeometryFactory::getDefaultInstance();
     std::vector<geos::geom::Geometry *> *geoms = new std::vector<geos::geom::Geometry *>;

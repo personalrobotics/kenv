@@ -38,17 +38,17 @@ PolygonalLink::PolygonalLink(std::string const &name, Eigen::Affine2d const &rel
     , relative_pose_(relative_pose)
 {
     BOOST_ASSERT(geometry);
-
-    relative_geometry_ = TransformGeometry(geometry, relative_pose.inverse());
+    relative_geometry_.reset(TransformGeometry(geometry, relative_pose.inverse()));
 }
 
 PolygonalLink::~PolygonalLink()
 {
-    delete relative_geometry_;
 }
 
 void PolygonalLink::update()
 {
+    absolute_geometry_.reset();
+
     BOOST_FOREACH (PolygonalJoint::Ptr child_joint, joints_) {
         child_joint->update();
     }
@@ -76,22 +76,12 @@ Eigen::Affine2d PolygonalLink::relative_pose() const
     return relative_pose_;
 }
 
-geos::geom::Geometry *PolygonalLink::geometry() const
+boost::shared_ptr<geos::geom::Geometry const> PolygonalLink::geometry() const
 {
-    return TransformGeometry(relative_geometry_, pose_);
-}
-
-std::vector<geos::geom::Geometry *> PolygonalLink::sensors() const
-{
-    std::vector<geos::geom::Geometry *> sensors;
-    sensors.reserve(relative_sensors_.size());
-
-    BOOST_FOREACH (geos::geom::Geometry *relative_sensor, relative_sensors_) {
-        geos::geom::Geometry *sensor = TransformGeometry(relative_sensor, pose_);
-        sensors.push_back(sensor);
+    if (!absolute_geometry_) {
+        absolute_geometry_.reset(TransformGeometry(relative_geometry_.get(), pose_));
     }
-
-    return sensors;
+    return absolute_geometry_;
 }
 
 std::vector<PolygonalJoint::Ptr> PolygonalLink::joints() const
@@ -131,22 +121,8 @@ void PolygonalLink::deserialize(YAML::Node const &node)
     // Load the link's geometry from its WKT serialization.
     std::string relative_geometry_wkt;
     node["relative_geometry"] >> relative_geometry_wkt;
-    relative_geometry_ = geom_reader.read(relative_geometry_wkt);
+    relative_geometry_.reset(geom_reader.read(relative_geometry_wkt));
     BOOST_ASSERT(relative_geometry_);
-
-    // Load the link's sensors (if any) from a WKT serialization.
-    for (size_t i = 0; i < node["relative_sensors"].size(); ++i) {
-        std::string relative_sensors_wkt;
-        node["relative_sensors"][i] >> relative_sensors_wkt;
-        geos::geom::Geometry *sensor_geom = geom_reader.read(relative_sensors_wkt);
-
-        // Verify that this geometry is a subset of the link geometry.
-        if (!sensor_geom->within(relative_geometry_)) {
-            throw std::runtime_error(boost::str(
-                boost::format("Link[%d]::Sensor[%d] deviates from the link geometry.") % name_ % i));
-        }
-        relative_sensors_.push_back(sensor_geom);
-    }
 
     // Recursively deserialize the rest of the kinematic tree.
     joints_.clear();
