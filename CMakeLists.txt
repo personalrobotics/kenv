@@ -21,4 +21,10 @@ find_package(Eigen REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIRS})
 add_definitions(${EIGEN_DEFINITIONS})
 
-rosbuild_add_library(kenv src/Environment.cpp src/CollisionChecker.cpp)
+include_directories(${PROJECT_SOURCE_DIR}/include/kenv)
+
+rosbuild_add_library(kenv
+    src/Environment.cpp
+    src/CollisionChecker.cpp
+    src/ObjectPool.cpp
+)
