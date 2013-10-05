@@ -69,6 +69,8 @@ public:
 
     virtual void enable(bool flag);
     virtual void setVisible(bool flag);
+    virtual bool getVisible() const;
+
     virtual AlignedBox3d getAABB(void) const;
     virtual bool checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts = NULL,
                                 std::vector<std::pair<Link::Ptr, Link::Ptr> > *links = NULL) const;
@@ -94,6 +96,7 @@ public:
 private:
     std::string type_;
     std::string name_;
+    bool visible_;
     double transparency_;
     Eigen::Vector4d color_;
     boost::weak_ptr<PolygonalEnvironment> environment_;

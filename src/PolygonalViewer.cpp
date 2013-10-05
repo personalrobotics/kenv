@@ -111,8 +111,12 @@ void PolygonalViewer::Redraw()
 {
     window_->clear(background_color_);
 
+    // Draw visible objects.
     BOOST_FOREACH (kenv::Object::Ptr object, env_->getObjects()) {
         kenv::PolygonalObject::Ptr polygonal_object = boost::dynamic_pointer_cast<kenv::PolygonalObject>(object);
+        if (!polygonal_object->getVisible()) {
+            continue;
+        }
         boost::shared_ptr<geos::geom::Geometry const> geom = polygonal_object->getGeometry();
 
         boost::optional<sf::Color> color;
@@ -131,6 +135,7 @@ void PolygonalViewer::Redraw()
         }
     }
 
+    // Draw visualization geometry.
     std::vector<ColoredGeometry::Ptr> viz_geom = env_->getVisualizationGeometry();
     BOOST_FOREACH (ColoredGeometry::Ptr custom_geom, viz_geom) {
         std::vector<sf::Drawable *> drawables;

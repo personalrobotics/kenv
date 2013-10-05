@@ -86,6 +86,7 @@ PolygonalObject::PolygonalObject(std::string const &type, std::string const &nam
                                  ::PolygonalLink::Ptr base_link)
     : type_(type)
     , name_(name)
+    , visible_(true)
     , transparency_(0)
     , color_(1, 0, 0, 1)
     , environment_(environment)
@@ -143,7 +144,12 @@ void PolygonalObject::enable(bool flag)
 
 void PolygonalObject::setVisible(bool flag)
 {
-    throw std::runtime_error("not implemented");
+    visible_ = flag;
+}
+
+bool PolygonalObject::getVisible() const
+{
+    return visible_;
 }
 
 AlignedBox3d PolygonalObject::getAABB(void) const
