@@ -32,6 +32,8 @@ Object::Ptr ObjectPool::Create()
     inactive_objects_.pop_back();
     active_objects_.insert(object);
 
+    object->enable(true);
+    object->setVisible(true);
     return Object::Ptr(object, boost::bind(&ObjectPool::ObjectDeleter, this, _1));
 }
 
@@ -39,6 +41,8 @@ void ObjectPool::ObjectDeleter(Object *object)
 {
     size_t const num_erased = active_objects_.erase(object);
     if (num_erased == 1) {
+        object->enable(false);
+        object->setVisible(false);
         inactive_objects_.push_back(object);
     } else {
         std::cout << "Warning: Object " << object << " is not a member of this pool." << std::endl;
