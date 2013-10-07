@@ -41,6 +41,7 @@ private:
     double scale_;
     Eigen::Vector2d origin_;
 
+    std::vector<sf::Texture *> texture_buffer_;
     std::set<kenv::Object::Ptr> selection_;
     bool dragging_;
     sf::Vector2f cursor_prev_;
@@ -48,6 +49,7 @@ private:
     sf::Color background_color_;
     double outline_thickness_;
 
+    void FromTexturePatch(TexturePatch const &patch, std::vector<sf::Drawable *> &shapes);
     void FromGeometry(geos::geom::Geometry const *geom, std::vector<sf::Drawable *> &shapes,
                       boost::optional<sf::Color> color = boost::optional<sf::Color>());
     void FromPolygon(geos::geom::Polygon const *polygon, std::vector<sf::Drawable *> &shapes,

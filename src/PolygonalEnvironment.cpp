@@ -16,6 +16,8 @@
 #include <geos/operation/union/CascadedPolygonUnion.h>
 #include "PolygonalEnvironment.h"
 
+#include <SFML/Graphics.hpp>
+
 using namespace boost::assign;
 
 typedef boost::shared_ptr<void> Handle;
@@ -502,9 +504,35 @@ Handle PolygonalEnvironment::drawPoints(std::vector<Eigen::Vector3d> const &poin
 }
 
 Handle PolygonalEnvironment::drawPlane(Eigen::Affine3d const &origin, float width, float height,
-                                       boost::multi_array<float,3> const &texture)
+                                       boost::multi_array<float, 3> const &texture)
 {
-    throw std::runtime_error("not implemented");
+    if (origin.linear().col(2) != Eigen::Vector3d::UnitZ()) {
+        throw std::runtime_error("Plane must be in the xy-plane.");
+    }
+
+#if 0
+    size_t const *shape = texture.shape();
+    sf::Image image;
+    image.create(shape[0], shape[1], sf::Color::Transparent);
+
+    for (size_t x = 0; x < shape[0]; ++x)
+    for (size_t y = 0; y < shape[1]; ++y) {
+        sf::Color color;
+        color.r = static_cast<uint8_t>(255 * texture[x][y][0]);
+        color.g = static_cast<uint8_t>(255 * texture[x][y][1]);
+        color.b = static_cast<uint8_t>(255 * texture[x][y][2]);
+        color.a = static_cast<uint8_t>(255 * texture[x][y][3]);
+        image.setPixel(x, y, color);
+    }
+#endif
+
+    Eigen::Affine2d origin_2d = Eigen::Affine2d::Identity();
+    origin_2d.linear() = origin.linear().block<2, 2>(0, 0);
+    origin_2d.translation() = origin.translation().head<2>();
+
+    TexturePatch::Ptr texture_patch = boost::make_shared<TexturePatch>(origin_2d, width, height, texture);
+    textures_.push_back(texture_patch);
+    return texture_patch;
 }
 
 geos::geom::Coordinate PolygonalEnvironment::toGeos2D(Eigen::Vector3d const &point) const
@@ -529,6 +557,25 @@ std::vector<ColoredGeometry::Ptr> PolygonalEnvironment::getVisualizationGeometry
     }
 
     visualization_ = new_visualization;
+    return geoms;
+}
+
+std::vector<TexturePatch::Ptr> PolygonalEnvironment::getTexturePatches()
+{
+    std::vector<TexturePatch::WeakPtr> new_texture;
+    std::vector<TexturePatch::Ptr> geoms;
+    geoms.reserve(textures_.size());
+    new_texture.reserve(textures_.size());
+
+    for (size_t i = 0; i < textures_.size(); ++i) {
+        TexturePatch::Ptr geom = textures_[i].lock();
+        if (geom) {
+            geoms.push_back(geom);
+            new_texture.push_back(geom);
+        }
+    }
+
+    textures_ = new_texture;
     return geoms;
 }
 

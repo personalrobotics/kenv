@@ -32,6 +32,30 @@ public:
     Eigen::Vector4d color;
 };
 
+class TexturePatch {
+public:
+    typedef boost::shared_ptr<TexturePatch> Ptr;
+    typedef boost::shared_ptr<TexturePatch const> ConstPtr;
+    typedef boost::weak_ptr<TexturePatch> WeakPtr;
+    typedef boost::weak_ptr<TexturePatch const> WeakConstPtr;
+
+    TexturePatch(Eigen::Affine2d const &origin, double width, double height,
+                     boost::multi_array<float, 3> const &texture)
+        : origin(origin)
+        , width(width)
+        , height(height)
+        , texture(texture)
+    {
+        BOOST_ASSERT(width > 0);
+        BOOST_ASSERT(height > 0);
+        BOOST_ASSERT(texture.shape()[2] == 3);
+    }
+
+    Eigen::Affine2d origin;
+    double width, height;
+    boost::multi_array<float, 3> texture;
+};
+
 class PolygonalLink : public virtual kenv::Link {
 public:
     typedef boost::shared_ptr<PolygonalLink> Ptr;
@@ -134,12 +158,14 @@ public:
     						boost::multi_array<float,3> const &texture);
 
     std::vector<ColoredGeometry::Ptr> getVisualizationGeometry();
+    std::vector<TexturePatch::Ptr> getTexturePatches();
 
 private:
     std::map<std::string, PolygonalObject::Ptr> objects_;
     geos::geom::GeometryFactory const *geom_factory_;
     geos::geom::CoordinateSequenceFactory const *coords_factory_;
     std::vector<ColoredGeometry::WeakPtr> visualization_;
+    std::vector<TexturePatch::WeakPtr> textures_;
 
     geos::geom::Coordinate toGeos2D(Eigen::Vector3d const &point) const;
 };

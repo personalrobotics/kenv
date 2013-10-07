@@ -109,9 +109,22 @@ void PolygonalViewer::Drag(sf::Vector2f const &cursor_curr)
 
 void PolygonalViewer::Redraw()
 {
+    std::vector<sf::Drawable *> drawables;
     window_->clear(background_color_);
 
-    // Draw visible objects.
+    // Texture patches.
+    std::vector<TexturePatch::Ptr> texture_patches = env_->getTexturePatches();
+    BOOST_FOREACH (TexturePatch::Ptr texture_patch, texture_patches) {
+        FromTexturePatch(*texture_patch, drawables);
+    }
+ 
+    // Visualization geometry.
+    std::vector<ColoredGeometry::Ptr> viz_geom = env_->getVisualizationGeometry();
+    BOOST_FOREACH (ColoredGeometry::Ptr custom_geom, viz_geom) {
+        FromGeometry(custom_geom->geom, drawables, toSFMLColor(custom_geom->color));
+    }
+
+    // Visible objects.
     BOOST_FOREACH (kenv::Object::Ptr object, env_->getObjects()) {
         kenv::PolygonalObject::Ptr polygonal_object = boost::dynamic_pointer_cast<kenv::PolygonalObject>(object);
         if (!polygonal_object->getVisible()) {
@@ -125,29 +138,84 @@ void PolygonalViewer::Redraw()
         } else {
             color.reset(toSFMLColor(polygonal_object->getColor()));
         }
-
-        std::vector<sf::Drawable *> drawables;
         FromGeometry(geom.get(), drawables, color);
-
-        BOOST_FOREACH (sf::Drawable *drawable, drawables) {
-            window_->draw(*drawable);
-            delete drawable;
-        }
     }
 
-    // Draw visualization geometry.
-    std::vector<ColoredGeometry::Ptr> viz_geom = env_->getVisualizationGeometry();
-    BOOST_FOREACH (ColoredGeometry::Ptr custom_geom, viz_geom) {
-        std::vector<sf::Drawable *> drawables;
-        FromGeometry(custom_geom->geom, drawables, toSFMLColor(custom_geom->color));
-
-        BOOST_FOREACH (sf::Drawable *drawable, drawables) {
-            window_->draw(*drawable);
-            delete drawable;
-        }
+    // Redraw the window.
+    BOOST_FOREACH (sf::Drawable *drawable, drawables) {
+        window_->draw(*drawable);
+        delete drawable;
     }
-
     window_->display();
+
+    // Clear the texture buffer.
+    BOOST_FOREACH (sf::Texture *texture, texture_buffer_) {
+        delete texture;
+    }
+    texture_buffer.clear();
+}
+
+void PolygonalViewer::FromTexturePatch(TexturePatch const &patch, std::vector<sf::Drawable *> &shapes)
+{
+    sf::Image image;
+    size_t const *shape = patch.texture.shape();
+    image.create(shape[0], shape[1], sf::Color::Transparent);
+
+    // Grayscale.
+    if (shape[2] == 1) {
+        for (size_t x = 0; x < shape[0]; ++x)
+        for (size_t y = 0; y < shape[1]; ++y) {
+            sf::Color color;
+            color.r = static_cast<uint8_t>(255 * patch.texture[x][y][0]);
+            color.g = static_cast<uint8_t>(255 * patch.texture[x][y][0]);
+            color.b = static_cast<uint8_t>(255 * patch.texture[x][y][0]);
+            color.a = 255;
+            image.setPixel(x, y, color);
+        }
+    // RGB.
+    } else if (shape[2] == 3) {
+        for (size_t x = 0; x < shape[0]; ++x)
+        for (size_t y = 0; y < shape[1]; ++y) {
+            sf::Color color;
+            color.r = static_cast<uint8_t>(255 * patch.texture[x][y][0]);
+            color.g = static_cast<uint8_t>(255 * patch.texture[x][y][1]);
+            color.b = static_cast<uint8_t>(255 * patch.texture[x][y][2]);
+            color.a = 255;
+            image.setPixel(x, y, color);
+        }
+    // RGBA.
+    } else if (shape[2] == 4) {
+        for (size_t x = 0; x < shape[0]; ++x)
+        for (size_t y = 0; y < shape[1]; ++y) {
+            sf::Color color;
+            color.r = static_cast<uint8_t>(255 * patch.texture[x][y][0]);
+            color.g = static_cast<uint8_t>(255 * patch.texture[x][y][1]);
+            color.b = static_cast<uint8_t>(255 * patch.texture[x][y][2]);
+            color.a = static_cast<uint8_t>(255 * patch.texture[x][y][3]);
+            image.setPixel(x, y, color);
+        }
+    } else {
+        throw std::runtime_error("Texture must have 1, 3, or 4 channels.");
+    }
+
+    sf::Texture *image_texture = new sf::Texture;
+    texture_buffer_.push_back(image_texture);
+    image_texture->loadFromImage(image);
+    image_texture->setSmooth(true);
+    image_texture->setRepeated(false);
+
+    Eigen::Affine2d const &pose = patch.origin;
+    geos::geom::Coordinate const position(pose.translation()[0], pose.translation()[1]);
+    double const orientation_rad = std::atan2(pose.linear()(1, 0), pose.linear()(0, 0));
+    double const orientation_deg = orientation_rad * 180 / M_PI;
+
+    sf::Sprite *sprite = new sf::Sprite;
+    sprite->setTexture(*image_texture);
+    sprite->setOrigin(sf::Vector2f(shape[0] / 2, shape[1] / 2));
+    sprite->setPosition(Project(position));
+    sprite->setRotation(orientation_deg);
+    sprite->setScale(sf::Vector2f(scale_ * patch.width, scale_ * patch.height));
+    shapes.push_back(sprite);
 }
 
 void PolygonalViewer::FromGeometry(geos::geom::Geometry const *geom, std::vector<sf::Drawable *> &shapes,
