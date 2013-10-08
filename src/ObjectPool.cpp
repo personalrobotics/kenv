@@ -1,10 +1,15 @@
 #include <iostream>
 #include <boost/bind.hpp>
 #include <boost/format.hpp>
+#include <boost/foreach.hpp>
+#include <boost/make_shared.hpp>
 #include "ObjectPool.h"
 
 namespace kenv {
 
+/*
+ * ObjectPool
+ */
 ObjectPool::ObjectPool(Environment::Ptr env, std::string const &type)
     : env_(env)
     , type_(type)
@@ -37,6 +42,11 @@ Object::Ptr ObjectPool::Create()
     return Object::Ptr(object, boost::bind(&ObjectPool::ObjectDeleter, this, _1));
 }
 
+size_t ObjectPool::size() const
+{
+    return owned_objects_.size();
+}
+
 void ObjectPool::ObjectDeleter(Object *object)
 {
     size_t const num_erased = active_objects_.erase(object);
@@ -47,6 +57,37 @@ void ObjectPool::ObjectDeleter(Object *object)
     } else {
         std::cout << "Warning: Object " << object << " is not a member of this pool." << std::endl;
     }
+}
+
+/*
+ * MultiObjectPool
+ */
+MultiObjectPool::MultiObjectPool(Environment::Ptr env)
+    : env_(env)
+{
+    BOOST_ASSERT(env);
+}
+
+Object::Ptr MultiObjectPool::Create(std::string const &type)
+{
+    ObjectPool::Ptr pool;
+    BOOST_AUTO(it, pools_.find(type));
+    if (it == pools_.end()) {
+        it = pools_.insert(std::make_pair(type, boost::make_shared<ObjectPool>(env_, type))).first;
+    }
+    return it->second->Create();
+}
+
+size_t MultiObjectPool::size() const
+{
+    size_t num_objects = 0;
+
+    typedef std::pair<std::string, ObjectPool::Ptr> PoolEntry;
+    BOOST_FOREACH (PoolEntry const &pool_entry, pools_) {
+        num_objects += pool_entry.second->size();
+    }
+
+    return num_objects;
 }
 
 }
