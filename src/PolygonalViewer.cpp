@@ -152,7 +152,7 @@ void PolygonalViewer::Redraw()
     BOOST_FOREACH (sf::Texture *texture, texture_buffer_) {
         delete texture;
     }
-    texture_buffer.clear();
+    texture_buffer_.clear();
 }
 
 void PolygonalViewer::FromTexturePatch(TexturePatch const &patch, std::vector<sf::Drawable *> &shapes)
@@ -214,7 +214,7 @@ void PolygonalViewer::FromTexturePatch(TexturePatch const &patch, std::vector<sf
     sprite->setOrigin(sf::Vector2f(shape[0] / 2, shape[1] / 2));
     sprite->setPosition(Project(position));
     sprite->setRotation(orientation_deg);
-    sprite->setScale(sf::Vector2f(scale_ * patch.width, scale_ * patch.height));
+    sprite->setScale(sf::Vector2f(scale_ * patch.width / shape[0], scale_ * patch.height / shape[1]));
     shapes.push_back(sprite);
 }
 

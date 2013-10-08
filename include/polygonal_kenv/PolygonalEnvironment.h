@@ -48,7 +48,9 @@ public:
     {
         BOOST_ASSERT(width > 0);
         BOOST_ASSERT(height > 0);
-        BOOST_ASSERT(texture.shape()[2] == 3);
+        BOOST_ASSERT(texture.shape()[2] == 1
+                  || texture.shape()[2] == 3
+                  || texture.shape()[2] == 4);
     }
 
     Eigen::Affine2d origin;

@@ -16,8 +16,6 @@
 #include <geos/operation/union/CascadedPolygonUnion.h>
 #include "PolygonalEnvironment.h"
 
-#include <SFML/Graphics.hpp>
-
 using namespace boost::assign;
 
 typedef boost::shared_ptr<void> Handle;
