@@ -220,7 +220,8 @@ bool PolygonalObject::checkCollision(Object::ConstPtr entity, std::vector<Contac
         }
 
         default:
-            throw std::runtime_error("Unknown type of intersection.");
+            std::cout << "Warning: Unknown type of intersection " << boundary->getGeometryType() << std::endl;
+            return true;
         }
             
         // Discretize the boundary to synthesize contact normals.
