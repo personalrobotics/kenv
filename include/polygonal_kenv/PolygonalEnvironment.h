@@ -17,16 +17,8 @@ public:
     typedef boost::weak_ptr<ColoredGeometry> WeakPtr;
     typedef boost::weak_ptr<ColoredGeometry const> WeakConstPtr;
 
-    ColoredGeometry(geos::geom::Geometry *geom,
-                    Eigen::Vector4d const &color)
-        : geom(geom)
-        , color(color)
-    {}
-
-    virtual ~ColoredGeometry()
-    {
-        delete geom;
-    }
+    ColoredGeometry(geos::geom::Geometry *geom, Eigen::Vector4d const &color);
+    virtual ~ColoredGeometry();
 
     geos::geom::Geometry *geom;
     Eigen::Vector4d color;
@@ -40,18 +32,7 @@ public:
     typedef boost::weak_ptr<TexturePatch const> WeakConstPtr;
 
     TexturePatch(Eigen::Affine2d const &origin, double width, double height,
-                     boost::multi_array<float, 3> const &texture)
-        : origin(origin)
-        , width(width)
-        , height(height)
-        , texture(texture)
-    {
-        BOOST_ASSERT(width > 0);
-        BOOST_ASSERT(height > 0);
-        BOOST_ASSERT(texture.shape()[2] == 1
-                  || texture.shape()[2] == 3
-                  || texture.shape()[2] == 4);
-    }
+                 boost::multi_array<float, 3> const &texture);
 
     Eigen::Affine2d origin;
     double width, height;
@@ -129,6 +110,7 @@ private:
     ::PolygonalLink::Ptr base_link_;
     std::vector<PolygonalLink::Ptr> links_;
     std::vector< ::PolygonalJoint::Ptr> joints_;
+    mutable boost::shared_ptr<geos::geom::Geometry> cached_geometry_;
 };
 
 class PolygonalEnvironment : public boost::enable_shared_from_this<PolygonalEnvironment>,

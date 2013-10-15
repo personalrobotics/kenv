@@ -14,6 +14,7 @@
 #include <geos/geom/Polygon.h>
 #include <geos/geom/Point.h>
 #include <geos/operation/union/CascadedPolygonUnion.h>
+#include "AffineTransformFilter.h"
 #include "PolygonalEnvironment.h"
 
 using namespace boost::assign;
@@ -33,6 +34,39 @@ inline Eigen::Vector3d orthgonal(Eigen::Vector3d const &x)
 
 
 namespace kenv {
+
+/*
+ * ColoredGeometry
+ */
+ColoredGeometry::ColoredGeometry(geos::geom::Geometry *geom,
+                                 Eigen::Vector4d const &color)
+    : geom(geom)
+    , color(color)
+{}
+
+ColoredGeometry::~ColoredGeometry()
+{
+    delete geom;
+}
+
+
+/*
+ * TexturePatch
+ */
+TexturePatch::TexturePatch(Eigen::Affine2d const &origin, double width, double height,
+                           boost::multi_array<float, 3> const &texture)
+    : origin(origin)
+    , width(width)
+    , height(height)
+    , texture(texture)
+{
+    BOOST_ASSERT(width > 0);
+    BOOST_ASSERT(height > 0);
+    BOOST_ASSERT(texture.shape()[2] == 1
+              || texture.shape()[2] == 3
+              || texture.shape()[2] == 4);
+}
+
 
 /*
  * PolygonalLink
@@ -168,6 +202,21 @@ bool PolygonalObject::checkCollision(Object::ConstPtr entity, std::vector<Contac
 
     boost::shared_ptr<geos::geom::Geometry const> geom1 = getGeometry();
     boost::shared_ptr<geos::geom::Geometry const> geom2 = other->getGeometry();
+
+    geos::geom::Geometry *aabb1 = geom1->getEnvelope();
+    geos::geom::Geometry *aabb2 = geom2->getEnvelope();
+    bool const shortcut = !aabb1->intersects(aabb2);
+    delete aabb1;
+    delete aabb2;
+    if (shortcut) {
+        if (contacts) {
+            contacts->clear();
+        }
+        if (links) {
+            links->clear();
+        }
+        return false;
+    }
 
     if (links) {
         links->clear();
@@ -311,6 +360,7 @@ void PolygonalObject::setDOFValues(Eigen::VectorXd const &dof_values)
     for (size_t i = 0; i < joints_.size(); ++i) {
         // FIXME: This triggers |joints_| updates. It only needs to trigger one.
         joints_[i]->set_angle(dof_values[i]);
+        cached_geometry_.reset();
     }
 }
 
@@ -342,21 +392,36 @@ double PolygonalObject::getTransparency() const
 
 boost::shared_ptr<geos::geom::Geometry const> PolygonalObject::getGeometry() const
 {
-    geos::geom::GeometryFactory const *geom_factory = geos::geom::GeometryFactory::getDefaultInstance();
-    std::vector<geos::geom::Geometry *> *geoms = new std::vector<geos::geom::Geometry *>;
+    Eigen::Affine2d const pose = base_link_->pose();
 
-    BOOST_FOREACH (Link::Ptr link, getLinks()) {
-        PolygonalLink::Ptr polygonal_link = boost::dynamic_pointer_cast<PolygonalLink>(link);
-        BOOST_ASSERT(polygonal_link);
+    if (!cached_geometry_) {
+        // Combine the individual link geometries into a single GeometryCollection.
+        geos::geom::GeometryFactory const *geom_factory = geos::geom::GeometryFactory::getDefaultInstance();
+        std::vector<geos::geom::Geometry *> *geoms = new std::vector<geos::geom::Geometry *>;
 
-        boost::shared_ptr<geos::geom::Geometry const> geom = polygonal_link->getGeometry();
-        geoms->push_back(geom->clone());
+        BOOST_FOREACH (Link::Ptr link, getLinks()) {
+            PolygonalLink::Ptr polygonal_link = boost::dynamic_pointer_cast<PolygonalLink>(link);
+            BOOST_ASSERT(polygonal_link);
+
+            boost::shared_ptr<geos::geom::Geometry const> geom = polygonal_link->getGeometry();
+            geoms->push_back(geom->clone());
+        }
+
+        geos::geom::GeometryCollection *geom_collection = geom_factory->createGeometryCollection(geoms);
+        boost::shared_ptr<geos::geom::Geometry> merged_geometry(geom_collection->buffer(0));
+        delete geom_collection;
+
+        // Cache the geometry in the object frame.
+        AffineTransformFilter untransformer(pose.inverse());
+        merged_geometry->apply_rw(&untransformer);
+        cached_geometry_ = merged_geometry;
     }
 
-    geos::geom::GeometryCollection *geom_collection = geom_factory->createGeometryCollection(geoms);
-    boost::shared_ptr<geos::geom::Geometry> geom_buffered(geom_collection->buffer(0));
-    delete geom_collection;
-    return geom_buffered;
+    // Transform the cached geometry into the world frame.
+    boost::shared_ptr<geos::geom::Geometry> world_geometry(cached_geometry_->clone());
+    AffineTransformFilter transformer(pose);
+    world_geometry->apply_rw(&transformer);
+    return world_geometry;
 }
 
 /*

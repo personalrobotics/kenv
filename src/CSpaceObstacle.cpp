@@ -1,3 +1,4 @@
+#define CGAL_DISABLE_ROUNDING_MATH_CHECK
 #include <boost/foreach.hpp>
 #include <geos/geom/CoordinateSequenceFactory.h>
 #include <geos/geom/GeometryFactory.h>
