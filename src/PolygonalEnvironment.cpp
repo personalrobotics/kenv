@@ -19,6 +19,7 @@
 
 using namespace boost::assign;
 
+typedef Eigen::AlignedBox<double, 3> AlignedBox3d;
 typedef boost::shared_ptr<void> Handle;
 
 inline Eigen::Vector3d toEigen(geos::geom::Coordinate const &coord)
@@ -32,6 +33,26 @@ inline Eigen::Vector3d orthgonal(Eigen::Vector3d const &x)
     return Eigen::Vector3d(-x[1], x[0], 0.0);
 }
 
+inline AlignedBox3d ComputeAABB(geos::geom::Geometry const *geometry)
+{
+    boost::shared_ptr<geos::geom::CoordinateSequence> coords(geometry->getCoordinates());
+
+    double min_x = std::numeric_limits<double>::max();
+    double max_x = std::numeric_limits<double>::min();
+    double min_y = std::numeric_limits<double>::max();
+    double max_y = std::numeric_limits<double>::min();
+
+    for (size_t i = 0; i < coords->size(); ++i) {
+        geos::geom::Coordinate const coord = coords->getAt(i);
+        min_x = std::min(coord.x, min_x);
+        max_x = std::max(coord.x, max_x);
+        min_y = std::min(coord.y, min_y);
+        max_y = std::max(coord.y, max_y);
+    }
+
+    return AlignedBox3d(Eigen::Vector3d(min_x, min_y, 0),
+                        Eigen::Vector3d(max_x, max_y, 0));
+}
 
 namespace kenv {
 
@@ -109,7 +130,8 @@ void PolygonalLink::enable(bool flag)
 
 AlignedBox3d PolygonalLink::computeLocalAABB()
 {
-    throw std::runtime_error("not implemented");
+    boost::shared_ptr<geos::geom::Geometry const> geometry = getGeometry();
+    return ComputeAABB(geometry.get());
 }
 
 /*
@@ -188,9 +210,9 @@ bool PolygonalObject::getVisible() const
 
 AlignedBox3d PolygonalObject::getAABB(void) const
 {
-    throw std::runtime_error("not implemented");
+    boost::shared_ptr<geos::geom::Geometry const> geometry = getGeometry();
+    return ComputeAABB(geometry.get());
 }
-
 
 bool PolygonalObject::checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts,
                                      std::vector<std::pair<Link::Ptr, Link::Ptr> > *links) const

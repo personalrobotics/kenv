@@ -118,12 +118,6 @@ void PolygonalViewer::Redraw()
         FromTexturePatch(*texture_patch, drawables);
     }
  
-    // Visualization geometry.
-    std::vector<ColoredGeometry::Ptr> viz_geom = env_->getVisualizationGeometry();
-    BOOST_FOREACH (ColoredGeometry::Ptr custom_geom, viz_geom) {
-        FromGeometry(custom_geom->geom, drawables, toSFMLColor(custom_geom->color));
-    }
-
     // Visible objects.
     BOOST_FOREACH (kenv::Object::Ptr object, env_->getObjects()) {
         kenv::PolygonalObject::Ptr polygonal_object = boost::dynamic_pointer_cast<kenv::PolygonalObject>(object);
@@ -139,6 +133,12 @@ void PolygonalViewer::Redraw()
             color.reset(toSFMLColor(polygonal_object->getColor()));
         }
         FromGeometry(geom.get(), drawables, color);
+    }
+
+    // Visualization geometry.
+    std::vector<ColoredGeometry::Ptr> viz_geom = env_->getVisualizationGeometry();
+    BOOST_FOREACH (ColoredGeometry::Ptr custom_geom, viz_geom) {
+        FromGeometry(custom_geom->geom, drawables, toSFMLColor(custom_geom->color));
     }
 
     // Redraw the window.
