@@ -562,7 +562,7 @@ Handle PolygonalEnvironment::drawLineList(std::vector<std::pair<Eigen::Vector3d,
     BOOST_FOREACH (EndPoints const &endpoints, lines) {
         geos::geom::CoordinateSequence *coords = coords_factory_->create(2, 2);
         coords->setAt(toGeos2D(endpoints.first), 0);
-        coords->setAt(toGeos2D(endpoints.second), 0);
+        coords->setAt(toGeos2D(endpoints.second), 1);
 
         geos::geom::LineString *line = geom_factory_->createLineString(coords);
         line_geoms->push_back(line);
@@ -595,22 +595,6 @@ Handle PolygonalEnvironment::drawPlane(Eigen::Affine3d const &origin, float widt
     if (origin.linear().col(2) != Eigen::Vector3d::UnitZ()) {
         throw std::runtime_error("Plane must be in the xy-plane.");
     }
-
-#if 0
-    size_t const *shape = texture.shape();
-    sf::Image image;
-    image.create(shape[0], shape[1], sf::Color::Transparent);
-
-    for (size_t x = 0; x < shape[0]; ++x)
-    for (size_t y = 0; y < shape[1]; ++y) {
-        sf::Color color;
-        color.r = static_cast<uint8_t>(255 * texture[x][y][0]);
-        color.g = static_cast<uint8_t>(255 * texture[x][y][1]);
-        color.b = static_cast<uint8_t>(255 * texture[x][y][2]);
-        color.a = static_cast<uint8_t>(255 * texture[x][y][3]);
-        image.setPixel(x, y, color);
-    }
-#endif
 
     Eigen::Affine2d origin_2d = Eigen::Affine2d::Identity();
     origin_2d.linear() = origin.linear().block<2, 2>(0, 0);
