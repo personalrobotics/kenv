@@ -232,7 +232,15 @@ void PolygonalViewer::FromGeometry(geos::geom::Geometry const *geom, std::vector
         FromLineString(dynamic_cast<geos::geom::LineString const *>(geom), shapes, color);
         break;
 
+    case geos::geom::GEOS_POINT:
+        FromPoint(dynamic_cast<geos::geom::Point const *>(geom), shapes, color);
+        break;
+
     case geos::geom::GEOS_MULTIPOINT:
+        // We can render the points as a batch more efficiently than individually.
+        FromMultiPoint(dynamic_cast<geos::geom::MultiPoint const *>(geom), shapes, color);
+        break;
+
     case geos::geom::GEOS_MULTIPOLYGON:
     case geos::geom::GEOS_MULTILINESTRING:
     case geos::geom::GEOS_GEOMETRYCOLLECTION:
@@ -298,6 +306,38 @@ void PolygonalViewer::FromLineString(geos::geom::LineString const *linestring,
     }
 
     shapes.push_back(linestrip);
+}
+
+void PolygonalViewer::FromPoint(geos::geom::Point const *point,
+                                std::vector<sf::Drawable *> &shapes,
+                                boost::optional<sf::Color> color)
+{
+    BOOST_ASSERT(point);
+    geos::geom::Coordinate const *coord = point->getCoordinate();
+
+    sf::Color const actual_color = (color) ? *color : sf::Color(255, 255, 255, 255);
+    sf::VertexArray *sf_point = new sf::VertexArray(sf::Points, 1);
+    (*sf_point)[0] = sf::Vertex(Project(*coord), actual_color);
+    shapes.push_back(sf_point);
+}
+
+void PolygonalViewer::FromMultiPoint(geos::geom::MultiPoint const *multipoint,
+                                     std::vector<sf::Drawable *> &shapes,
+                                     boost::optional<sf::Color> color)
+{
+    BOOST_ASSERT(multipoint);
+
+    sf::Color const actual_color = (color) ? *color : sf::Color(255, 255, 255, 255);
+
+    boost::shared_ptr<geos::geom::CoordinateSequence> coordinates = boost::shared_ptr<geos::geom::CoordinateSequence>(multipoint->getCoordinates());
+    sf::VertexArray *sf_multipoint = new sf::VertexArray(sf::Points, coordinates->getSize());
+
+    for (size_t i = 0; i < coordinates->getSize(); ++i) {
+        geos::geom::Coordinate const &coord = coordinates->getAt(i);
+        (*sf_multipoint)[i] = sf::Vertex(Project(coord), actual_color);
+    }
+
+    shapes.push_back(sf_multipoint);
 }
 
 sf::Vector2f PolygonalViewer::Project(geos::geom::Coordinate const &coord) const

@@ -59,6 +59,10 @@ private:
                                 boost::optional<sf::Color> color);
     void FromLineString(geos::geom::LineString const *linestring, std::vector<sf::Drawable *> &shapes,
                         boost::optional<sf::Color> color);
+    void FromPoint(geos::geom::Point const *point, std::vector<sf::Drawable *> &shapes,
+                   boost::optional<sf::Color> color);
+    void FromMultiPoint(geos::geom::MultiPoint const *multipoint, std::vector<sf::Drawable *> &shapes,
+                        boost::optional<sf::Color> color);
 
     sf::Vector2f Project(geos::geom::Coordinate const &coord) const;
     geos::geom::Point *Reproject(sf::Vector2f const &p) const;
