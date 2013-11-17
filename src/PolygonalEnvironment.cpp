@@ -217,7 +217,15 @@ AlignedBox3d PolygonalObject::getAABB(void) const
 bool PolygonalObject::checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts,
                                      std::vector<std::pair<Link::Ptr, Link::Ptr> > *links) const
 {
+    // TODO: Take resolution as a parameter.
     static double const resolution = 0.0025;
+
+    if (contacts) {
+        contacts->clear();
+    }
+    if (links) {
+        links->clear();
+    }
 
     PolygonalObject::ConstPtr other = boost::dynamic_pointer_cast<PolygonalObject const>(entity);
     BOOST_ASSERT(other);
@@ -225,18 +233,12 @@ bool PolygonalObject::checkCollision(Object::ConstPtr entity, std::vector<Contac
     boost::shared_ptr<geos::geom::Geometry const> geom1 = getGeometry();
     boost::shared_ptr<geos::geom::Geometry const> geom2 = other->getGeometry();
 
-    geos::geom::Geometry *aabb1 = geom1->getEnvelope();
-    geos::geom::Geometry *aabb2 = geom2->getEnvelope();
-    bool const shortcut = !aabb1->intersects(aabb2);
-    delete aabb1;
-    delete aabb2;
+    // Perform a broad-phase check using the AABBs.
+    boost::shared_ptr<geos::geom::Geometry> aabb1(geom1->getEnvelope());
+    boost::shared_ptr<geos::geom::Geometry> aabb2(geom2->getEnvelope());
+    bool const shortcut = !aabb1->intersects(aabb2.get());
+
     if (shortcut) {
-        if (contacts) {
-            contacts->clear();
-        }
-        if (links) {
-            links->clear();
-        }
         return false;
     }
 
@@ -263,36 +265,50 @@ bool PolygonalObject::checkCollision(Object::ConstPtr entity, std::vector<Contac
         std::vector<geos::geom::LineString const *> linestrings;
 
         // Compute the intersection line(s).
-        geos::geom::Geometry *boundary = geom1->getBoundary()->intersection(geom2.get());
+        boost::shared_ptr<geos::geom::Geometry> boundary1(geom1->getBoundary());
+        boost::shared_ptr<geos::geom::Geometry> boundary(boundary1->intersection(geom2.get()));
         if (boundary->isEmpty()) {
             return false;
         }
 
-        std::vector<geos::geom::LineString *> lines;
+        // Wwe have to use raw pointers in these casts because the memory is
+        // managed by the boundary shared_ptr. Adding a second level of shared
+        // pointers would result in a double-free.
+        std::vector<geos::geom::LineString> lines;
         switch (boundary->getGeometryTypeId()) {
         case geos::geom::GEOS_LINESTRING: {
-            geos::geom::LineString *linestring = dynamic_cast<geos::geom::LineString *>(boundary);
+            geos::geom::LineString *linestring = dynamic_cast<geos::geom::LineString *>(boundary.get());
             BOOST_ASSERT(linestring);
             linestrings.push_back(linestring);
             break;
         }
 
+        case geos::geom::GEOS_GEOMETRYCOLLECTION:
         case geos::geom::GEOS_MULTILINESTRING: {
-            geos::geom::MultiLineString *multilinestring = dynamic_cast<geos::geom::MultiLineString *>(boundary);
-            BOOST_ASSERT(multilinestring);
+            geos::geom::GeometryCollection *collection = dynamic_cast<geos::geom::GeometryCollection *>(boundary.get());
+            BOOST_ASSERT(collection);
 
-            for (size_t i = 0; i < multilinestring->getNumGeometries(); ++i) {
-                geos::geom::Geometry const *tmp = multilinestring->getGeometryN(i);
+            for (size_t i = 0; i < collection->getNumGeometries(); ++i) {
+                geos::geom::Geometry const *tmp = collection->getGeometryN(i);
                 geos::geom::LineString const *linestring = dynamic_cast<geos::geom::LineString const *>(tmp);
-                BOOST_ASSERT(linestring);
-                linestrings.push_back(linestring);
+
+                // XXX: We might be ignoring nested collections that contain LineStrings.
+                if (linestring) {
+                    linestrings.push_back(linestring);
+                }
             }
             break;
         }
 
-        default:
-            std::cout << "Warning: Unknown type of intersection " << boundary->getGeometryType() << std::endl;
+        case geos::geom::GEOS_POINT:
+        case geos::geom::GEOS_MULTIPOINT:
+            // The normal of point contact is undefined.
             return true;
+
+        default:
+            throw std::runtime_error(boost::str(
+                boost::format("Unknown type of intersection '%s'.")
+                    % boundary->getGeometryType()));
         }
             
         // Discretize the boundary to synthesize contact normals.
@@ -429,9 +445,10 @@ boost::shared_ptr<geos::geom::Geometry const> PolygonalObject::getGeometry() con
             geoms->push_back(geom->clone());
         }
 
-        geos::geom::GeometryCollection *geom_collection = geom_factory->createGeometryCollection(geoms);
+        boost::shared_ptr<geos::geom::GeometryCollection> geom_collection(
+            geom_factory->createGeometryCollection(geoms)
+        );
         boost::shared_ptr<geos::geom::Geometry> merged_geometry(geom_collection->buffer(0));
-        delete geom_collection;
 
         // Cache the geometry in the object frame.
         AffineTransformFilter untransformer(pose.inverse());

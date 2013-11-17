@@ -20,14 +20,16 @@ static CGAL::Polygon_2<Kernel> GEOSToCGAL(geos::geom::Polygon const *geos_polygo
 
     // Omit the last point to avoid closing the polygon. This is necessary
     // because GEOS stores closed polygons, while CGAL stores open polygons.
-    geos::geom::CoordinateSequence *coords = geos_polygon->getCoordinates();
+    boost::shared_ptr<geos::geom::CoordinateSequence> coords(
+        geos_polygon->getCoordinates()
+    );
+
     for (size_t i = 0; i < coords->size() - 1; ++i) {
         geos::geom::Coordinate const &geos_point = (*coords)[i];
         typename Kernel::Point_2 const cgal_point(geos_point.x, geos_point.y);
         cgal_polygon.push_back(cgal_point);
     }
 
-    delete coords;
     return cgal_polygon;
 }
 

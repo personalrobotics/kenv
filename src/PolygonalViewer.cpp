@@ -86,8 +86,8 @@ void PolygonalViewer::Select(sf::Vector2f const &point_screen)
 
 void PolygonalViewer::Drag(sf::Vector2f const &cursor_curr)
 {
-    geos::geom::Point *point_curr = Reproject(cursor_curr);
-    geos::geom::Point *point_prev = Reproject(cursor_prev_);
+    boost::shared_ptr<geos::geom::Point> point_curr(Reproject(cursor_curr));
+    boost::shared_ptr<geos::geom::Point> point_prev(Reproject(cursor_prev_));
 
     if (dragging_) {
         Eigen::Vector3d delta;
@@ -103,8 +103,6 @@ void PolygonalViewer::Drag(sf::Vector2f const &cursor_curr)
     }
 
     cursor_prev_ = cursor_curr;
-    delete point_curr;
-    delete point_prev;
 }
 
 void PolygonalViewer::Redraw()
@@ -201,7 +199,7 @@ void PolygonalViewer::FromTexturePatch(TexturePatch const &patch, std::vector<sf
     sf::Texture *image_texture = new sf::Texture;
     texture_buffer_.push_back(image_texture);
     image_texture->loadFromImage(image);
-    image_texture->setSmooth(true);
+    image_texture->setSmooth(false);
     image_texture->setRepeated(false);
 
     Eigen::Affine2d const &pose = patch.origin;
@@ -262,7 +260,9 @@ void PolygonalViewer::FromPolygon(geos::geom::Polygon const *polygon, std::vecto
 
     sf::Color const actual_color = (color) ? *color : sf::Color(255, 255, 255, 255);
 
-    geos::geom::CoordinateSequence const *coordinates = polygon->getCoordinates(); 
+    boost::shared_ptr<geos::geom::CoordinateSequence> coordinates(
+        polygon->getCoordinates()
+    );
     sf::ConvexShape *convex_shape = new sf::ConvexShape(coordinates->getSize());
     convex_shape->setFillColor(sf::Color::Transparent);
     convex_shape->setOutlineThickness(1);
@@ -272,8 +272,6 @@ void PolygonalViewer::FromPolygon(geos::geom::Polygon const *polygon, std::vecto
         geos::geom::Coordinate const &coord = coordinates->getAt(j);
         convex_shape->setPoint(j, Project(coord));
     }
-
-    delete coordinates;
     shapes.push_back(convex_shape);
 }
 
