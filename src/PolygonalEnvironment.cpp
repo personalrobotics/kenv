@@ -395,9 +395,18 @@ Eigen::VectorXd PolygonalObject::getDOFValues(void) const
 void PolygonalObject::setDOFValues(Eigen::VectorXd const &dof_values)
 {
     BOOST_ASSERT(dof_values.size() == static_cast<int>(joints_.size()));
+
+    bool invalidated = false;
+
     for (size_t i = 0; i < joints_.size(); ++i) {
-        // FIXME: This triggers |joints_| updates. It only needs to trigger one.
-        joints_[i]->set_angle(dof_values[i]);
+        if (joints_[i]->angle() != dof_values[i]) {
+            // FIXME: This triggers |joints_| updates. It only needs to trigger one.
+            joints_[i]->set_angle(dof_values[i]);
+            invalidated = true;
+        }
+    }
+
+    if (invalidated) {
         cached_geometry_.reset();
     }
 }
