@@ -16,6 +16,19 @@
 
 namespace kenv {
 
+class ViewerText {
+public:
+    typedef boost::shared_ptr<ViewerText> Ptr;
+    typedef boost::weak_ptr<ViewerText> WeakPtr;
+
+    ViewerText(std::string const &content, double x, double y,
+               unsigned int font_size);
+
+    std::string content;
+    double x, y;
+    unsigned int font_size;
+};
+
 class PolygonalViewer {
 public:
     typedef boost::shared_ptr<PolygonalViewer> Ptr;
@@ -36,12 +49,16 @@ public:
     void Select(sf::Vector2f const &point_screen);
     void Drag(sf::Vector2f const &cursor_curr);
 
+    kenv::Handle DrawText(std::string const &text, double x, double y, unsigned int font_size);
+
 private:
     kenv::PolygonalEnvironment::Ptr env_;
     boost::shared_ptr<sf::RenderWindow> window_;
     double scale_;
     Eigen::Vector2d origin_;
+    sf::Font font_;
 
+    std::vector<ViewerText::WeakPtr> text_overlay_;
     std::vector<sf::Texture *> texture_buffer_;
     std::set<kenv::Object::Ptr> selection_;
     bool dragging_;

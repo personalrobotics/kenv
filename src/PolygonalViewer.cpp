@@ -7,6 +7,18 @@
 
 namespace kenv {
 
+ViewerText::ViewerText(std::string const &content, double x, double y,
+                       unsigned int font_size)
+    : content(content)
+    , x(x)
+    , y(y)
+    , font_size(font_size)
+{
+    BOOST_ASSERT(0 <= x && x <= 1);
+    BOOST_ASSERT(0 <= y && y <= 1);
+    BOOST_ASSERT(font_size > 0);
+}
+
 PolygonalViewer::PolygonalViewer(kenv::PolygonalEnvironment::Ptr env, std::string const &name,
                                  size_t const width, size_t const height, double const scale,
                                  Eigen::Vector2d const &origin)
@@ -24,6 +36,12 @@ PolygonalViewer::PolygonalViewer(kenv::PolygonalEnvironment::Ptr env, std::strin
     settings.antialiasingLevel = 8;
     window_ = boost::make_shared<sf::RenderWindow>(sf::VideoMode(width, height), name);
     window_->setActive(false);
+
+    static std::string const font_path = "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf";
+    if (!font_.loadFromFile(font_path)) {
+        throw std::runtime_error(boost::str(
+            boost::format("Failed loading font '%s'.") % font_path));
+    }
 }
 
 bool PolygonalViewer::Screenshot(std::string const &path)
@@ -84,6 +102,7 @@ char PolygonalViewer::WaitForKey()
             return static_cast<char>(char_raw);
         }
     }
+    return '\0';
 }
 
 void PolygonalViewer::Select(sf::Vector2f const &point_screen)
@@ -123,6 +142,13 @@ void PolygonalViewer::Drag(sf::Vector2f const &cursor_curr)
     cursor_prev_ = cursor_curr;
 }
 
+kenv::Handle PolygonalViewer::DrawText(std::string const &content, double x, double y, unsigned int font_size)
+{
+    ViewerText::Ptr text = boost::make_shared<ViewerText>(content, x, y, font_size);
+    text_overlay_.push_back(text);
+    return text;
+}
+
 void PolygonalViewer::Redraw()
 {
     std::vector<sf::Drawable *> drawables;
@@ -156,6 +182,25 @@ void PolygonalViewer::Redraw()
     BOOST_FOREACH (ColoredGeometry::Ptr custom_geom, viz_geom) {
         FromGeometry(custom_geom->geom, drawables, toSFMLColor(custom_geom->color));
     }
+
+    // Text overlay.
+    sf::Vector2u const window_size = window_->getSize();
+    std::vector<ViewerText::WeakPtr> new_text_overlay;
+
+    BOOST_FOREACH (ViewerText::WeakPtr text_weak, text_overlay_) {
+        ViewerText::Ptr text = text_weak.lock();
+        if (!text) {
+            continue;
+        }
+        new_text_overlay.push_back(text_weak);
+
+        sf::Text *sf_text = new sf::Text(text->content, font_);
+        sf_text->setPosition(text->x * window_size.x, text->y * window_size.y);
+        sf_text->setCharacterSize(text->font_size);
+        drawables.push_back(sf_text);
+    }
+
+    text_overlay_ = new_text_overlay;
 
     // Redraw the window.
     BOOST_FOREACH (sf::Drawable *drawable, drawables) {
