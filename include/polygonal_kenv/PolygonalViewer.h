@@ -30,6 +30,7 @@ public:
 
     void Spin();
     void SpinOnce();
+    char WaitForKey();
     void Redraw();
 
     void Select(sf::Vector2f const &point_screen);
@@ -45,6 +46,7 @@ private:
     std::set<kenv::Object::Ptr> selection_;
     bool dragging_;
     sf::Vector2f cursor_prev_;
+    uint32_t key_;
 
     sf::Color background_color_;
     double outline_thickness_;

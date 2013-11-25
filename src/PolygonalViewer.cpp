@@ -48,6 +48,10 @@ void PolygonalViewer::SpinOnce()
             window_->close();
             break;
 
+        case sf::Event::TextEntered:
+            key_ = event.text.unicode;
+            break;
+
         case sf::Event::MouseButtonPressed:
             Select(sf::Vector2f(event.mouseButton.x, event.mouseButton.y));
             dragging_ = true;
@@ -66,6 +70,20 @@ void PolygonalViewer::SpinOnce()
         }
     }
     Redraw();
+}
+
+char PolygonalViewer::WaitForKey()
+{
+    while (window_->isOpen()) {
+        SpinOnce();
+
+        uint32_t char_raw = key_;
+        key_ = 0;
+
+        if (0 < char_raw && char_raw< 128) {
+            return static_cast<char>(char_raw);
+        }
+    }
 }
 
 void PolygonalViewer::Select(sf::Vector2f const &point_screen)
