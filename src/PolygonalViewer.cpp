@@ -38,7 +38,8 @@ PolygonalViewer::PolygonalViewer(kenv::PolygonalEnvironment::Ptr env, std::strin
     window_->setActive(false);
 
     static std::string const font_path = "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf";
-    if (!font_.loadFromFile(font_path)) {
+    font_ = boost::make_shared<sf::Font>();
+    if (!font_->loadFromFile(font_path)) {
         throw std::runtime_error(boost::str(
             boost::format("Failed loading font '%s'.") % font_path));
     }
@@ -194,7 +195,7 @@ void PolygonalViewer::Redraw()
         }
         new_text_overlay.push_back(text_weak);
 
-        sf::Text *sf_text = new sf::Text(text->content, font_);
+        sf::Text *sf_text = new sf::Text(text->content, *font_);
         sf_text->setPosition(text->x * window_size.x, text->y * window_size.y);
         sf_text->setCharacterSize(text->font_size);
         drawables.push_back(sf_text);

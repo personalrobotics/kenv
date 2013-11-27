@@ -56,7 +56,7 @@ private:
     boost::shared_ptr<sf::RenderWindow> window_;
     double scale_;
     Eigen::Vector2d origin_;
-    sf::Font font_;
+    boost::shared_ptr<sf::Font> font_;
 
     std::vector<ViewerText::WeakPtr> text_overlay_;
     std::vector<sf::Texture *> texture_buffer_;
