@@ -370,7 +370,8 @@ bool ORObject::checkCollision(Object::ConstPtr entity, std::vector<Contact> *con
                 BOOST_FOREACH (OpenRAVE::CollisionReport::CONTACT const &or_contact, report->contacts) {
                     Contact contact;
                     contact.position = toEigen3(or_contact.pos);
-                    contact.normal = toEigen3(or_contact.norm);
+                    // Contact normals appear to be returned in the wrong direction - reverse before adding
+                    contact.normal = toEigen3(-or_contact.norm);
                     contacts->push_back(contact);
                 }
             }
@@ -391,7 +392,8 @@ bool ORObject::checkCollision(Object::ConstPtr entity, std::vector<Contact> *con
             BOOST_FOREACH (OpenRAVE::CollisionReport::CONTACT const &or_contact, report->contacts) {
                 Contact contact;
                 contact.position = toEigen3(or_contact.pos);
-                contact.normal = toEigen3(or_contact.norm);
+                // Contact normals appear to be returned in the wrong direction - reverse before adding
+                contact.normal = toEigen3(-or_contact.norm); 
                 contacts->push_back(contact);
             }
         }
