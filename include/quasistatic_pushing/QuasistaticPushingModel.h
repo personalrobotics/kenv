@@ -62,6 +62,7 @@ public:
                             double step_meters, double step_radians);
     void Simulate(kenv::Object::Ptr pusher, kenv::Object::Ptr pushee,
                   Action const &action, double mu, double c);
+    void MoveHand(kenv::Object::Ptr hand, Action const &vp);
 
 private:
     kenv::CollisionChecker::Ptr collision_checker_;
@@ -69,7 +70,7 @@ private:
     size_t max_iterations_;
     double epsilon_;
 
-    void moveHand(kenv::Object::Ptr hand, Action const &vp);
+
     bool pushObject(kenv::Object::Ptr hand, kenv::Object::Ptr object,
                     Action const &step, double mu, double c);
 

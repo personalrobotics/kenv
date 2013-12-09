@@ -30,7 +30,7 @@ Action::Action(Eigen::Vector2d const &linear_velocity, double const &angular_vel
 void Action::apply(Eigen::Affine3d &pose) const
 {
     pose.pretranslate(Eigen::Vector3d(linear_velocity_[0], linear_velocity_[1], 0));
-    pose.rotate(Eigen::AngleAxisd(angular_velocity_, Eigen::Vector3d::UnitZ()));
+    pose.prerotate(Eigen::AngleAxisd(angular_velocity_, Eigen::Vector3d::UnitZ()));
 }
 
 void Action::apply(kenv::Object::Ptr target) const
@@ -71,8 +71,11 @@ void Action::Serialize(YAML::Emitter &emitter) const
 
 void Action::Deserialize(YAML::Node const &node)
 {
-    node["linear"] >> linear_velocity_;
-    node["angular"] >> angular_velocity_;
+    throw std::runtime_error("Deserialize not implemented for Action.");
+
+    // Note: This will work with a patched version of YAML.
+    //node["linear"] >> linear_velocity_;  
+    //node["angular"] >> angular_velocity_;
 }
 
 Action &Action::operator*=(double scale)
@@ -144,11 +147,11 @@ void QuasistaticPushingModel::Simulate(kenv::Object::Ptr pusher, kenv::Object::P
             original_pose.pretranslate(to3D(step.linear_velocity()));
             pushee->setTransform(original_pose);
         }
-        moveHand(pusher, step);
+        MoveHand(pusher, step);
     }
 }
 
-void QuasistaticPushingModel::moveHand(kenv::Object::Ptr hand, Action const &action)
+void QuasistaticPushingModel::MoveHand(kenv::Object::Ptr hand, Action const &action)
 {
     Eigen::Affine3d hand_pose = hand->getTransform();
     action.apply(hand_pose);
