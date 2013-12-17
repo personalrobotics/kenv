@@ -21,6 +21,9 @@ find_package(Eigen REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIRS})
 add_definitions(${EIGEN_DEFINITIONS})
 
+find_package(PythonLibs)
+include_directories (${PYTHON_INCLUDE_DIRS})
+
 include_directories(${PROJECT_SOURCE_DIR}/include/kenv)
 
 rosbuild_add_library(kenv
@@ -28,3 +31,8 @@ rosbuild_add_library(kenv
     src/CollisionChecker.cpp
     src/ObjectPool.cpp
 )
+
+rosbuild_add_library(kenv_ext
+    src/python/Environment.cpp
+)
+rosbuild_link_boost(kenv_ext python)
