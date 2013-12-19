@@ -16,8 +16,11 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 find_package(Eigen REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIRS})
 add_definitions(${EIGEN_DEFINITIONS})
-
 add_definitions(-frounding-math)
+
+find_package(PythonLibs)
+include_directories (${PYTHON_INCLUDE_DIRS})
+
 include_directories(${PROJECT_SOURCE_DIR}/include/polygonal_kenv)
 
 #rosbuild_genmsg()
@@ -36,3 +39,12 @@ rosbuild_link_boost(polygonal_kenv system)
 rosbuild_add_executable(planarize src/planarize.cpp)
 rosbuild_link_boost(planarize program_options)
 target_link_libraries(planarize polygonal_kenv yaml-cpp)
+
+rosbuild_add_library(polygonal_kenv_ext
+    src/python/python.cpp
+    src/python/python_PolygonalEnvironment.cpp
+)
+rosbuild_link_boost(polygonal_kenv_ext python)
+# TODO: I should not need to explicitly link with glog here.
+target_link_libraries(polygonal_kenv_ext kenv polygonal_kenv)
+set_target_properties(polygonal_kenv_ext PROPERTIES PREFIX "")
