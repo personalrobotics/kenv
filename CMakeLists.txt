@@ -35,6 +35,7 @@ rosbuild_add_library(kenv
 rosbuild_add_library(kenv_ext
     src/python/python.cpp
     src/python/python_Environment.cpp
+    src/python/python_ObjectPool.cpp
 )
 rosbuild_link_boost(kenv_ext python)
 # TODO: I should not need to explicitly link with glog here.
