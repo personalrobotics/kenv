@@ -33,6 +33,10 @@ rosbuild_add_library(kenv
 )
 
 rosbuild_add_library(kenv_ext
-    src/python/Environment.cpp
+    src/python/python.cpp
+    src/python/python_Environment.cpp
 )
 rosbuild_link_boost(kenv_ext python)
+# TODO: I should not need to explicitly link with glog here.
+target_link_libraries(kenv_ext kenv boost_numpy_eigen glog)
+set_target_properties(kenv_ext PROPERTIES PREFIX "")
