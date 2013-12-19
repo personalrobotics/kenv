@@ -60,24 +60,6 @@ void Action::set_angular_velocity(double angular_velocity)
     angular_velocity_ = angular_velocity;
 }
 
-void Action::Serialize(YAML::Emitter &emitter) const
-{
-    emitter << YAML::LocalTag("Action")
-            << YAML::BeginMap
-            << YAML::Key << "linear"  << YAML::Value << linear_velocity_
-            << YAML::Key << "angular" << YAML::Value << angular_velocity_
-            << YAML::EndMap;
-}
-
-void Action::Deserialize(YAML::Node const &node)
-{
-    throw std::runtime_error("Deserialize not implemented for Action.");
-
-    // Note: This will work with a patched version of YAML.
-    //node["linear"] >> linear_velocity_;  
-    //node["angular"] >> angular_velocity_;
-}
-
 Action &Action::operator*=(double scale)
 {
     linear_velocity_ *= scale;
@@ -123,7 +105,7 @@ QuasistaticPushingModel::QuasistaticPushingModel(kenv::CollisionChecker::Ptr col
 }
 
 void QuasistaticPushingModel::Simulate(kenv::Object::Ptr pusher, kenv::Object::Ptr pushee,
-                                       Action const &action, double mu, double c)
+                                       Action const &action, double mu, double c) const
 {
     double const linear_scale = action.linear_velocity().norm() / step_meters_;
     double const angular_scale =  action.angular_velocity() / step_radians_;
@@ -151,7 +133,7 @@ void QuasistaticPushingModel::Simulate(kenv::Object::Ptr pusher, kenv::Object::P
     }
 }
 
-void QuasistaticPushingModel::MoveHand(kenv::Object::Ptr hand, Action const &action)
+void QuasistaticPushingModel::MoveHand(kenv::Object::Ptr hand, Action const &action) const
 {
     Eigen::Affine3d hand_pose = hand->getTransform();
     action.apply(hand_pose);
@@ -159,7 +141,7 @@ void QuasistaticPushingModel::MoveHand(kenv::Object::Ptr hand, Action const &act
 }
 
 bool QuasistaticPushingModel::pushObject(kenv::Object::Ptr hand, kenv::Object::Ptr object,
-                                         Action const &step, double mu, double c)
+                                         Action const &step, double mu, double c) const
 {
     // FIXME: This should use the COF frame, not the object frame.
     Eigen::Affine3d const Tenv_cof = object->getTransform();
@@ -214,7 +196,7 @@ bool QuasistaticPushingModel::pushObject(kenv::Object::Ptr hand, kenv::Object::P
 }
 
 Eigen::Vector3d QuasistaticPushingModel::getPushTwist(Eigen::Vector2d const &n, Eigen::Vector2d const &r,
-                                                      Eigen::Vector2d const &vp, double mu, double c)
+                                                      Eigen::Vector2d const &vp, double mu, double c) const
 {
 	// Get the edges of the friction cone.
     Eigen::Vector2d fl, fr;
@@ -264,7 +246,7 @@ Eigen::Vector3d QuasistaticPushingModel::getPushTwist(Eigen::Vector2d const &n, 
 }
 
 void QuasistaticPushingModel::getFrictionCone(Eigen::Vector2d const &normal, double mu,
-                                              Eigen::Vector2d *fr_l, Eigen::Vector2d *fr_r)
+                                              Eigen::Vector2d *fr_l, Eigen::Vector2d *fr_r) const
 {
     BOOST_ASSERT(fr_l && fr_r);
     BOOST_ASSERT(mu >= 0);
@@ -274,20 +256,20 @@ void QuasistaticPushingModel::getFrictionCone(Eigen::Vector2d const &normal, dou
 }
 
 Eigen::Vector3d QuasistaticPushingModel::getTwistFromForce(double c, Eigen::Vector2d const &f,
-                                                                     Eigen::Vector2d const &r)
+                                                                     Eigen::Vector2d const &r) const
 {
     double const c_sqr = std::pow(c, 2);
     return Eigen::Vector3d(c_sqr * f[0], c_sqr * f[1], cross(r, f));
 }
 
 Eigen::Vector2d QuasistaticPushingModel::getVelocityFromTwist(Eigen::Vector3d const &q,
-                                                              Eigen::Vector2d const &r)
+                                                              Eigen::Vector2d const &r) const
 {
 	return Eigen::Vector2d(q[0] - q[2] * r[1], q[1] + q[2] * r[0]);
 }
 
 ContactMode::Enum QuasistaticPushingModel::getContactMode(Eigen::Vector2d const &vp, Eigen::Vector2d const &n,
-                                                          Eigen::Vector2d const &vl, Eigen::Vector2d const &vr)
+                                                          Eigen::Vector2d const &vl, Eigen::Vector2d const &vr) const
 {
 	Eigen::Vector2d const vl_orthog = Eigen::Rotation2Dd(-M_PI / 2) * vl;
 	Eigen::Vector2d const vr_orthog = Eigen::Rotation2Dd(+M_PI / 2) * vr;

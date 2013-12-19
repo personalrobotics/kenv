@@ -2,8 +2,6 @@
 #define QUASISTATICPUSHINGMODEL_H_
 
 #include <Eigen/Dense>
-#include <yaml-cpp/yaml.h>
-#include <kenv/eigen_yaml.h>
 #include <kenv/Environment.h>
 #include <kenv/CollisionChecker.h>
 
@@ -21,7 +19,7 @@ struct ContactMode {
 /*
  * Action
  */
-class Action : public virtual YAMLSerializable {
+class Action {
 public:
     Action();
     Action(Eigen::Vector2d const &linear_velocity, double const &angular_velocity);
@@ -34,9 +32,6 @@ public:
 
     double angular_velocity() const;
     void set_angular_velocity(double angular_velocity);
-
-    virtual void Serialize(YAML::Emitter &emitter) const;
-    virtual void Deserialize(YAML::Node const &node);
 
     Action &operator*=(double scale);
     Action &operator/=(double scale);
@@ -61,8 +56,8 @@ public:
     QuasistaticPushingModel(kenv::CollisionChecker::Ptr collision_checker,
                             double step_meters, double step_radians);
     void Simulate(kenv::Object::Ptr pusher, kenv::Object::Ptr pushee,
-                  Action const &action, double mu, double c);
-    void MoveHand(kenv::Object::Ptr hand, Action const &vp);
+                  Action const &action, double mu, double c) const;
+    void MoveHand(kenv::Object::Ptr hand, Action const &vp) const;
 
 private:
     kenv::CollisionChecker::Ptr collision_checker_;
@@ -72,16 +67,16 @@ private:
 
 
     bool pushObject(kenv::Object::Ptr hand, kenv::Object::Ptr object,
-                    Action const &step, double mu, double c);
+                    Action const &step, double mu, double c) const;
 
     Eigen::Vector3d getPushTwist(Eigen::Vector2d const &n, Eigen::Vector2d const &r,
-                                 Eigen::Vector2d const &vp, double mu, double c);
+                                 Eigen::Vector2d const &vp, double mu, double c) const;
     void getFrictionCone(Eigen::Vector2d const &normal, double mu,
-                         Eigen::Vector2d *fr_l, Eigen::Vector2d *fr_r);
-    Eigen::Vector3d getTwistFromForce(double c, Eigen::Vector2d const &f, Eigen::Vector2d const &r);
-    Eigen::Vector2d getVelocityFromTwist(Eigen::Vector3d const &q, Eigen::Vector2d const &r);
+                         Eigen::Vector2d *fr_l, Eigen::Vector2d *fr_r) const;
+    Eigen::Vector3d getTwistFromForce(double c, Eigen::Vector2d const &f, Eigen::Vector2d const &r) const;
+    Eigen::Vector2d getVelocityFromTwist(Eigen::Vector3d const &q, Eigen::Vector2d const &r) const;
     ContactMode::Enum getContactMode(Eigen::Vector2d const &vp, Eigen::Vector2d const &n,
-                                     Eigen::Vector2d const &vl, Eigen::Vector2d const &vr);
+                                     Eigen::Vector2d const &vl, Eigen::Vector2d const &vr) const;
 
     double cross(Eigen::Vector2d const &x1, Eigen::Vector2d const &x2) const;
     Eigen::Vector3d scaleTwist(Eigen::Vector3d const &q) const;
