@@ -51,8 +51,8 @@ public:
 
     kenv::Handle DrawText(std::string const &text, double x, double y, unsigned int font_size);
 
-private:
     kenv::PolygonalEnvironment::Ptr env_;
+private:
     boost::shared_ptr<sf::RenderWindow> window_;
     double scale_;
     Eigen::Vector2d origin_;
