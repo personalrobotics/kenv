@@ -31,6 +31,7 @@ rosbuild_add_library(kenv
     src/CollisionChecker.cpp
     src/ObjectPool.cpp
 )
+set_target_properties(kenv PROPERTIES COMPILE_FLAGS -std=c++0x)
 
 rosbuild_add_library(kenv_ext
     src/python/python.cpp

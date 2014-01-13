@@ -3,6 +3,7 @@
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/typeof/typeof.hpp>
 #include "ObjectPool.h"
 
 namespace kenv {
@@ -47,6 +48,11 @@ size_t ObjectPool::size() const
     return owned_objects_.size();
 }
 
+auto ObjectPool::constructor_arguments() const -> arguments_tuple
+{
+    return boost::make_tuple(env_, type_);
+}
+
 void ObjectPool::ObjectDeleter(Object *object)
 {
     size_t const num_erased = active_objects_.erase(object);
@@ -88,6 +94,11 @@ size_t MultiObjectPool::size() const
     }
 
     return num_objects;
+}
+
+auto MultiObjectPool::constructor_arguments() const -> arguments_tuple
+{
+    return boost::make_tuple(env_);
 }
 
 }
