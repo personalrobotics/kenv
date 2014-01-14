@@ -1,10 +1,10 @@
+#include "PolygonalEnvironment.h"
 #include <boost/python.hpp>
 #include <geos/geom/Geometry.h>
+#include <geos/geom/GeometryFactory.h>
 #include <geos/io/WKBWriter.h>
 #include <geos/io/WKTWriter.h>
-#include "PolygonalEnvironment.h"
-
-#include <geos/geom/GeometryFactory.h>
+#include <kenv/python_pickle_helpers.h>
 
 using namespace boost::python;
 using namespace kenv;
@@ -38,6 +38,7 @@ void python_PolygonalEnvironment()
     class_<PolygonalEnvironment, boost::noncopyable,
            bases<Environment>, PolygonalEnvironment::Ptr>
            ("PolygonalEnvironment")
+        .def_pickle(util::empty_pickle_wrapper<PolygonalEnvironment>())
         ;
 
     class_<PolygonalObject, boost::noncopyable,
