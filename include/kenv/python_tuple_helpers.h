@@ -7,7 +7,7 @@
 
 namespace util {
 
-boost::python::tuple tuple_to_python(boost::tuples::null_type) 
+inline boost::python::tuple tuple_to_python(boost::tuples::null_type) 
 { 
     return boost::python::tuple(); 
 } 
@@ -15,10 +15,10 @@ boost::python::tuple tuple_to_python(boost::tuples::null_type)
 template <class H, class T> 
 boost::python::tuple tuple_to_python(boost::tuples::cons<H, T> const &x) 
 { 
-    BOOST_AUTO(head_tuple, boost::python::make_tuple(x.get_head()));
-    BOOST_AUTO(tail_tuple, tuple_to_python(x.get_tail()));
-    BOOST_AUTO(full_tuple, head_tuple.attr("__add__")(tail_tuple));
-    return boost::python::extract<boost::python::tuple>(full_tuple);
+    boost::python::list temp_list;
+    temp_list.extend(boost::python::make_tuple(x.get_head()));
+    temp_list.extend(tuple_to_python(x.get_tail()));
+    return boost::python::tuple(temp_list);
 } 
 
 template <class T> 
