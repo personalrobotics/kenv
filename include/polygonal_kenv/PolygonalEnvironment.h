@@ -60,6 +60,8 @@ private:
     ::PolygonalLink::Ptr internal_link_;
 };
 
+typedef PolygonalLink PolygonalLink_ext;
+
 class PolygonalObject : public virtual kenv::Object {
 public:
     typedef boost::shared_ptr<PolygonalObject> Ptr;
