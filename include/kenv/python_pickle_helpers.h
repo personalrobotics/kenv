@@ -24,22 +24,32 @@ struct pickle_init_wrapper : public boost::python::pickle_suite {
 
 template <class T, class InputArchive, class OutputArchive>
 struct pickle_serialization_wrapper : public pickle_init_wrapper<T> {
-    static boost::python::tuple getstate(T const &instance)
+    static boost::python::tuple getstate(boost::python::object py_instance)
     {
+        T const &instance = boost::python::extract<T const &>(py_instance);
+
+
         std::ostringstream ostream;
         OutputArchive archive(ostream);
         archive & instance;
-        return boost::python::make_tuple(ostream.str());
+        return boost::python::make_tuple(py_instance.attr("__dict__"),
+                                         ostream.str());
     }
 
-    static void setstate(T &instance, boost::python::tuple state)
+    static void setstate(boost::python::object py_instance, boost::python::tuple state)
     {
-        BOOST_ASSERT(boost::python::len(state) == 1);
-        std::string const content = boost::python::extract<std::string>(state[0]);
+        T &instance = boost::python::extract<T &>(py_instance);
+        boost::python::dict py_dict = boost::python::extract<boost::python::dict>(py_instance.attr("__dict__"));
+        py_dict.update(state[0]);
+
+        BOOST_ASSERT(boost::python::len(state) == 2);
+        std::string const content = boost::python::extract<std::string>(state[1]);
         std::istringstream istream(content);
         InputArchive archive(istream);
         archive & instance;
     }
+
+    static bool getstate_manages_dict() { return true; }
 };
 
 template <class T>
