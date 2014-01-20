@@ -18,6 +18,12 @@ static boost::python::list Object_getLinks(Object const *instance)
     return py_links;
 }
 
+static bool Object_checkCollision(kenv::Object const *instance,
+                                  kenv::Object::Ptr other)
+{
+    return instance->checkCollision(other);
+}
+
 void python_Environment()
 {
     class_<Contact>("Contact")
@@ -49,6 +55,7 @@ void python_Environment()
         .def("setDOFValues", &Object::setDOFValues)
         .def("setColor", &Object::setColor)
         .def("setTransparency", &Object::setTransparency)
+        .def("checkCollision", &Object_checkCollision)
         ;
 
     class_<Environment, boost::noncopyable, Environment::Ptr>("Environment", no_init)
