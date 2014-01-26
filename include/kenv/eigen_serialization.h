@@ -1,6 +1,11 @@
 #ifndef EIGEN_SERIALIZATION_H_
 #define EIGEN_SERIALIZATION_H_
+#include <boost/foreach.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/split_free.hpp>
 #include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 namespace boost {
 
@@ -48,6 +53,87 @@ inline void serialize(Archive &ar, Eigen::Array<_Scalar, _Rows, _Cols, _Options,
     for (int i = 0; i < t.size(); ++i) {
         ar & t.data()[i];
     }
+}
+
+/*
+ * SparseMatrix
+ * Inspired by: https://gist.github.com/mtao/5798888
+ */
+template <class Scalar>
+class EigenTriplet {
+public:
+    EigenTriplet() {}
+    EigenTriplet(int row, int col, Scalar const &value)
+        : row_(row), col_(col), value_(value) {}
+
+    int row() const { return row_; }
+    int col() const { return col_; }
+    Scalar value() const { return value_; };
+
+private: 
+    int row_, col_;
+    Scalar value_;
+
+    template <class Archive>
+    void serialize(Archive &archive, unsigned int const version)
+    {
+        archive & row_ & col_ & value_;
+    }
+
+    friend class boost::serialization::access;
+};
+
+template <class Archive, typename _Scalar, int _Options, typename _Index>
+inline void save(Archive &archive, Eigen::SparseMatrix<_Scalar, _Options, _Index> const &m,
+                 unsigned int const version)
+{
+    //typedef typename Eigen::Triplet<_Scalar> Triplet;
+    typedef EigenTriplet<_Scalar> Triplet;
+    typedef typename Eigen::SparseMatrix<_Scalar, _Options, _Index>::InnerIterator InnerIterator;
+
+    int innerSize = m.innerSize();
+    int outerSize = m.outerSize();
+
+    std::vector<Triplet> triplets;
+
+    for (int i=0; i < outerSize; ++i) {
+        for (InnerIterator it(m,i); it; ++it) {
+            triplets.push_back(Triplet(it.row(), it.col(), it.value()));
+        }
+    }
+
+    archive & innerSize & outerSize & triplets;
+}
+
+template <class Archive, typename _Scalar, int _Options, typename _Index>
+inline void load(Archive &archive, Eigen::SparseMatrix<_Scalar, _Options, _Index> &m,
+                 unsigned int const version) {
+    int innerSize;
+    int outerSize;
+    archive & innerSize & outerSize;
+
+    int rows = m.IsRowMajor ? outerSize : innerSize;
+    int cols = m.IsRowMajor ? innerSize : outerSize;
+    m.resize(rows,cols);
+
+    //typedef typename Eigen::Triplet<_Scalar> Triplet;
+    typedef EigenTriplet<_Scalar> Triplet;
+    std::vector<Triplet> triplets;
+    archive & triplets;
+
+    //m.setFromTriplets(triplets.begin(), triplets.end());
+    m.setZero();
+    BOOST_FOREACH (Triplet const &triplet, triplets) {
+        m.insert(triplet.row(), triplet.col()) = triplet.value();
+    }
+    m.finalize();
+}
+
+template <class Archive, typename _Scalar, int _Options, typename _Index>
+void serialize(Archive &archive, Eigen::SparseMatrix<_Scalar,_Options,_Index> &m,
+               unsigned int const version)
+{
+    boost::serialization::split_free(archive, m, version);
 }
 
 /*
