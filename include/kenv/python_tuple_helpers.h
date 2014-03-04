@@ -28,7 +28,12 @@ struct tuple_converter
     { 
         return boost::python::incref(tuple_to_python(x).ptr()); 
     } 
+
+    static bool registered;
 }; 
+
+
+template <class T> bool tuple_converter<T>::registered = false;
 
 }
 

@@ -12,8 +12,12 @@ template <class T>
 struct pickle_init_wrapper : public boost::python::pickle_suite {
     pickle_init_wrapper()
     {
-        boost::python::to_python_converter<typename T::arguments_tuple,
-                                           util::tuple_converter<typename T::arguments_tuple> >(); 
+        bool &flag = util::tuple_converter<typename T::arguments_tuple>::registered;
+        if (!flag) {
+            boost::python::to_python_converter<typename T::arguments_tuple,
+                                               util::tuple_converter<typename T::arguments_tuple> >(); 
+            flag = true;
+        }
     }
 
     static boost::python::tuple getinitargs(T const &instance)
