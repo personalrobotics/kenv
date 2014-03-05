@@ -40,6 +40,8 @@ rosbuild_add_library(kenv_ext
     src/python/python_ObjectPool.cpp
 )
 rosbuild_link_boost(kenv_ext python)
-# TODO: I should not need to explicitly link with glog here.
-target_link_libraries(kenv_ext kenv boost_numpy_eigen glog)
-set_target_properties(kenv_ext PROPERTIES PREFIX "")
+target_link_libraries(kenv_ext kenv boost_numpy_eigen)
+set_target_properties(kenv_ext PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pythonsrc
+    PREFIX ""
+)

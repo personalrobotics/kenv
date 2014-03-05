@@ -8,6 +8,6 @@
     <rosdep name="eigen"/>
     <export>
         <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lkenv"/>
-        <python path="${prefix}/lib"/>
+        <python path="${prefix}/pythonsrc"/>
     </export>
 </package>
