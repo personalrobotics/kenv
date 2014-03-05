@@ -17,7 +17,6 @@
     <depend package="quasistatic_pushing"/>
     <export>
         <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lpolygonal_kenv"/>
-        <python path="${prefix}/lib"/>
-        <openrave plugins="${prefix}/lib"/>
+        <python path="${prefix}/pythonsrc"/>
     </export>
 </package>

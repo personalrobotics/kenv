@@ -45,6 +45,8 @@ rosbuild_add_library(polygonal_kenv_ext
     src/python/python_PolygonalEnvironment.cpp
 )
 rosbuild_link_boost(polygonal_kenv_ext python)
-# TODO: I should not need to explicitly link with glog here.
 target_link_libraries(polygonal_kenv_ext kenv polygonal_kenv)
-set_target_properties(polygonal_kenv_ext PROPERTIES PREFIX "")
+set_target_properties(polygonal_kenv_ext PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pythonsrc
+    PREFIX ""
+)
