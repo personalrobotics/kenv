@@ -1,4 +1,5 @@
 #define CGAL_DISABLE_ROUNDING_MATH_CHECK
+#include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <geos/geom/CoordinateSequenceFactory.h>
 #include <geos/geom/GeometryFactory.h>
@@ -11,7 +12,7 @@
 #include "CSpaceObstacle.h"
 
 template <class Kernel>
-static CGAL::Polygon_2<Kernel> GEOSToCGAL(geos::geom::Polygon const *geos_polygon)
+static CGAL::Polygon_2<Kernel> GEOSToCGAL_Polygon(geos::geom::Polygon const *geos_polygon)
 {
     CGAL::Polygon_2<Kernel> cgal_polygon;
     if (geos_polygon->isEmpty()) {
@@ -29,8 +30,44 @@ static CGAL::Polygon_2<Kernel> GEOSToCGAL(geos::geom::Polygon const *geos_polygo
         typename Kernel::Point_2 const cgal_point(geos_point.x, geos_point.y);
         cgal_polygon.push_back(cgal_point);
     }
-
     return cgal_polygon;
+}
+
+template <class Kernel>
+static CGAL::Polygon_2<Kernel> GEOSToCGAL_LineString(geos::geom::LineString const *geos_linestring)
+{
+    CGAL::Polygon_2<Kernel> cgal_polygon;
+    if (geos_linestring->isEmpty()) {
+        return cgal_polygon;
+    }
+
+    boost::shared_ptr<geos::geom::CoordinateSequence> coords(
+        geos_linestring->getCoordinates()
+    );
+
+    for (size_t i = 0; i < coords->size(); ++i) {
+        geos::geom::Coordinate const &geos_point = (*coords)[i];
+        typename Kernel::Point_2 const cgal_point(geos_point.x, geos_point.y);
+        cgal_polygon.push_back(cgal_point);
+    }
+    return cgal_polygon;
+}
+
+template <class Kernel>
+static CGAL::Polygon_2<Kernel> GEOSToCGAL(geos::geom::Geometry const *geos_geometry)
+{
+    switch (geos_geometry->getGeometryTypeId()) {
+    case geos::geom::GEOS_POLYGON:
+        return GEOSToCGAL_Polygon<Kernel>(dynamic_cast<geos::geom::Polygon const *>(geos_geometry));
+
+    case geos::geom::GEOS_LINESTRING:
+        return GEOSToCGAL_LineString<Kernel>(dynamic_cast<geos::geom::LineString const *>(geos_geometry));
+
+    default:
+        throw std::runtime_error(boost::str(
+            boost::format("Unable to convert GEOS geometry to CGAL; unsupported type \"%s\".")
+                % geos_geometry->getGeometryType()));
+    }
 }
 
 template <class Kernel>
@@ -65,19 +102,8 @@ geos::geom::Geometry *ComputeCSpaceObstacle(geos::geom::Geometry const *robot,
     typedef CGAL::Polygon_2<Kernel>                     Polygon_2;
     typedef CGAL::Polygon_with_holes_2<Kernel>          Polygon_with_holes_2;
 
-    // Extract the objects' polygonal geometry.
-    if (robot->getGeometryTypeId() != geos::geom::GEOS_POLYGON) {
-        throw std::runtime_error("Robot is not a polygon.");
-    } else if (obstacle->getGeometryTypeId() != geos::geom::GEOS_POLYGON) {
-        throw std::runtime_error("Obstacle is not a polygon.");
-    }
-    geos::geom::Polygon const *geos_robot = dynamic_cast<geos::geom::Polygon const *>(robot);
-    geos::geom::Polygon const *geos_obstacle = dynamic_cast<geos::geom::Polygon const *>(obstacle);
-    BOOST_ASSERT(geos_robot && geos_obstacle);
-
-    // Convert from GEOS to CGAL.
-    Polygon_2 cgal_robot = GEOSToCGAL<Kernel>(geos_robot);
-    Polygon_2 cgal_obstacle = GEOSToCGAL<Kernel>(geos_obstacle);
+    Polygon_2 const cgal_robot = GEOSToCGAL<Kernel>(robot);
+    Polygon_2 const cgal_obstacle = GEOSToCGAL<Kernel>(obstacle);
 
     // Use the Minkowski sum to compute the C-space obstacle.
     Polygon_with_holes_2 minkowski_sum = minkowski_sum_2(cgal_robot, cgal_obstacle);
