@@ -1,0 +1,19 @@
+<package>
+  <description brief="gazebo_push_grasp_sim">
+
+     gazebo_push_grasp_sim
+
+  </description>
+  <author>vsunder</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/gazebo_push_grasp_sim</url>
+  <depend package="rospy"/>
+  <depend package="roscpp"/>
+  <depend package="kenv"/>
+  <depend package="gz_kenv"/>
+  <depend package="quasistatic_pushing"/>
+
+</package>
+
+

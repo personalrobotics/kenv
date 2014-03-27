@@ -1,0 +1,54 @@
+mkdir -p bin
+cd build && cmake -Wdev -DCMAKE_TOOLCHAIN_FILE=`rospack find rosbuild`/rostoolchain.cmake  ..
+Re-run cmake no build system arguments
+-- The C compiler identification is GNU
+-- The CXX compiler identification is GNU
+-- Check for working C compiler: /usr/bin/gcc
+-- Check for working C compiler: /usr/bin/gcc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Found PythonInterp: /usr/bin/python (found version "2.7.3")
+-- checking for module 'eigen3'
+--   found eigen3, version 3.2.0
+-- Found Eigen: /usr/local/include/eigen3 
+-- Eigen found (include: /usr/local/include/eigen3)
+-- Found PythonLibs: /usr/lib/libpython2.7.so 
+-- Boost version: 1.46.1
+-- Found the following Boost libraries:
+--   system
+-- checking for module 'gazebo'
+--   found gazebo, version 2.2.2
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build
+cd build && make 
+make[1]: Entering directory `/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build'
+/usr/bin/cmake -H/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim -B/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start /home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build/CMakeFiles /home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build/CMakeFiles/progress.marks
+make -f CMakeFiles/Makefile2 all
+make[2]: Entering directory `/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build'
+make -f CMakeFiles/quasistatic_world_plugin.dir/build.make CMakeFiles/quasistatic_world_plugin.dir/depend
+make[3]: Entering directory `/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build'
+cd /home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim /home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim /home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build /home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build /home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build/CMakeFiles/quasistatic_world_plugin.dir/DependInfo.cmake --color=
+Dependee "/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build/CMakeFiles/quasistatic_world_plugin.dir/DependInfo.cmake" is newer than depender "/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build/CMakeFiles/quasistatic_world_plugin.dir/depend.internal".
+Dependee "/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build/CMakeFiles/CMakeDirectoryInformation.cmake" is newer than depender "/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build/CMakeFiles/quasistatic_world_plugin.dir/depend.internal".
+Scanning dependencies of target quasistatic_world_plugin
+make[3]: Leaving directory `/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build'
+make -f CMakeFiles/quasistatic_world_plugin.dir/build.make CMakeFiles/quasistatic_world_plugin.dir/build
+make[3]: Entering directory `/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build'
+/usr/bin/cmake -E cmake_progress_report /home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build/CMakeFiles 1
+[100%] Building CXX object CMakeFiles/quasistatic_world_plugin.dir/src/Quasistatic_World_Plugin.o
+/usr/bin/c++   -Dquasistatic_world_plugin_EXPORTS -O2 -g -fPIC -I/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/include -I/opt/ros/fuerte/include -I/home/vsunder/Herb/vsunder/Gazebo_ws/src/kenv/include -I/home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/include -I/home/vsunder/Herb/vsunder/Gazebo_ws/src/quasistatic_pushing/include -I/usr/local/include/eigen3 -I/usr/include/python2.7 -I/usr/include/gazebo-2.2 -I/usr/include/sdformat-1.4    -DROS_PACKAGE_NAME='"gazebo_push_grasp_sim"' -o CMakeFiles/quasistatic_world_plugin.dir/src/Quasistatic_World_Plugin.o -c /home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/src/Quasistatic_World_Plugin.cc
+Linking CXX shared library ../lib/libquasistatic_world_plugin.so
+/usr/bin/cmake -E cmake_link_script CMakeFiles/quasistatic_world_plugin.dir/link.txt --verbose=1
+/usr/bin/c++  -fPIC -O2 -g   -shared -Wl,-soname,libquasistatic_world_plugin.so -o ../lib/libquasistatic_world_plugin.so CMakeFiles/quasistatic_world_plugin.dir/src/Quasistatic_World_Plugin.o -L/opt/ros/fuerte/lib -L/home/vsunder/Herb/vsunder/Gazebo_ws/src/kenv/lib -L/home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/lib -L/home/vsunder/Herb/vsunder/Gazebo_ws/src/quasistatic_pushing/lib -L/usr/lib/gazebo-2.2/plugins -lkenv -lgazebo_transport -lgazebo_physics -lgazebo_sensors -lgazebo_rendering -lgazebo_gui -lsdformat -lgazebo_msgs -lgazebo_math -lgazebo_common -lgazebo -Wl,-rpath,/opt/ros/fuerte/lib:/home/vsunder/Herb/vsunder/Gazebo_ws/src/kenv/lib:/home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/lib:/home/vsunder/Herb/vsunder/Gazebo_ws/src/quasistatic_pushing/lib:/usr/lib/gazebo-2.2/plugins: 
+make[3]: Leaving directory `/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build'
+/usr/bin/cmake -E cmake_progress_report /home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build/CMakeFiles  1
+[100%] Built target quasistatic_world_plugin
+make[2]: Leaving directory `/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build'
+/usr/bin/cmake -E cmake_progress_start /home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build/CMakeFiles 0
+make[1]: Leaving directory `/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/build'
