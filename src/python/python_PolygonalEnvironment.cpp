@@ -25,15 +25,26 @@ std::string toWKT(geos::geom::Geometry const &geom)
     return writer.write(&geom);
 }
 
+struct geos_to_python {
+    static PyObject *convert(geos::geom::Geometry const &geom)
+    {
+        std::cout << "LOADING" << std::endl;
+        // Dump the geometry to WKB.
+        geos::io::WKBWriter writer;
+        std::ostringstream ss;
+        writer.write(geom, ss);
+
+        // Load a Shapely object from WKB.
+        boost::python::object const ns = boost::python::import("shapely.wkb");
+        boost::python::object const loads = ns.attr("loads");
+        boost::python::object const py_geom = loads(ss.str());
+        return boost::python::incref(boost::python::object(py_geom).ptr());
+    }
+};
+
+
 void python_PolygonalEnvironment()
 {
-    register_ptr_to_python<boost::shared_ptr<geos::geom::Geometry const> >(); 
-
-    class_<geos::geom::Geometry, GeometryPtr, boost::noncopyable>("GEOSGeometry", no_init)
-        .add_property("wkb", &toWKB)
-        .add_property("wkt", &toWKT)
-        ;
-
     class_<PolygonalEnvironment, boost::noncopyable, bases<Environment>, PolygonalEnvironment::Ptr>("PolygonalEnvironment")
         .def_pickle(util::empty_pickle_wrapper<PolygonalEnvironment>())
         ;
