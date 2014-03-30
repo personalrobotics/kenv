@@ -10,25 +10,11 @@ using namespace boost::python;
 using namespace kenv;
 
 typedef boost::shared_ptr<geos::geom::Geometry> GeometryPtr;
-
-std::string toWKB(geos::geom::Geometry const &geom)
-{
-    std::ostringstream ss;
-    static geos::io::WKBWriter writer;
-    writer.write(geom, ss);
-    return ss.str();
-}
-
-std::string toWKT(geos::geom::Geometry const &geom)
-{
-    static geos::io::WKTWriter writer;
-    return writer.write(&geom);
-}
+typedef boost::shared_ptr<geos::geom::Geometry const> GeometryConstPtr;
 
 struct geos_to_python {
     static PyObject *convert(geos::geom::Geometry const &geom)
     {
-        std::cout << "LOADING" << std::endl;
         // Dump the geometry to WKB.
         geos::io::WKBWriter writer;
         std::ostringstream ss;
@@ -42,18 +28,34 @@ struct geos_to_python {
     }
 };
 
+// This is a hack to work around Boost.Python's poor support for const.
+template <class T, class Delegate>
+struct const_ptr_to_python {
+    static PyObject *convert(boost::shared_ptr<T const> const &const_ptr)
+    {
+        return Delegate().convert(*const_ptr);
+    }
+};
 
 void python_PolygonalEnvironment()
 {
-    class_<PolygonalEnvironment, boost::noncopyable, bases<Environment>, PolygonalEnvironment::Ptr>("PolygonalEnvironment")
+    to_python_converter<geos::geom::Geometry, geos_to_python>();
+    register_ptr_to_python<GeometryPtr>();
+    to_python_converter<GeometryConstPtr,
+                        const_ptr_to_python<geos::geom::Geometry, geos_to_python> >();
+
+    class_<PolygonalEnvironment, boost::noncopyable, bases<Environment>,
+           PolygonalEnvironment::Ptr>("PolygonalEnvironment")
         .def_pickle(util::empty_pickle_wrapper<PolygonalEnvironment>())
         ;
 
-    class_<PolygonalObject, boost::noncopyable, bases<Object>, PolygonalObject::Ptr>("PolygonalObject", no_init)
+    class_<PolygonalObject, boost::noncopyable, bases<Object>,
+           PolygonalObject::Ptr>("PolygonalObject", no_init)
         .add_property("geometry", &PolygonalObject::getGeometry)
         ;
 
-    class_<PolygonalLink_ext, boost::noncopyable, bases<Link>, boost::shared_ptr<PolygonalLink_ext> >("PolygonalLink", no_init)
+    class_<PolygonalLink_ext, boost::noncopyable, bases<Link>,
+           boost::shared_ptr<PolygonalLink_ext> >("PolygonalLink", no_init)
         .add_property("geometry", &PolygonalLink_ext::getGeometry)
         ;
 }
