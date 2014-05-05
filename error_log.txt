@@ -1,119 +1,0 @@
-[ rosmake ] rosmake starting...                                                 
-[ rosmake ] Packages requested are: ['gz_kenv']                                 
-[ rosmake ] Logging to directory /home/vsunder/.ros/rosmake/rosmake_output-20140221-134320
-[ rosmake ] Expanded args ['gz_kenv'] to:
-['gz_kenv']                           
-[rosmake-0] Starting >>> roslang [ make ]                                       
-[rosmake-0] Finished <<< roslang  No Makefile in package roslang                
-[rosmake-0] Starting >>> rospy [ make ]                                         
-[rosmake-1] Starting >>> roscpp [ make ]                                        
-[rosmake-0] Finished <<< rospy  No Makefile in package rospy                    
-[rosmake-0] Starting >>> common_rosdeps [ make ]                                
-[rosmake-1] Finished <<< roscpp  No Makefile in package roscpp                  
-[rosmake-1] Starting >>> std_msgs [ make ]                                      
-[rosmake-0] Finished <<< common_rosdeps ROS_NOBUILD in package common_rosdeps   
-[rosmake-0] Starting >>> ogre [ make ]                                          
-[rosmake-1] Finished <<< std_msgs  No Makefile in package std_msgs              
-[rosmake-1] Starting >>> geometry_msgs [ make ]                                 
-[rosmake-0] Finished <<< ogre ROS_NOBUILD in package ogre                       
-[rosmake-0] Starting >>> trajectory_msgs [ make ]                               
-[rosmake-0] Finished <<< trajectory_msgs  No Makefile in package trajectory_msgs
-[rosmake-0] Starting >>> roslib [ make ]                                        
-[rosmake-0] Finished <<< roslib  No Makefile in package roslib                  
-[rosmake-0] Starting >>> bullet [ make ]                                        
-[rosmake-0] Finished <<< bullet ROS_NOBUILD in package bullet                   
-[rosmake-0] Starting >>> colladadom [ make ]                                    
-[rosmake-0] Finished <<< colladadom ROS_NOBUILD in package colladadom           
-[rosmake-0] Starting >>> urdf_interface [ make ]                                
-[rosmake-0] Finished <<< urdf_interface ROS_NOBUILD in package urdf_interface   
-[rosmake-0] Starting >>> urdf_parser [ make ]                                   
-[rosmake-0] Finished <<< urdf_parser ROS_NOBUILD in package urdf_parser         
-[rosmake-0] Starting >>> collada_parser [ make ]                                
-[rosmake-0] Finished <<< collada_parser ROS_NOBUILD in package collada_parser   
-[rosmake-0] Starting >>> urdf [ make ]                                          
-[rosmake-1] Finished <<< geometry_msgs  No Makefile in package geometry_msgs    
-[rosmake-1] Starting >>> sensor_msgs [ make ]                                   
-[rosmake-1] Finished <<< sensor_msgs  No Makefile in package sensor_msgs        
-[rosmake-1] Starting >>> gazebo_msgs [ make ]                                   
-[rosmake-1] Finished <<< gazebo_msgs ROS_NOBUILD in package gazebo_msgs         
-[rosmake-0] Finished <<< urdf ROS_NOBUILD in package urdf                       
-[rosmake-1] Starting >>> std_srvs [ make ]                                      
-[rosmake-0] Starting >>> rosconsole [ make ]                                    
-[rosmake-0] Finished <<< rosconsole  No Makefile in package rosconsole          
-[rosmake-0] Starting >>> angles [ make ]                                        
-[rosmake-0] Finished <<< angles ROS_NOBUILD in package angles                   
-[rosmake-1] Finished <<< std_srvs  No Makefile in package std_srvs              
-[rosmake-0] Starting >>> rostest [ make ]                                       
-[rosmake-1] Starting >>> roswtf [ make ]                                        
-[rosmake-0] Finished <<< rostest  No Makefile in package rostest                
-[rosmake-0] Starting >>> message_filters [ make ]                               
-[rosmake-0] Finished <<< message_filters  No Makefile in package message_filters
-[rosmake-1] Finished <<< roswtf  No Makefile in package roswtf                  
-[rosmake-1] Starting >>> rosgraph_msgs [ make ]                                 
-[rosmake-1] Finished <<< rosgraph_msgs  No Makefile in package rosgraph_msgs    
-[rosmake-1] Starting >>> rosservice [ make ]                                    
-[rosmake-1] Finished <<< rosservice  No Makefile in package rosservice          
-[rosmake-1] Starting >>> dynamic_reconfigure [ make ]                           
-[rosmake-1] Finished <<< dynamic_reconfigure ROS_NOBUILD in package dynamic_reconfigure
-[rosmake-1] Starting >>> rosbuild [ make ]                                      
-[rosmake-0] Starting >>> tf [ make ]                                            
-[rosmake-0] Finished <<< tf ROS_NOBUILD in package tf                           
-[rosmake-0] Starting >>> kenv [ make ]                                          
-[rosmake-1] Finished <<< rosbuild  No Makefile in package rosbuild              
-[rosmake-1] Starting >>> protobuf [ make ]                                      
-[rosmake-1] Finished <<< protobuf ROS_NOBUILD in package protobuf               
-[rosmake-1] Starting >>> gazebo [ make ]                                        
-[ rosmake ] [ make ] [ kenv: 0.1 sec ] [ gazebo: ... [ 2 Active 29/32 Complete ][rosmake-1] Finished <<< gazebo ROS_NOBUILD in package gazebo                   
-[ rosmake ] [ make ] [ kenv: 0.2 sec ]               [ 1 Active 30/32 Complete ][ rosmake ] [ make ] [ kenv: 0.3 sec ]               [ 1 Active 30/32 Complete ][ rosmake ] [ make ] [ kenv: 0.4 sec ]               [ 1 Active 30/32 Complete ][ rosmake ] [ make ] [ kenv: 0.5 sec ]               [ 1 Active 30/32 Complete ][rosmake-0] Finished <<< kenv [PASS] [ 0.47 seconds ]                           
-[rosmake-0] Starting >>> gz_kenv [ make ]                                       
-[ rosmake ] [ make ] [ gz_kenv: 0.1 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 0.2 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 0.3 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 0.4 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 0.5 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 0.6 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 0.7 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 0.8 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 0.9 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 1.0 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 1.1 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 1.2 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 1.3 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 1.4 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 1.5 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 1.6 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 1.7 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 1.8 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 1.9 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 2.0 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 2.1 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 2.2 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 2.3 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 2.4 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 2.5 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 2.6 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 2.7 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 2.8 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 2.9 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 3.0 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 3.1 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 3.2 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 3.3 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 3.4 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 3.5 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 3.6 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 3.7 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 3.8 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 3.9 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 4.0 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 4.1 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 4.2 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 4.3 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 4.4 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 4.5 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 4.6 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 4.7 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 4.8 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 4.9 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 5.0 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] [ make ] [ gz_kenv: 5.1 sec ]            [ 1 Active 31/32 Complete ][ rosmake ] Last 40 lines
-{-------------------------------------------------------------------------------
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp: In member function ‘virtual std::vector<boost::shared_ptr<kenv::Link> > kenv::GazeboObject::getLinks() const’:
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:195:69: error: conversion from ‘std::map<std::basic_string<char>, boost::shared_ptr<kenv::Link> >::const_iterator {aka std::_Rb_tree_const_iterator<std::pair<const std::basic_string<char>, boost::shared_ptr<kenv::Link> > >}’ to non-scalar type ‘std::map<std::basic_string<char>, boost::shared_ptr<kenv::Link> >::iterator {aka std::_Rb_tree_iterator<std::pair<const std::basic_string<char>, boost::shared_ptr<kenv::Link> > >}’ requested
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp: At global scope:
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:209:51: error: no ‘Eigen::VectorXd kenv::GazeboObject::getDOFValue() const’ member function declared in class ‘kenv::GazeboObject’
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp: In member function ‘virtual void kenv::GazeboObject::setDOFValues(const VectorXd&)’:
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:216:12: error: return-statement with a value, in function returning 'void' [-fpermissive]
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp: In member function ‘virtual kenv::Object::Ptr kenv::GazeboEnvironment::getObject(const string&)’:
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:232:9: error: request for member ‘insert’ in ‘((kenv::GazeboEnvironment*)this)->kenv::GazeboEnvironment::objects_’, which is of non-class type ‘int’
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:232:9: error: invalid type in declaration before ‘=’ token
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:232:9: error: request for member ‘insert’ in ‘((kenv::GazeboEnvironment*)this)->kenv::GazeboEnvironment::objects_’, which is of non-class type ‘int’
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:233:20: error: request for member ‘second’ in ‘result’, which is of non-class type ‘int’
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:235:20: error: request for member ‘first’ in ‘result’, which is of non-class type ‘int’
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:237:23: error: request for member ‘first’ in ‘result’, which is of non-class type ‘int’
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp: In member function ‘virtual boost::shared_ptr<void> kenv::GazeboEnvironment::drawLine(const Vector3d&, const Vector3d&, double, const Vector4d&)’:
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:257:3: warning: no return statement in function returning non-void [-Wreturn-type]
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp: In member function ‘virtual boost::shared_ptr<void> kenv::GazeboEnvironment::drawLineStrip(const std::vector<Eigen::Matrix<double, 3, 1> >&, double, const Vector4d&)’:
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:262:3: warning: no return statement in function returning non-void [-Wreturn-type]
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp: In member function ‘virtual boost::shared_ptr<void> kenv::GazeboEnvironment::drawLineList(const std::vector<std::pair<Eigen::Matrix<double, 3, 1>, Eigen::Matrix<double, 3, 1> > >&, double, const Vector4d&)’:
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:267:3: warning: no return statement in function returning non-void [-Wreturn-type]
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp: In member function ‘virtual boost::shared_ptr<void> kenv::GazeboEnvironment::drawArrow(const Vector3d&, const Vector3d&, double, const Vector4d&)’:
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:274:3: warning: no return statement in function returning non-void [-Wreturn-type]
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp: In member function ‘virtual boost::shared_ptr<void> kenv::GazeboEnvironment::drawPoints(const std::vector<Eigen::Matrix<double, 3, 1> >&, float, const Vector4d&)’:
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:279:3: warning: no return statement in function returning non-void [-Wreturn-type]
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp: In member function ‘virtual boost::shared_ptr<void> kenv::GazeboEnvironment::drawPlane(const Affine3d&, float, float, const boost::multi_array<float, 3ul>&)’:
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:285:3: warning: no return statement in function returning non-void [-Wreturn-type]
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp: In member function ‘virtual Eigen::Affine3d kenv::GazeboObject::getTransform() const’:
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:168:3: warning: control reaches end of non-void function [-Wreturn-type]
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp: In member function ‘gazebo::physics::ModelPtr kenv::GazeboObject::getModelPtr() const’:
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:99:3: warning: control reaches end of non-void function [-Wreturn-type]
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp: In member function ‘virtual kenv::AlignedBox3d kenv::GazeboLink::computeLocalAABB()’:
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:51:3: warning: control reaches end of non-void function [-Wreturn-type]
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp: In member function ‘virtual Eigen::Affine3d kenv::GazeboLink::getTransform() const’:
-  /home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/src/gz_kenv.cpp:42:3: warning: control reaches end of non-void function [-Wreturn-type]
-  make[3]: *** [CMakeFiles/gz_kenv.dir/src/gz_kenv.o] Error 1
-  make[3]: Leaving directory `/home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/build'
-  make[2]: *** [CMakeFiles/gz_kenv.dir/all] Error 2
-  make[2]: Leaving directory `/home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/build'
-  make[1]: *** [all] Error 2
-  make[1]: Leaving directory `/home/vsunder/Herb/vsunder/Gazebo_ws/src/gz_kenv/build'
--------------------------------------------------------------------------------}
-[ rosmake ] Output from build of package gz_kenv written to:
-[ rosmake ]    /home/vsunder/.ros/rosmake/rosmake_output-20140221-134320/gz_kenv/build_output.log
-[rosmake-0] Finished <<< gz_kenv [FAIL] [ 5.16 seconds ]                        
-[ rosmake ] Halting due to failure in package gz_kenv. 
-[ rosmake ] Waiting for other threads to complete.
-[ rosmake ] Results:                                                            
-[ rosmake ] Built 32 packages with 1 failures.                                  
-[ rosmake ] Summary output to directory                                         
-[ rosmake ] /home/vsunder/.ros/rosmake/rosmake_output-20140221-134320           
