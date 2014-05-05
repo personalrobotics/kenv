@@ -54,7 +54,10 @@ void Quasistatic_World_Plugin::Load(physics::WorldPtr _parent, sdf::ElementPtr _
   pusher_vel[1] = 0;
   pusher_vel[2] = 0;
   /* Set up phyiscs Engine */
+
   engine = this->world->GetPhysicsEngine();
+  engine->SetGravity(math::Vector3(0,0,0));
+
   engine->SetRealTimeUpdateRate(1000000000);
   engine->SetMaxStepSize(.001);
 
@@ -64,10 +67,8 @@ void Quasistatic_World_Plugin::Load(physics::WorldPtr _parent, sdf::ElementPtr _
   /* Listen to 'step' events */
   this->updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&Quasistatic_World_Plugin::OnUpdate, this, _1));
   world->EnableAllModels();
-  engine->SetGravity(math::Vector3(0,0,0));
-  world->SetPaused(true);
+  // world->SetPaused(true);
 }
-
 
 //Note that this implies that that only one object can be updated at a time
 void Quasistatic_World_Plugin::OnUpdate(const common::UpdateInfo & /*_info*/){
@@ -82,41 +83,65 @@ void Quasistatic_World_Plugin::OnUpdate(const common::UpdateInfo & /*_info*/){
         pushee_pool.push_back(this->world->GetModels().at(i+2));
       }
     }
-    pusher = this->world->GetModel("pusher_box");
+    pusher = this->world->GetModel("Hand");
+      math::Vector3 trans(0,0,.5);
+    math::Quaternion rot(0,1,0,cos(M_PI/4));
+    math::Pose p(trans,rot);
+    pusher->SetRelativePose(p);
+    
     objects_loaded = true;
   }
-    
-
+  math::Pose p = pusher->GetRelativePose();
+  math::Vector3 vp = p.pos;
+  math::Vector3 new_pos(vp.x,vp.y, .5);
+  math::Quaternion rot(0,1,0,cos(M_PI/4));
+  math::Pose np(new_pos, rot);
+  pusher->SetRelativePose(np); 
+  physics::Joint_V jv = pusher->GetJoints();
+  for(unsigned int i = 0; i < pusher->GetJointCount(); i++)
+  {
+    physics::JointPtr j = jv.at(i);
+    j->Reset();
+  } 
   has_contact = check_pusher_contact(); 
 
   if(has_contact){
     //SET UP CONTROLS
+     std::cout << "Contact\n";
      double mu = 0.5;
      double c = 0.5;
-     Eigen::Vector2d v(pusher_vel[0],pusher_vel[1]);
-     quasistatic_pushing::Action a(v, 0.0);
-     simulator->Simulate(kenv_world->getObject(this->pusher->GetName()), 
-                                    kenv_world->getObject(this->cur_pushee->GetName()),  a, mu, c);
+
+     math::Vector3 vv = pusher->GetRelativeLinearVel();
+     Eigen::Vector2d v(vv.x,vv.y);
+     quasistatic_pushing::Action a(v, 0.0,.001);
+     simulator->Simulate_Step(kenv_world->getObject(this->pusher->GetName()), 
+                                    kenv_world->getObject(this->cur_pushee->GetName()),  a, mu, c, false);
 
      
      math::Pose pose = this->pusher->GetRelativePose();
      math::Vector3 trans = pose.pos;
-     printf("Quasistatic %f, %f, %f\n", trans.x, trans.y, trans.z);
      set_ode(pusher, true);
      set_ode(cur_pushee, true);
      this->pusher->SetAngularVel(math::Vector3(0,0,0));
-
+     
 
   } else {
+     std::cout << "No Contact\n";
      math::Pose pose = this->pusher->GetRelativePose();
      math::Vector3 trans = pose.pos;
-     printf("Gazebo %f, %f, %f\n", trans.x, trans.y, trans.z);
     if(cur_pushee_set){
-      set_ode(pusher, true);
-      set_ode(cur_pushee, true);
+      std::cout << "Stop Pushee\n";
+       this->cur_pushee->SetLinearVel(math::Vector3(0,0,0));
+       this->cur_pushee->SetAngularVel(math::Vector3(0,0,0));
     }
+    //Comment this out when integrating with state estimator
+
     this->pusher->SetLinearVel(math::Vector3(pusher_vel[0],pusher_vel[1], pusher_vel[2]));
     this->pusher->SetAngularVel(math::Vector3(0,0,0));
+
+    //THIS IS FOR STATE ESTIMATOR
+    // this->pusher->SetLinearVel(this->pusher->GetRelativeLinearVel());
+    // this->pusher->SetAngularVel(this->pusher->GetRelativeAngularVel());
   }
   ros::spinOnce();
 }
@@ -126,12 +151,15 @@ bool Quasistatic_World_Plugin::check_pusher_contact(){
   // std::cout << "Checking Pusher Contacts\n";
   std::vector<physics::Contact*> contacts = this->contact_manager->GetContacts();
   // std::cout << "num contacts " << contacts.size() << '\n';
-  for(int i = 0; i < contacts.size(); i++){        
+
+  for(int i = 0; i < this->contact_manager->GetContactCount(); i++){        
     physics::Collision* collision1 = contacts.at(i)->collision1;
     physics::Collision* collision2 = contacts.at(i)->collision2;
     std::string name1 = collision1->GetModel()->GetName();
     std::string name2 = collision2->GetModel()->GetName();
     std::string pusher_name = pusher->GetName();
+
+    std::cout << "Collision: " << name1 << "," << name2 << "\n";
     // std::cout << "Check pusher has collided\n";
     if(name1 == "ground_plane" || 
        name2 == "ground_plane")
@@ -166,8 +194,9 @@ void Quasistatic_World_Plugin::load_objects(){
   /* TODO load each sdf into the world  */
   
   /* Test Objects */
-  load_object("../models/pusher_box.model");
-  load_object("../models/pushee_box.model");
+  load_object("/home/vsunder/.gazebo/models/bh280_standalone/bh280_standalone.model");
+  // load_object("/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/models/pusher_box.model");
+  load_object("/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/models/pushee_box.model");
 
 }
 void Quasistatic_World_Plugin::load_object(std::string filename){
@@ -181,12 +210,11 @@ void Quasistatic_World_Plugin::load_object(std::string filename){
   model_file.seekg(0, std::ios::beg);
   
   model_sdf.assign(std::istreambuf_iterator<char>(model_file),
-		    std::istreambuf_iterator<char>());
-		    
+        std::istreambuf_iterator<char>());
+        
   model.SetFromString(model_sdf);
   world->InsertModelSDF(model);
 }
-
 /* check if two pushees have contact while connected */
 void Quasistatic_World_Plugin::check_interpushee(physics::ModelPtr pushee){
   std::vector<physics::Contact*> contacts = contact_manager->GetContacts();
