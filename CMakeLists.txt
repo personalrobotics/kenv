@@ -42,8 +42,18 @@ include_directories(${PROJECT_SOURCE_DIR}/include/gz_kenv)
 
 
 rosbuild_add_library(gz_kenv SHARED src/gz_kenv.cpp)
-target_link_libraries(gz_kenv yaml-cpp ${GAZEBO_LIBRARIES})
+target_link_libraries(gz_kenv yaml-cpp geos ${GAZEBO_LIBRARIES})
 set_target_properties(gz_kenv PROPERTIES COMPILE_FLAGS -std=c++0x)
+rosbuild_link_boost(gz_kenv system)
 
-
+rosbuild_add_library(gz_kenv_ext
+    src/python/python.cpp
+    src/python/python_GazeboEnvironment.cpp
+)
+rosbuild_link_boost(gz_kenv_ext python)
+target_link_libraries(gz_kenv_ext kenv gz_kenv)
+set_target_properties(gz_kenv_ext PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/pythonsrc
+    PREFIX ""
+)
 
