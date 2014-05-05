@@ -90,6 +90,7 @@ public:
 
     virtual Object::Ptr createObject(std::string const &type, std::string const &name, bool anonymous = false);
     virtual void remove(Object::Ptr object);
+    virtual void runWorld(int steps);
 
     virtual Handle drawLine(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
                             double width, Eigen::Vector4d const &color);
@@ -110,22 +111,9 @@ private:
     physics::WorldPtr env_;
     std::map<std::string, std::string> types_;
     std::map<physics::ModelPtr, GazeboObject::Ptr> objects_;
-
     bool addObject(GazeboObject::Ptr object, std::string const name, bool anonymous);
 };
 
-// class GazeboCollisionChecker : virtual public checkCollisionChecker()
-// {
-// public:
-//   typedef boost::shared_ptr<GazeboCollisionChecker> Ptr;
-//   typedef boost::shared_ptr<GazeboCollisionChecker const> ConstPtr;
-
-//   virtual bool checkCollision(Object::Ptr obj1, Object::Ptr oj2,
-//                                 std::vector<Contact> *contacts = NULL,
-//                                 std::vector<std::pair<Link::Ptr, Link::Ptr> > *links = NULL) const;
-// private:
-//   GazeboEnvironment evn_;
-// };
 
 };
 

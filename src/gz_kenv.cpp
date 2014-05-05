@@ -259,6 +259,10 @@ namespace kenv {
   {
     return;
   }
+  void GazeboEnvironment::runWorld(int steps)
+  {
+    gazebo::runWorld(env_,steps);
+  }
 
   boost::shared_ptr<void> GazeboEnvironment::drawLine(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
                                                   double width, Eigen::Vector4d const &color)
