@@ -194,10 +194,9 @@ void Quasistatic_World_Plugin::load_objects(){
   /* TODO load each sdf into the world  */
   
   /* Test Objects */
-  load_object("/home/vsunder/.gazebo/models/bh280_standalone/bh280_standalone.model");
-  // load_object("/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/models/pusher_box.model");
-  load_object("/home/vsunder/Herb/vsunder/Gazebo_ws/src/gazebo_push_grasp_sim/models/pushee_box.model");
-
+  // TODO: Load these objects with kenv.
+  load_object("/homes/mkoval/ros/gazebo_push_grasp_sim/models/bh280_standalone.model");
+  load_object("/homes/mkoval/ros/gazebo_push_grasp_sim/models/pushee_box.model");
 }
 void Quasistatic_World_Plugin::load_object(std::string filename){
   std::ifstream model_file;
