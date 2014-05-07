@@ -13,6 +13,7 @@
   <depend package="roscpp"/>
   <depend package="kenv"/>
  <export>
+   <python path="${prefix}/pythonsrc"/>
    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lgz_kenv"/>
  </export>
 </package>

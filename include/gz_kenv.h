@@ -85,9 +85,9 @@ public:
     GazeboEnvironment(void);
     GazeboEnvironment(physics::WorldPtr world);
     physics::WorldPtr getGazeboEnvironment(void);
+    virtual void runWorld(int steps);
     
     virtual Object::Ptr getObject(std::string const &name);
-
     virtual Object::Ptr createObject(std::string const &type, std::string const &name, bool anonymous = false);
     virtual void remove(Object::Ptr object);
 
