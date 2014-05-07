@@ -8,7 +8,6 @@
 #include "ros/ros.h"
 #include "gz_kenv/gz_kenv.h"
 #include "kenv/Environment.h"
-#include "kenv/CollisionChecker.h"
 #include "quasistatic_pushing/QuasistaticPushingModel.h"
 
 namespace gazebo
@@ -29,22 +28,17 @@ namespace gazebo
       
 
       /* ROS Stuff */
-      ros::NodeHandle* node;
-
-      bool simStarted;
-      bool has_contact;
-      int numPushees;
-      
+      bool has_contact_;
       
       /* Pusher Initial Conditions */
-      double pusher_vel[3];
+      double pusher_vel_[3];
       
       /* Gazebo entities */
-      event::ConnectionPtr updateConnection;      
+      event::ConnectionPtr update_connection_;      
       physics::WorldPtr world;
       physics::PhysicsEnginePtr engine;
-      physics::ContactManager* contact_manager;
-      physics::Model_V pushee_pool;
+      physics::ContactManager* contact_manager_;
+      physics::Model_V pushee_pool_;
       physics::ModelPtr pusher;
       physics::ModelPtr cur_pushee;
 
@@ -53,10 +47,9 @@ namespace gazebo
       kenv::GazeboEnvironment::Ptr kenv_world;
 
       /* Quasistatic Pushing */
-      kenv::DefaultCollisionChecker::Ptr collision_checker;
-      quasistatic_pushing::QuasistaticPushingModel::Ptr simulator;
+      quasistatic_pushing::QuasistaticPushingModel::Ptr simulator_;
 
-      bool objects_loaded;
+      bool objects_loaded_;
       bool cur_pushee_set;
   };
 };
