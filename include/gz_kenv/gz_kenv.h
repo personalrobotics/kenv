@@ -82,8 +82,9 @@ public:
     typedef boost::shared_ptr<GazeboEnvironment> Ptr;
     typedef boost::shared_ptr<GazeboEnvironment const> ConstPtr;
     
-    GazeboEnvironment(void);
-    GazeboEnvironment(physics::WorldPtr world);
+    GazeboEnvironment();
+    explicit GazeboEnvironment(std::string const &path);
+    explicit GazeboEnvironment(physics::WorldPtr world);
     physics::WorldPtr getGazeboEnvironment(void);
     
     virtual Object::Ptr getObject(std::string const &name);

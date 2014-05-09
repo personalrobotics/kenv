@@ -3,6 +3,7 @@
 #include <boost/assert.hpp>
 #include <boost/assign/std/vector.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/typeof/typeof.hpp>
@@ -232,7 +233,16 @@ namespace kenv {
   {
     env_ = gazebo_env;
   }
-  
+
+  GazeboEnvironment::GazeboEnvironment(std::string const &path)
+  {
+    env_ = gazebo::loadWorld(path);
+    if (!env_) {
+      throw std::runtime_error(boost::str(boost::format("Loading world [%s] failed.") % path));
+    }
+    std::cout << "Successfully created world." << std::endl;
+    runWorld(1);
+  }
 
   Object::Ptr GazeboEnvironment::getObject(std::string const &name)
   {
@@ -267,34 +277,38 @@ namespace kenv {
   boost::shared_ptr<void> GazeboEnvironment::drawLine(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
                                                   double width, Eigen::Vector4d const &color)
   {
+    throw std::runtime_error("not implemented");
   }
 
   boost::shared_ptr<void> GazeboEnvironment::drawLineStrip(std::vector<Eigen::Vector3d> const &points,
                                                        double width, Eigen::Vector4d const &color)
   {
+    throw std::runtime_error("not implemented");
   }
 
   boost::shared_ptr<void> GazeboEnvironment::drawLineList(std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d> > const &lines,
                                                       double width, Eigen::Vector4d const &color)
   {
+    throw std::runtime_error("not implemented");
   }
-
 
   boost::shared_ptr<void> GazeboEnvironment::drawArrow(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
                                                    double width, Eigen::Vector4d const &color)
   {
-    
+    throw std::runtime_error("not implemented");
   }
 
   boost::shared_ptr<void> GazeboEnvironment::drawPoints(std::vector<Eigen::Vector3d> const &points,
                                                     float point_size, Eigen::Vector4d const &color)
   {
+    throw std::runtime_error("not implemented");
   }
 
   boost::shared_ptr<void> GazeboEnvironment::drawPlane(Eigen::Affine3d const &origin,
                                                    float width, float height,
                                                    boost::multi_array<float, 3> const &texture)
   {
+    throw std::runtime_error("not implemented");
   }
 
   physics::WorldPtr GazeboEnvironment::getGazeboEnvironment(void)
