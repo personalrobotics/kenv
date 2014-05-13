@@ -52,7 +52,7 @@ namespace kenv {
   }
   
   AlignedBox3d GazeboLink::computeLocalAABB() {
-	 return AlignedBox3d();
+    throw std::runtime_error("not implemented");
   }
   
   //Gazebo Model
@@ -95,7 +95,7 @@ namespace kenv {
 
   std::string GazeboObject::getKinematicsGeometryHash(void) const
   {
-    return "";//Doesnt appear to be useful
+    throw std::runtime_error("not implemented");
   }
 
   physics::ModelPtr GazeboObject::getModelPtr(void) const
@@ -164,7 +164,7 @@ namespace kenv {
 
   void GazeboObject::setVisible(bool flag)
   {
-    return; 
+    throw std::runtime_error("not implemented");
   }
 
   Eigen::Affine3d GazeboObject::getTransform(void) const
@@ -183,18 +183,17 @@ namespace kenv {
 
   AlignedBox3d GazeboObject::getAABB(void) const
   {
-    AlignedBox3d b; //Dummy function
-    return b;
+    throw std::runtime_error("not implemented");
   }
 
   void GazeboObject::setTransparency(double x)
   {
-    return;
+    throw std::runtime_error("not implemented");
   }
 
   void GazeboObject::setColor(Eigen::Vector4d const &color)
   {
-    return;
+    throw std::runtime_error("not implemented");
   }
 
   std::vector<Link::Ptr> GazeboObject::getLinks(void) const
@@ -217,12 +216,12 @@ namespace kenv {
 
   Eigen::VectorXd GazeboObject::getDOFValues(void) const
   {
-    return Eigen::VectorXd();
+    throw std::runtime_error("not implemented");
   }
 
   void GazeboObject::setDOFValues(Eigen::VectorXd const &dof_values)
   {
-    return;
+    throw std::runtime_error("not implemented");
   }
 
 
