@@ -38,6 +38,8 @@ Quasistatic_World_Plugin::Quasistatic_World_Plugin()
   auto collision_checker = boost::make_shared<kenv::DefaultCollisionChecker>();
   simulator_ = boost::make_shared<quasistatic_pushing::QuasistaticPushingModel>(
     collision_checker, .0001,.0001);
+
+  // Add the "quasistatic" flag for models.
 }
 
 void Quasistatic_World_Plugin::Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf){
@@ -194,25 +196,37 @@ void Quasistatic_World_Plugin::load_objects(){
   
   /* Test Objects */
   // TODO: Load these objects with kenv.
-  load_object("/homes/mkoval/ros/gazebo_push_grasp_sim/models/bh280_standalone.model");
-  load_object("/homes/mkoval/ros/gazebo_push_grasp_sim/models/pushee_box.model");
+  
+#if 0
+  world->InsertModelFile("model://bh280");
+  physics::ModelPtr pusher = world->GetModel("bh280");
+#endif
+
+  physics::ModelPtr pusher = load_object("model://bh280", "pusher");
+  physics::ModelPtr pushee = load_object("model://bh280", "pushee");
+  //physics::ModelPtr pushee = load_object("/homes/mkoval/ros/gazebo_push_grasp_sim/models/pushee_box.model", "pushee");
+  active_models_.insert(pusher);
+  active_models_.insert(pushee);
 }
 
-void Quasistatic_World_Plugin::load_object(std::string filename){
-  std::ifstream model_file;
-  model_file.open(filename.c_str());
-  
-  std::string model_sdf;
+physics::ModelPtr Quasistatic_World_Plugin::load_object(std::string const &filename,
+                                                        std::string const &name){
+  // Resolve the SDF filename from a model:/// path.
+  // TODO: Only do this if the URI starts with model://.
+  std::string const sdf_filename = common::ModelDatabase::Instance()->GetModelFile(filename);
+
+  // Load the SDF file.
   sdf::SDF model;
-  model_file.seekg(0, std::ios::end);   
-  model_sdf.reserve(model_file.tellg());
-  model_file.seekg(0, std::ios::beg);
-  
+  std::string model_sdf;
+  std::ifstream model_file(filename.c_str());
   model_sdf.assign(std::istreambuf_iterator<char>(model_file),
-        std::istreambuf_iterator<char>());
-        
+                   std::istreambuf_iterator<char>());
   model.SetFromString(model_sdf);
+
+  // Set the model's name and add it to the world.
+  model.root->GetFirstElement()->GetAttribute("name")->Set(name);
   world->InsertModelSDF(model);
+  return world->GetModel(name);
 }
 
 /* check if two pushees have contact while connected */

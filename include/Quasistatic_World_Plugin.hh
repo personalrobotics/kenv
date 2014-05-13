@@ -21,7 +21,7 @@ namespace gazebo
   
     private:
       void load_objects();
-      void load_object(std::string filename);
+      physics::ModelPtr load_object(std::string const &filename, std::string const &name);
       void check_interpushee(physics::ModelPtr pushee);
       bool check_pusher_contact();
       void set_ode(physics::ModelPtr m, bool on);
@@ -31,6 +31,8 @@ namespace gazebo
       bool has_contact_;
       
       /* Pusher Initial Conditions */
+      // TODO: This set should store weak pointers.
+      std::set<physics::ModelPtr> active_models_;
       double pusher_vel_[3];
       
       /* Gazebo entities */
