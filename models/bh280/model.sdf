@@ -203,7 +203,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file://meshes/finger1_0_collision.STL</uri>
+            <uri>file://meshes/finger0_0_collision.STL</uri>
           </mesh>
         </geometry>
       </collision>
@@ -212,7 +212,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file://meshes/finger1_0.STL</uri>
+            <uri>file://meshes/finger0_0.STL</uri>
           </mesh>
         </geometry>
       </visual>
@@ -252,7 +252,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file://meshes/finger1_1_collision.STL</uri>
+            <uri>file://meshes/finger0_1_collision.STL</uri>
           </mesh>
         </geometry>
       </collision>
@@ -261,7 +261,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file://meshes/finger1_1.STL</uri>
+            <uri>file://meshes/finger0_1.STL</uri>
           </mesh>
         </geometry>
       </visual>
@@ -301,7 +301,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file://meshes/finger1_2_collision.STL</uri>
+            <uri>file://meshes/finger0_2_collision.STL</uri>
           </mesh>
         </geometry>
       </collision>
@@ -310,7 +310,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file://meshes/finger1_2.STL</uri>
+            <uri>file://meshes/finger0_2.STL</uri>
           </mesh>
         </geometry>
       </visual>
@@ -350,7 +350,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file://meshes/finger2_1_collision.STL</uri>
+            <uri>file://meshes/finger0_1_collision.STL</uri>
           </mesh>
         </geometry>
       </collision>
@@ -359,7 +359,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file://meshes/finger2_1.STL</uri>
+            <uri>file://meshes/finger0_1.STL</uri>
           </mesh>
         </geometry>
       </visual>
@@ -399,7 +399,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file://meshes/finger2_2_collision.STL</uri>
+            <uri>file://meshes/finger0_2_collision.STL</uri>
           </mesh>
         </geometry>
       </collision>
@@ -408,7 +408,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file://meshes/finger2_2.STL</uri>
+            <uri>file://meshes/finger0_2.STL</uri>
           </mesh>
         </geometry>
       </visual>
