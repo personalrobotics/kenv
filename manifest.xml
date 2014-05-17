@@ -9,10 +9,8 @@
     <rosdep name="cgal"/>
     <rosdep name="eigen"/>
     <!--<rosdep name="geos"/>-->
-    <rosdep name="sfml-dev"/>
     <rosdep name="yaml-cpp"/>
     <depend package="kenv"/>
-    <depend package="or_kenv"/>
     <depend package="openrave"/>
     <depend package="quasistatic_pushing"/>
     <export>
