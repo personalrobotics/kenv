@@ -6,18 +6,14 @@
 #include <boost/python/tuple.hpp> 
 #include "python_tuple_helpers.h"
 
-namespace util {
+namespace kenv_util {
 
 template <class T>
 struct pickle_init_wrapper : public boost::python::pickle_suite {
     pickle_init_wrapper()
     {
-        bool &flag = util::tuple_converter<typename T::arguments_tuple>::registered;
-        if (!flag) {
-            boost::python::to_python_converter<typename T::arguments_tuple,
-                                               util::tuple_converter<typename T::arguments_tuple> >(); 
-            flag = true;
-        }
+        boost::python::to_python_converter<typename T::arguments_tuple,
+                                           kenv_util::tuple_converter<typename T::arguments_tuple> >(); 
     }
 
     static boost::python::tuple getinitargs(T const &instance)

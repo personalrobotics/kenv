@@ -1,5 +1,5 @@
 #include <boost/python.hpp>
-#include <boost/numpy/eigen_numpy.h>
+#include <boost/eigen_numpy.h>
 
 using namespace boost::python;
 

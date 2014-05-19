@@ -5,7 +5,7 @@
 #include <boost/python/module.hpp> 
 #include <boost/python/refcount.hpp> 
 
-namespace util {
+namespace kenv_util {
 
 inline boost::python::tuple tuple_to_python(boost::tuples::null_type) 
 { 
@@ -28,12 +28,7 @@ struct tuple_converter
     { 
         return boost::python::incref(tuple_to_python(x).ptr()); 
     } 
-
-    static bool registered;
 }; 
-
-
-template <class T> bool tuple_converter<T>::registered = false;
 
 }
 

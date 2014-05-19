@@ -128,6 +128,7 @@ public:
     virtual Object::Ptr getObject(std::string const &name) = 0;
     virtual Object::Ptr createObject(std::string const &type, std::string const &name, bool anonymous = false) = 0;
     virtual void remove(Object::Ptr object) = 0;
+    virtual void runWorld(int steps) = 0;
 
     virtual Handle drawLine(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
                             double width, Eigen::Vector4d const &color) = 0;

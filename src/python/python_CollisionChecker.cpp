@@ -14,6 +14,6 @@ void python_CollisionChecker()
 
     class_<DefaultCollisionChecker, bases<CollisionChecker>,
            DefaultCollisionChecker::Ptr>("DefaultCollisionChecker")
-        .def_pickle(util::empty_pickle_wrapper<CollisionChecker>())
+        .def_pickle(kenv_util::empty_pickle_wrapper<CollisionChecker>())
         ;
 }

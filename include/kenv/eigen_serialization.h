@@ -1,5 +1,6 @@
 #ifndef EIGEN_SERIALIZATION_H_
 #define EIGEN_SERIALIZATION_H_
+#define EIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET
 #include <boost/foreach.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>

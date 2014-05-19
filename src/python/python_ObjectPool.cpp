@@ -9,14 +9,14 @@ void python_ObjectPool()
 {
     class_<ObjectPool, boost::noncopyable, ObjectPool::Ptr>("ObjectPool",
             init<kenv::Environment::Ptr, std::string>())
-        .def_pickle(util::pickle_init_wrapper<ObjectPool>())
+        .def_pickle(kenv_util::pickle_init_wrapper<ObjectPool>())
         .def("Create", &ObjectPool::Create)
         .def("__len__", &ObjectPool::size)
         ;
 
     class_<MultiObjectPool, boost::noncopyable, MultiObjectPool::Ptr>("MultiObjectPool",
             init<kenv::Environment::Ptr>())
-        .def_pickle(util::pickle_init_wrapper<MultiObjectPool>())
+        .def_pickle(kenv_util::pickle_init_wrapper<MultiObjectPool>())
         .def("Create", &MultiObjectPool::Create)
         .def("__len__", &MultiObjectPool::size)
         ;
