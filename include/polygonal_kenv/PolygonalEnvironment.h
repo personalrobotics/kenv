@@ -128,6 +128,7 @@ public:
     virtual std::vector<Object::Ptr> getObjects() const;
     virtual Object::Ptr createObject(std::string const &type, std::string const &name, bool anonymous = false);
     virtual void remove(Object::Ptr object);
+    virtual void runWorld(int steps);
 
     virtual Handle drawGeometry(geos::geom::Geometry *geom, Eigen::Vector4d const &color);
     virtual Handle drawLine(Eigen::Vector3d const &start, Eigen::Vector3d const &end,

@@ -481,6 +481,10 @@ PolygonalEnvironment::PolygonalEnvironment()
 {
 }
 
+void PolygonalEnvironment::runWorld(int steps)
+{
+}
+
 Object::Ptr PolygonalEnvironment::getObject(std::string const &name)
 {
     BOOST_AUTO(it, objects_.find(name));

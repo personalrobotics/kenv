@@ -8,11 +8,9 @@
     <author>Michael Koval</author>
     <rosdep name="cgal"/>
     <rosdep name="eigen"/>
-    <!--<rosdep name="geos"/>-->
     <rosdep name="yaml-cpp"/>
+    <!-- TODO: This should also depend on the "geos" system library. -->
     <depend package="kenv"/>
-    <depend package="openrave"/>
-    <depend package="quasistatic_pushing"/>
     <export>
         <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lpolygonal_kenv"/>
         <python path="${prefix}/pythonsrc"/>
