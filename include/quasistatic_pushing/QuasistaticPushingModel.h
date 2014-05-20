@@ -22,10 +22,13 @@ struct ContactMode {
 class Action {
 public:
     Action();
-    Action(Eigen::Vector2d const &linear_velocity, double const &angular_velocity);
+    Action(Eigen::Vector2d const &linear_displacement, double const &angular_displacement, double time);
 
     void apply(Eigen::Affine3d &pose) const;
     void apply(kenv::Object::Ptr target) const;
+
+    Eigen::Vector2d linear_displacement() const;
+    double angular_displacement() const;
 
     Eigen::Vector2d linear_velocity() const;
     void set_linear_velocity(Eigen::Vector2d const &linear_velocity);
@@ -33,12 +36,16 @@ public:
     double angular_velocity() const;
     void set_angular_velocity(double angular_velocity);
 
+    double get_time();
+    void set_time(double t);
+
     Action &operator*=(double scale);
     Action &operator/=(double scale);
 
 private:
     Eigen::Vector2d linear_velocity_;
     double angular_velocity_;
+    double t_;
 };
 
 Action operator*(Action const &action, double scale);
@@ -55,15 +62,20 @@ public:
 
     QuasistaticPushingModel(kenv::CollisionChecker::Ptr collision_checker,
                             double step_meters, double step_radians);
-    void Simulate(kenv::Object::Ptr pusher, kenv::Object::Ptr pushee,
-                  Action const &action, double mu, double c) const;
+    void Simulate_Step(kenv::Object::Ptr pusher, kenv::Object::Ptr pushee,
+          Action const &action, double mu, double c, bool reset);
     void MoveHand(kenv::Object::Ptr hand, Action const &vp) const;
+    void Simulate(kenv::Object::Ptr pusher, kenv::Object::Ptr pushee,
+          Action const &action, double mu, double c) const;
 
 private:
     kenv::CollisionChecker::Ptr collision_checker_;
     double step_meters_, step_radians_;
     size_t max_iterations_;
     double epsilon_;
+    int iteration_;
+    int step_;
+    bool in_contact;
 
 
     bool pushObject(kenv::Object::Ptr hand, kenv::Object::Ptr object,

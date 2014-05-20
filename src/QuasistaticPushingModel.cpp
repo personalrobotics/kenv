@@ -18,19 +18,19 @@ namespace quasistatic_pushing {
 Action::Action()
     : linear_velocity_(0, 0)
     , angular_velocity_(0)
-{
-}
+{}
 
-Action::Action(Eigen::Vector2d const &linear_velocity, double const &angular_velocity)
-    : linear_velocity_(linear_velocity)
-    , angular_velocity_(angular_velocity)
+Action::Action(Eigen::Vector2d const &linear_displacement, double const &angular_displacement, double t)
+    : t_(t)
 {
+    angular_velocity_ = angular_displacement/t;
+    linear_velocity_ = linear_displacement/t;
 }
 
 void Action::apply(Eigen::Affine3d &pose) const
 {
-    pose.pretranslate(Eigen::Vector3d(linear_velocity_[0], linear_velocity_[1], 0));
-    pose.prerotate(Eigen::AngleAxisd(angular_velocity_, Eigen::Vector3d::UnitZ()));
+    pose.pretranslate(Eigen::Vector3d(linear_velocity_[0]*t_, linear_velocity_[1]*t_, 0));
+    pose.prerotate(Eigen::AngleAxisd(angular_velocity_*t_, Eigen::Vector3d::UnitZ()));
 }
 
 void Action::apply(kenv::Object::Ptr target) const
@@ -45,9 +45,27 @@ Eigen::Vector2d Action::linear_velocity() const
     return linear_velocity_;
 }
 
+Eigen::Vector2d Action::linear_displacement() const
+{
+    return linear_velocity_*t_;
+}
+double Action::angular_displacement() const
+{
+    return angular_velocity_*t_;
+}
+
 void Action::set_linear_velocity(Eigen::Vector2d const &linear_velocity)
 {
     linear_velocity_ = linear_velocity;
+}
+
+void Action::set_time(double t)
+{
+    t_ = t;
+}
+double Action::get_time()
+{
+    return t_;
 }
 
 double Action::angular_velocity() const
@@ -70,7 +88,7 @@ Action &Action::operator*=(double scale)
 Action &Action::operator/=(double scale)
 {
     BOOST_ASSERT(scale != 0);
-    linear_velocity_ /= scale;
+    linear_velocity_ /  scale;
     angular_velocity_ /= scale;
     return *this;
 }
@@ -101,18 +119,53 @@ QuasistaticPushingModel::QuasistaticPushingModel(kenv::CollisionChecker::Ptr col
     , max_iterations_(25)
     , epsilon_(1e-6)
 {
+    this->in_contact = false;
     BOOST_ASSERT(step_meters > 0 && step_radians > 0);
 }
 
-void QuasistaticPushingModel::Simulate(kenv::Object::Ptr pusher, kenv::Object::Ptr pushee,
-                                       Action const &action, double mu, double c) const
+void QuasistaticPushingModel::Simulate_Step(kenv::Object::Ptr pusher, kenv::Object::Ptr pushee,
+                                       Action const &action, double mu, double c,bool reset) 
 {
-    double const linear_scale = action.linear_velocity().norm() / step_meters_;
-    double const angular_scale =  action.angular_velocity() / step_radians_;
+    
+    double const linear_scale = action.linear_displacement().norm() / step_meters_;
+    double const angular_scale =  action.angular_displacement() / step_radians_;
     double const scale = std::max(linear_scale, angular_scale);
     int const num_steps = static_cast<int>(scale + 0.5);
     Action const step = action * (1.0 / scale);
+    if(reset || step_>num_steps)
+      step_ = 0;
+    if(step_ < num_steps)
+    {
+        Eigen::Affine3d original_pose = pushee->getTransform();
 
+        // Push the object until it leaves contact with the hand.
+        if(in_contact && iteration_ < max_iterations_)
+        {
+            in_contact = pushObject(pusher, pushee, step, mu, c);
+    
+        } else {
+        
+            // Give up and translate the object with the hand.
+            // FIXME: This is broken with non-zero angular velocities.
+            if (iteration_ == max_iterations_) {
+                original_pose.pretranslate(to3D(step.linear_displacement()));
+                pushee->setTransform(original_pose);
+            }
+            MoveHand(pusher, step);    
+        }
+    }
+    
+
+}
+void QuasistaticPushingModel::Simulate(kenv::Object::Ptr pusher, kenv::Object::Ptr pushee,
+                                       Action const &action, double mu, double c) const
+{
+   double const linear_scale = action.linear_displacement().norm() / step_meters_;
+    double const angular_scale =  action.angular_displacement() / step_radians_;
+    double const scale = std::max(linear_scale, angular_scale);
+    int const num_steps = static_cast<int>(scale + 0.5);
+    Action const step = action * (1.0 / scale);
+    kenv::Environment::Ptr env = pusher->getEnvironment(); 
     for (int i = 0; i < num_steps; ++i) {
         Eigen::Affine3d original_pose = pushee->getTransform();
 
@@ -121,18 +174,18 @@ void QuasistaticPushingModel::Simulate(kenv::Object::Ptr pusher, kenv::Object::P
         size_t iteration;
         for (iteration = 0; in_contact && iteration < max_iterations_; ++iteration) {
             in_contact = pushObject(pusher, pushee, step, mu, c);
+            env->runWorld(1);        
         }
 
         // Give up and translate the object with the hand.
-        // FIXME: This is broken with non-zero angular velocities.
         if (iteration == max_iterations_) {
-            original_pose.pretranslate(to3D(step.linear_velocity()));
+            original_pose.pretranslate(to3D(step.linear_displacement()));
             pushee->setTransform(original_pose);
         }
         MoveHand(pusher, step);
-    }
+        env->runWorld(1);
+    } 
 }
-
 void QuasistaticPushingModel::MoveHand(kenv::Object::Ptr hand, Action const &action) const
 {
     Eigen::Affine3d hand_pose = hand->getTransform();
@@ -159,9 +212,9 @@ bool QuasistaticPushingModel::pushObject(kenv::Object::Ptr hand, kenv::Object::P
 
         // Compute the instantaneous velocity at the contact location from the
         // hand's twist.
-        Eigen::Vector2d const vh_linear_world = step.linear_velocity();
+        Eigen::Vector2d const vh_linear_world = step.linear_displacement();
         Eigen::Vector2d const vh_linear_hand = Tenv_cof.matrix().inverse().block<2, 2>(0, 0) * vh_linear_world;
-        double const omega = step.angular_velocity();
+        double const omega = step.angular_displacement();
         Eigen::Vector2d const vp = vh_linear_hand + Eigen::Vector2d(r[1] * omega, -r[0] * omega);
 
         // Compute the twist and transform it back into the world frame.
