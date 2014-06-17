@@ -101,6 +101,10 @@ OREnvironment::OREnvironment(OpenRAVE::EnvironmentBasePtr or_env)
 {
 }
 
+void OREnvironment::runWorld(int)
+{
+}
+
 Object::Ptr OREnvironment::getObject(std::string const &name)
 {
     OpenRAVE::KinBodyPtr kinbody = env_->GetKinBody(name);

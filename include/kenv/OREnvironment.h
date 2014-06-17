@@ -13,7 +13,8 @@ class ORObject;
 
 class ORViewer : private boost::noncopyable {
 public:
-    typedef boost::shared_ptr<ORViewer> Ptr; typedef boost::shared_ptr<ORViewer const> ConstPtr;
+    typedef boost::shared_ptr<ORViewer> Ptr;
+    typedef boost::shared_ptr<ORViewer const> ConstPtr;
 
     ORViewer(OpenRAVE::EnvironmentBasePtr or_env);
     bool isOpen(void) const;
@@ -30,7 +31,8 @@ private:
 
 class ORLogger : public Logger {
 public:
-    virtual void debug(std::string const &msg); virtual void info(std::string const &msg);
+    virtual void debug(std::string const &msg);
+    virtual void info(std::string const &msg);
     virtual void warning(std::string const &msg);
     virtual void error(std::string const &msg);
     virtual void fatal(std::string const &msg);
@@ -38,8 +40,8 @@ public:
 
 class ORLink : virtual public Link {
 public:
-    typedef boost::shared_ptr<Link> Ptr;
-    typedef boost::shared_ptr<Link const> ConstPtr;
+    typedef boost::shared_ptr<ORLink> Ptr;
+    typedef boost::shared_ptr<ORLink const> ConstPtr;
 
     ORLink(boost::weak_ptr<ORObject> robot, OpenRAVE::KinBody::LinkPtr link);
     virtual Object::Ptr getObject(void) const;
@@ -108,6 +110,8 @@ public:
     OREnvironment(OpenRAVE::EnvironmentBasePtr or_env);
     OpenRAVE::EnvironmentBasePtr getOREnvironment(void) const;
     virtual Object::Ptr getObject(std::string const &name);
+
+    virtual void runWorld(int);
 
     virtual Object::Ptr createObject(std::string const &type, std::string const &name, bool anonymous = false);
     virtual void remove(Object::Ptr object);
