@@ -26,7 +26,6 @@ add_definitions(${EIGEN_DEFINITIONS})
 find_package(PythonLibs)
 include_directories (${PYTHON_INCLUDE_DIRS})
 
-
 find_package(Boost REQUIRED COMPONENTS system)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
