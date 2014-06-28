@@ -1,0 +1,17 @@
+<package>
+  <name>kenv</name>
+  <version>0.0.1</version>
+  <description>
+    Lightweight wrapper for kinematic planning environments.
+  </description>
+  <maintainer email="mkoval@cs.cmu.edu">Michael Koval</maintainer>
+  <author email="mkoval@cs.cmu.edu">Michael Koval</author>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>eigen</build_depend>
+  <build_depend>geos</build_depend>
+  <build_depend>boost</build_depend>
+  <run_depend>eigen</run_depend>
+  <run_depend>geos</run_depend>
+  <run_depend>boost</run_depend>
+</package>
