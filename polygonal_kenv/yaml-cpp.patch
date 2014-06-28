@@ -1,0 +1,43 @@
+diff -rupN yaml-cpp/conversion.h yaml-cpp.new/conversion.h
+--- yaml-cpp/conversion.h	2013-09-23 16:55:57.574660928 -0400
++++ yaml-cpp.new/conversion.h	2013-09-23 16:57:03.371003829 -0400
+@@ -14,6 +14,15 @@
+ 
+ namespace YAML
+ {
++	// traits for conversion
++	template<typename T>
++	struct is_scalar_convertible { enum { value = is_numeric<T>::value }; };
++	
++	template<> struct is_scalar_convertible<std::string> { enum { value = true }; };
++	template<> struct is_scalar_convertible<bool> { enum { value = true }; };
++	template<> struct is_scalar_convertible<_Null> { enum { value = true }; };
++	
++	// actual conversion
+ 	inline bool Convert(const std::string& input, std::string& output) {
+ 		output = input;
+ 		return true;
+diff -rupN yaml-cpp/node.h yaml-cpp.new/node.h
+--- yaml-cpp/node.h	2013-09-23 16:55:57.538660740 -0400
++++ yaml-cpp.new/node.h	2013-09-23 16:57:41.339201533 -0400
+@@ -66,7 +66,7 @@ namespace YAML
+ 		const T to() const;
+ 
+ 		template <typename T>
+-		friend YAML_CPP_API void operator >> (const Node& node, T& value);
++		friend YAML_CPP_API typename enable_if<is_scalar_convertible<T> >::type operator >> (const Node& node, T& value);
+ 
+ 		// retrieval for maps and sequences
+ 		template <typename T>
+diff -rupN yaml-cpp/nodeimpl.h yaml-cpp.new/nodeimpl.h
+--- yaml-cpp/nodeimpl.h	2013-09-23 16:55:57.574660928 -0400
++++ yaml-cpp.new/nodeimpl.h	2013-09-23 16:58:21.567410872 -0400
+@@ -20,7 +20,7 @@ namespace YAML
+ 	}
+ 
+ 	template <typename T>
+-	inline void operator >> (const Node& node, T& value) {
++	inline typename enable_if<is_scalar_convertible<T> >::type operator >> (const Node& node, T& value) {
+ 		if(!ConvertScalar(node, value))
+ 			throw InvalidScalar(node.m_mark);
+ 	}
