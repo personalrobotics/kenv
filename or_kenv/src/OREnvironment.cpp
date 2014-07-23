@@ -11,8 +11,8 @@
 #include <openrave-core.h>
 #include <openrave/openrave.h>
 #include <iostream>
-#include <kenv/OREnvironment.h>
-#include <kenv/or_conversions.h>
+#include "OREnvironment.h"
+#include "or_conversions.h"
 
 namespace kenv {
 

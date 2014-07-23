@@ -1,0 +1,14 @@
+<package>
+  <name>quasistatic_pushing</name>
+  <version>0.0.1</version>
+  <description>
+    Quasistatic pushing simulator.
+  </description>
+  <maintainer email="mkoval@cs.cmu.edu">Michael Koval</maintainer>
+  <author email="mkoval@cs.cmu.edu">Michael Koval</author>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>eigen</build_depend>
+  <build_depend>kenv</build_depend>
+  <run_depend>kenv</run_depend>
+</package>
