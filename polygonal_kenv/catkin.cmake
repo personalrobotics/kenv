@@ -38,6 +38,9 @@ add_library("${PROJECT_NAME}"
     src/CSpaceObstacle.cpp
 )
 target_link_libraries("${PROJECT_NAME}"
+    # TODO: Shouldn't CGAL_LIBRARIES contain this?
+    CGAL
+    # TODO: Figure out how to find GEOS in a portable way.
     geos
     ${catkin_LIBRARIES}
     ${CGAL_LIBRARIES}
