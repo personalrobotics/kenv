@@ -15,6 +15,9 @@ find_package(OpenRAVE REQUIRED)
 find_package(PythonLibs)
 pkg_check_modules(YamlCpp QUIET yaml-cpp)
 
+#message(STATUS "Found OpenRAVE at ${OpenRAVE_LIBRARY_DIRS}")
+message(STATUS "Found OpenRAVE at ${OpenRAVE_LIBRARY_DIRS}")
+
 # TODO: The headers should be in "or_kenv", not "kenv".
 include_directories(
     "${PROJECT_SOURCE_DIR}/include/kenv"
@@ -24,6 +27,14 @@ include_directories(
     ${PYTHON_INCLUDE_DIRS}
     ${OpenRAVE_INCLUDE_DIRS}
     ${YamlCpp_INCLUDE_DIRS}
+)
+link_directories(
+    ${catkin_LIBRARY_DIRS}
+    ${Boost_LIBRARY_DIRS}
+    ${EIGEN_LIBRARY_DIRS}
+    ${PYTHON_LIBRARY_DIRS}
+    ${OpenRAVE_LIBRARY_DIRS}
+    ${YamlCpp_LIBRARY_DIRS}
 )
 add_definitions(
     ${EIGEN_DEFINITIONS}
@@ -39,7 +50,7 @@ target_link_libraries("${PROJECT_NAME}"
     ${Boost_LIBRARIES}
     ${OpenRAVE_LIBRARIES}
     ${YamlCpp_LIBRARIES}
-    openrave0.9-core
+    "openrave${OpenRAVE_LIBRARY_SUFFIX}-core"
 )
 
 add_library("${PROJECT_NAME}_ext"
@@ -51,6 +62,7 @@ target_link_libraries("${PROJECT_NAME}_ext"
     boost_numpy_eigen
     ${Boost_LIBRARIES}
     ${OpenRAVE_LIBRARIES}
+    "openrave${OpenRAVE_LIBRARY_SUFFIX}-core"
 )
 set_target_properties("${PROJECT_NAME}_ext" PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/pythonsrc"
