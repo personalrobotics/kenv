@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+    <world name="Quasistatic Simulator Test">
+        <!--<include><uri>model://ground_plane</uri></include>-->
+        <include><uri>model://sun</uri></include>
+        <include>
+            <uri>model://box</uri>
+            <name>hand</name>
+            <pose>0 0 0 0 0 0</pose>
+        </include>
+        <include>
+            <uri>model://box</uri>
+            <name>object</name>
+            <pose>2 0.75 0 0 0 0</pose>
+        </include>
+        <plugin name="quasistatic_physics" filename="libquasistatic_world_plugin.so">
+            <pusher>hand</pusher>
+            <pushee mu="0.5" c="0.25">object</pushee>
+        </plugin>
+    </world>
+</sdf>
