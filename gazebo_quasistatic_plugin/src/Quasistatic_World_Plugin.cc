@@ -147,8 +147,9 @@ void Quasistatic_World_Plugin::OnUpdate(common::UpdateInfo const &info)
     return;
   }
 
-  bool  = get_pusher_contacts(); 
-
+   boost::unordered_map<physics::ModelPtr, physics::Contact> contacts = get_pusher_contacts(); 
+  
+  bool has_contact = contacts.size() == 0;
 
   if(has_contact){
     //SET UP CONTROLS
@@ -220,7 +221,7 @@ boost::unordered_map<physics::ModelPtr, physics::Contact> Quasistatic_World_Plug
     }
 
     // TODO: Do something with the contacts.
-    auto result = pusher_contacts.insert(std::pair(pushee, normalized_contact));
+    auto result = pusher_contacts.insert(std::pair<physics::ModelPtr, physics::Contact>(pushee, normalized_contact));
     BOOST_ASSERT(result.second);
   }
   return pusher_contacts;

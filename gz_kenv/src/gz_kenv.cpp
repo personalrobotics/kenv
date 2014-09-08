@@ -9,7 +9,7 @@
 #include <boost/typeof/typeof.hpp>
 #include <yaml-cpp/yaml.h>
 #include <yaml-cpp/parser.h>
-#include "gazebo/gazebo.hh"
+#include <gazebo/gazebo.hh>
 #include "gazebo/physics/physics.hh"
 #include "gazebo/common/common.hh"
 #include "sdf/sdf.hh"

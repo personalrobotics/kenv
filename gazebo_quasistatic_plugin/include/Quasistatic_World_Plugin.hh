@@ -23,6 +23,7 @@ namespace gazebo
       Quasistatic_World_Plugin();
       void Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf);
       void OnUpdate(const common::UpdateInfo & /*_info*/);
+      void setPusher(string name);
 
     private:
       boost::unordered_map<physics::ModelPtr, physics::Contact> get_pusher_contacts();

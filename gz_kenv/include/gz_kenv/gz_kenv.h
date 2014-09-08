@@ -7,7 +7,7 @@
 #include "gazebo/physics/physics.hh"
 #include "gazebo/common/common.hh"
 #include "sdf/sdf.hh"
-#include "kenv/Environment.h"
+#include <kenv/Environment.h>
 
 using namespace gazebo;
 
