@@ -1,0 +1,22 @@
+<package>
+  <name>gz_kenv</name>
+  <version>0.0.1</version>
+  <description>
+
+     gz_kenv 
+
+  </description>
+  <author>vsunder</author>
+  <maintainer email="vsunder@andrew.cmu.edu">vsunder</maintainer>
+  <license>BSD</license>
+  <url>http://ros.org/wiki/gz_kenv</url>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>eigen</build_depend>
+  <build_depend>kenv</build_depend>
+  <build_depend>boost</build_depend>
+  <run_depend>boost</run_depend>
+  <run_depend>kenv</run_depend>  
+  
+</package>
+
+

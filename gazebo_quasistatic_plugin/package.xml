@@ -1,0 +1,21 @@
+<package>
+  <name>gazebo_quasistatic_plugin</name>
+  <version>0.0.1</version>
+  <description>
+    quasistatic plugin for gazebo
+  </description>
+  <author>vsunder</author>
+  <maintainer email="vsunder@andrew.cmu.edu">vsunder</maintainer>
+  <license>BSD</license>
+  <url>http://ros.org/wiki/gazebo_quasistatic_plugin</url>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>eigen</build_depend>
+  <build_depend>kenv</build_depend>
+  <build_depend>boost</build_depend>
+  <build_depend>gz_kenv</build_depend>
+  <build_depend>quasistatic_pushing</build_depend>
+  <run_depend>kenv</run_depend>
+  <run_depend>gz_kenv</run_depend>
+  <run_depend>quasistatic_pushing</run_depend>
+
+</package>
