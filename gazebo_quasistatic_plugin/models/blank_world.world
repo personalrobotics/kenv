@@ -6,6 +6,6 @@
     </include>
 
     <include><uri>model://sun</uri></include>
-    <plugin name = "quasistatic_world" filename="libquasistatic_world_plugin.so"/>
+    <plugin name = "quasistatic_world" filename="libgazebo_quasistatic_plugin.so"/>
   </world>
 </sdf>

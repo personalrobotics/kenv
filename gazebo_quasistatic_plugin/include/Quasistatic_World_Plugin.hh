@@ -26,7 +26,8 @@ namespace gazebo
   class Quasistatic_World_Plugin : public WorldPlugin
   {
     transport::NodePtr node;
-    transport::SubscriberPtr assignmentSubscriber; 
+    transport::SubscriberPtr pusherAssignmentSubscriber; 
+    transport::SubscriberPtr pusheeAssignmentSubscriber;
     
     public:
       Quasistatic_World_Plugin();

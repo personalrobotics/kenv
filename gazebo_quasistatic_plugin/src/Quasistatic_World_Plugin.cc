@@ -33,6 +33,7 @@ GZ_REGISTER_WORLD_PLUGIN(Quasistatic_World_Plugin)
 
 Quasistatic_World_Plugin::Quasistatic_World_Plugin()
 {
+  std::cout << "Quasistatic Plugin Initializing";
   int argc = 0;
   ros::init(argc, NULL, "Quasistatic_World_Plugin");
   
@@ -44,9 +45,13 @@ Quasistatic_World_Plugin::Quasistatic_World_Plugin()
 }
 
 void Quasistatic_World_Plugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf){
+  std::cout << "Quasistatic Plugin Initializing";
+
   // Set up Transport Layer
   node = transport::NodePtr(new transport::Node());
-  assignmentSubscriber = node -> Subscribe("", &Quasistatic_World_Plugin::setPusher, this);
+  pusherAssignmentSubscriber = node -> Subscribe("quasistatic_set_pusher", &Quasistatic_World_Plugin::setPusher, this);
+  pusheeAssignmentSubscriber = node -> Subscribe("quasistatic_add_pushee", &Quasistatic_World_Plugin::addPushee, this);
+  
   world = parent;
   kenv_world = boost::make_shared<kenv::GazeboEnvironment>(world);
 
