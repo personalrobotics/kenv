@@ -9,6 +9,9 @@
 #include "gz_kenv/gz_kenv.h"
 #include "kenv/Environment.h"
 #include "quasistatic_pushing/QuasistaticPushingModel.h"
+#include "gazebo/transport/transport.hh"
+#include "set_pusher_request.pb.h"
+
 
 // TODO: This should be in a namespace.
 struct Pushee {
@@ -17,13 +20,17 @@ struct Pushee {
 
 namespace gazebo
 {
+  typedef const boost::shared_ptr<const set_pusher_request_msgs::msgs::SetPusherRequest> SetPusherRequestPtr; 
   class Quasistatic_World_Plugin : public WorldPlugin
   {
+    transport::NodePtr node;
+    transport::SubscriberPtr assignmentSubscriber; 
+    
     public:
       Quasistatic_World_Plugin();
       void Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf);
       void OnUpdate(const common::UpdateInfo & /*_info*/);
-      void setPusher(string name);
+      void setPusher(SetPusherRequestPtr &msg);     
 
     private:
       boost::unordered_map<physics::ModelPtr, physics::Contact> get_pusher_contacts();

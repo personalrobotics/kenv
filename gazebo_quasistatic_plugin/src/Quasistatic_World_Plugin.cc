@@ -24,8 +24,8 @@
 #include "kenv/CollisionChecker.h"
 #include "gz_kenv/gz_kenv.h"
 #include "quasistatic_pushing/QuasistaticPushingModel.h"
-
-
+#include "gazebo/transport/transport.hh"
+#include "set_pusher_request.pb.h"
 using namespace gazebo;
 
 GZ_REGISTER_WORLD_PLUGIN(Quasistatic_World_Plugin)
@@ -43,9 +43,14 @@ Quasistatic_World_Plugin::Quasistatic_World_Plugin()
 }
 
 void Quasistatic_World_Plugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf){
+  // Set up Transport Layer
+  node = transport::NodePtr(new transport::Node());
+  assignmentSubscriber = node -> Subscribe("", &Quasistatic_World_Plugin::setPusher, this);
   world = parent;
   kenv_world = boost::make_shared<kenv::GazeboEnvironment>(world);
-  
+
+
+/*  
   sdf::ElementPtr child_sdf = sdf->GetFirstElement();
   while (child_sdf) {
     std::string const child_name = child_sdf->GetName();
@@ -115,7 +120,7 @@ void Quasistatic_World_Plugin::Load(physics::WorldPtr parent, sdf::ElementPtr sd
 
     child_sdf = child_sdf->GetNextElement();
   }
-
+*/
   /* Initialize with active gazebosim and no quasistatic */
   has_contact_ = false;
   objects_loaded_ = false;
@@ -138,6 +143,25 @@ void Quasistatic_World_Plugin::Load(physics::WorldPtr parent, sdf::ElementPtr sd
   update_connection_ = event::Events::ConnectWorldUpdateBegin(
       boost::bind(&Quasistatic_World_Plugin::OnUpdate, this, _1));
   world->EnableAllModels();
+}
+
+/*
+ * Sets the pusher to the named object
+ * 
+ */
+
+void Quasistatic_World_Plugin::setPusher(SetPusherRequestPtr &msg)
+{
+  double mu = 0.5;
+  double c = 0.8;
+  std::string pusher_name = msg->pusher();
+  physics::ModelPtr model = world->GetModel(pusher_name);
+
+  if(pusher_)
+    add_pushee(pusher_,  mu, c);
+
+  set_pusher(model);
+  pushees_.erase(model); 
 }
 
 //Note that this implies that that only one object can be updated at a time

@@ -23,10 +23,27 @@ if (PKG_CONFIG_FOUND)
 endif()
 link_directories(${GAZEBO_LIBRARY_DIRS})
 
+set (CMAKE_CXX_FLAGS "-g -Wall")
+
+include (FindPkgConfig)
+if (PKG_CONFIG_FOUND)
+  pkg_check_modules(GAZEBO gazebo)
+  pkg_check_modules(SDF sdformat)
+endif()
+include_directories(
+  ${GAZEBO_INCLUDE_DIRS}
+  ${SDF_INCLUDE_DIRS}
+  ${PROJECT_SOURCE_DIR}/proto_msg
+  )
+link_directories(${GAZEBO_LIBRARY_DIRS} ${PROJECT_SOURCE_DIR}/proto_msg)
+add_subdirectory(proto_msg)
+
+
 
 find_package(Eigen REQUIRED)
 include_directories(
  "include/"
+ "proto_msg/"
  ${EIGEN_INCLUDE_DIRS}
  ${catkin_INCLUDE_DIRS}
  ${GAZEBO_INCLUDE_DIRS}
@@ -41,7 +58,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
 add_library("${PROJECT_NAME}" SHARED src/Quasistatic_World_Plugin.cc)
-target_link_libraries("${PROJECT_NAME}" yaml-cpp geos ${GAZEBO_LIBRARIES} ${BOOST_LIBRARIES})
+target_link_libraries("${PROJECT_NAME}" quasistatic_msgs yaml-cpp geos ${GAZEBO_LIBRARIES} ${BOOST_LIBRARIES})
 set_target_properties("${PROJECT_NAME}" PROPERTIES COMPILE_FLAGS -std=c++0x)
 
 
