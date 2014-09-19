@@ -26,6 +26,7 @@
 #include "quasistatic_pushing/QuasistaticPushingModel.h"
 #include "gazebo/transport/transport.hh"
 #include "set_pusher_request.pb.h"
+#include "add_pushee_request.pb.h"
 using namespace gazebo;
 
 GZ_REGISTER_WORLD_PLUGIN(Quasistatic_World_Plugin)
@@ -149,6 +150,22 @@ void Quasistatic_World_Plugin::Load(physics::WorldPtr parent, sdf::ElementPtr sd
  * Sets the pusher to the named object
  * 
  */
+
+void Quasistatic_World_Plugin::addPushee(AddPusheeRequestPtr &msg)
+{
+  double mu = 0.5;
+  double c = 0.8;
+
+  std::string pushee_name = msg->pushee();
+  physics::ModelPtr model = world->GetModel(pushee_name);
+  
+  //Check if this is the pusher
+
+  if(pusher_ && !pushee_name.compare(pusher_ -> GetName()))
+     pusher_ = boost::shared_ptr<physics::Model>();
+  if(model)
+     add_pushee(model, mu, c); 
+}
 
 void Quasistatic_World_Plugin::setPusher(SetPusherRequestPtr &msg)
 {

@@ -1,0 +1,7 @@
+package add_pushee_request_msgs.msgs;
+
+message AddPusheeRequest
+{
+  required string pushee = 1 [default = ""];
+}
+

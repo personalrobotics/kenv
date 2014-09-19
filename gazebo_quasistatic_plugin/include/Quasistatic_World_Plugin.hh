@@ -11,7 +11,7 @@
 #include "quasistatic_pushing/QuasistaticPushingModel.h"
 #include "gazebo/transport/transport.hh"
 #include "set_pusher_request.pb.h"
-
+#include "add_pushee_request.pb.h"
 
 // TODO: This should be in a namespace.
 struct Pushee {
@@ -20,7 +20,9 @@ struct Pushee {
 
 namespace gazebo
 {
-  typedef const boost::shared_ptr<const set_pusher_request_msgs::msgs::SetPusherRequest> SetPusherRequestPtr; 
+  typedef const boost::shared_ptr<const set_pusher_request_msgs::msgs::SetPusherRequest> SetPusherRequestPtr;
+  typedef const boost::shared_ptr<const add_pushee_request_msgs::msgs::AddPusheeRequest> AddPusheeRequestPtr; 
+
   class Quasistatic_World_Plugin : public WorldPlugin
   {
     transport::NodePtr node;
@@ -30,7 +32,8 @@ namespace gazebo
       Quasistatic_World_Plugin();
       void Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf);
       void OnUpdate(const common::UpdateInfo & /*_info*/);
-      void setPusher(SetPusherRequestPtr &msg);     
+      void setPusher(SetPusherRequestPtr &msg);    
+      void addPushee(AddPusheeRequestPtr &msg); 
 
     private:
       boost::unordered_map<physics::ModelPtr, physics::Contact> get_pusher_contacts();
