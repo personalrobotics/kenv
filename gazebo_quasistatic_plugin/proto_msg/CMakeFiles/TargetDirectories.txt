@@ -1,1 +1,0 @@
-/home/vsunder/Herb/hydro_Gazebo/src/kenv/gazebo_quasistatic_plugin/proto_msg/CMakeFiles/quasistatic_msgs.dir
