@@ -33,12 +33,13 @@ endif()
 include_directories(
   ${GAZEBO_INCLUDE_DIRS}
   ${SDF_INCLUDE_DIRS}
-  ${PROJECT_SOURCE_DIR}/proto_msg
-  )
-link_directories(${GAZEBO_LIBRARY_DIRS} ${PROJECT_SOURCE_DIR}/proto_msg)
+  ${CMAKE_CURRENT_BINARY_DIR}/proto_msg
+)
+link_directories(
+  ${GAZEBO_LIBRARY_DIRS}
+  ${CMAKE_CURRENT_BINARY_DIR}/proto_msg
+)
 add_subdirectory(proto_msg)
-
-
 
 find_package(Eigen REQUIRED)
 include_directories(
@@ -60,5 +61,3 @@ link_directories(${Boost_LIBRARY_DIRS})
 add_library("${PROJECT_NAME}" SHARED src/Quasistatic_World_Plugin.cc)
 target_link_libraries("${PROJECT_NAME}" quasistatic_msgs yaml-cpp geos ${GAZEBO_LIBRARIES} ${BOOST_LIBRARIES})
 set_target_properties("${PROJECT_NAME}" PROPERTIES COMPILE_FLAGS -std=c++0x)
-
-
