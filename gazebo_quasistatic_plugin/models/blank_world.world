@@ -1,11 +1,14 @@
 <?xml version="1.0"?>
 <sdf version="1.4">
-  <world name="blank plane">
+  <world name="default">
     <include>
       <uri>model://ground_plane</uri>
     </include>
 
-    <include><uri>model://sun</uri></include>
-    <plugin name = "quasistatic_world" filename="libgazebo_quasistatic_plugin.so"/>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <plugin name="quasistatic" filename="gazebo_quasistatic_plugin.so"/>
   </world>
 </sdf>

@@ -15,6 +15,6 @@ set (proto_msg
   ${PROTOBUF_IMPORT_DIRS}/time.proto
 )
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${proto_msg})
-add_library(quasistatic_msgs SHARED ${PROTO_SRCS})
-target_link_libraries(quasistatic_msgs ${PROTOBUF_LIBRARY})
+add_library("${PROJECT_NAME}_msgs" SHARED ${PROTO_SRCS})
+target_link_libraries("${PROJECT_NAME}_msgs" ${PROTOBUF_LIBRARY})
 
