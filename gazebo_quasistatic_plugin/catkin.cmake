@@ -3,12 +3,12 @@ cmake_minimum_required(VERSION 2.8)
 # NOTE: This is used by packages that depend on you. List of dependencies that
 # dependencies might need. For Catkin and non-Catkin packages. INCLUDE_DIRS and
 # LIBRARIES are exported from this package.
-find_package(catkin REQUIRED COMPONENTS gz_kenv quasistatic_pushing)
+find_package(catkin REQUIRED COMPONENTS kenv gz_kenv quasistatic_pushing roscpp)
 find_package(Boost REQUIRED COMPONENTS system)
 catkin_package(
     INCLUDE_DIRS "include/" "proto_msg/"
     LIBRARIES "${PROJECT_NAME}" "${PROJECT_NAME}_msgs"
-    CATKIN_DEPENDS gz_kenv quasistatic_pushing
+    CATKIN_DEPENDS gz_kenv quasistatic_pushing kenv
     DEPENDS eigen
 )
 #catkin_python_setup()
@@ -59,5 +59,5 @@ include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
 add_library("${PROJECT_NAME}" SHARED src/Quasistatic_World_Plugin.cc)
-target_link_libraries("${PROJECT_NAME}" "${PROJECT_NAME}_msgs" yaml-cpp geos ${GAZEBO_LIBRARIES} ${BOOST_LIBRARIES})
+target_link_libraries("${PROJECT_NAME}" "${PROJECT_NAME}_msgs" yaml-cpp geos ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES} ${BOOST_LIBRARIES})
 set_target_properties("${PROJECT_NAME}" PROPERTIES COMPILE_FLAGS -std=c++0x)

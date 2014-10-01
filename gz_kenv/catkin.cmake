@@ -47,7 +47,7 @@ link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/include/gz_kenv)
 
 add_library("${PROJECT_NAME}" SHARED src/gz_kenv.cpp)
-target_link_libraries("${PROJECT_NAME}" yaml-cpp geos ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries("${PROJECT_NAME}" yaml-cpp geos ${GAZEBO_LIBRARIES}  ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 set_target_properties("${PROJECT_NAME}" PROPERTIES COMPILE_FLAGS -std=c++0x)
 
 add_library("${PROJECT_NAME}_ext"

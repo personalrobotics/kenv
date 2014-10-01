@@ -1,4 +1,4 @@
-#ifndef COLLISIONCHECKER_H_
+    #ifndef COLLISIONCHECKER_H_
 #define COLLISIONCHECKER_H_
 
 #include "Environment.h"

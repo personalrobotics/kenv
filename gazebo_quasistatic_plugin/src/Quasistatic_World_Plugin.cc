@@ -33,34 +33,35 @@ GZ_REGISTER_WORLD_PLUGIN(Quasistatic_World_Plugin)
 
 Quasistatic_World_Plugin::Quasistatic_World_Plugin()
 {
-  std::cout << "Quasistatic Plugin Initializing";
+  std::cout << "Initializing Plugin\n";
   int argc = 0;
   ros::init(argc, NULL, "Quasistatic_World_Plugin");
-  
+
   auto collision_checker = boost::make_shared<kenv::DefaultCollisionChecker>();
   simulator_ = boost::make_shared<quasistatic_pushing::QuasistaticPushingModel>(
     collision_checker, .0001,.0001);
-
-  // Add the "quasistatic" flag for models.
 }
 
 void Quasistatic_World_Plugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf){
-  std::cout << "Quasistatic Plugin Initializing";
 
-  // Set up Transport Layer
+  //Set up Transport Layer
   node = transport::NodePtr(new transport::Node());
+  node->Init(parent->GetName());
   pusherAssignmentSubscriber = node -> Subscribe("quasistatic_set_pusher", &Quasistatic_World_Plugin::setPusher, this);
   pusheeAssignmentSubscriber = node -> Subscribe("quasistatic_add_pushee", &Quasistatic_World_Plugin::addPushee, this);
-  
+  double mu = 0.5;
+  double c = 0.8;
+
   world = parent;
   kenv_world = boost::make_shared<kenv::GazeboEnvironment>(world);
+  physics::Model_V models= world -> GetModels();
 
 
-/*  
+  
   sdf::ElementPtr child_sdf = sdf->GetFirstElement();
   while (child_sdf) {
+    std::cout << "Stuff happened\n";
     std::string const child_name = child_sdf->GetName();
-
     // Load a single pusher from SDF.
     if (child_name == "pusher") {
       std::string pusher_name;
@@ -126,7 +127,6 @@ void Quasistatic_World_Plugin::Load(physics::WorldPtr parent, sdf::ElementPtr sd
 
     child_sdf = child_sdf->GetNextElement();
   }
-*/
   /* Initialize with active gazebosim and no quasistatic */
   has_contact_ = false;
   objects_loaded_ = false;
@@ -195,39 +195,38 @@ void Quasistatic_World_Plugin::OnUpdate(common::UpdateInfo const &info)
 
    boost::unordered_map<physics::ModelPtr, physics::Contact> contacts = get_pusher_contacts(); 
   
-  bool has_contact = contacts.size() == 0;
+  bool has_contact = contact_manager_ -> GetContactCount();
+  if(has_contact && pusher_){
 
-  if(has_contact){
     //SET UP CONTROLS
-     std::cout << "Contact\n";
      double mu = 0.5;
      double c = 0.5;
-
      math::Vector3 vv = pusher_->GetRelativeLinearVel();
+
      Eigen::Vector2d v(vv.x,vv.y);
      quasistatic_pushing::Action a(v, 0.0,.001);
      simulator_->Simulate_Step(kenv_world->getObject(pusher_->GetName()), 
-                                    kenv_world->getObject(cur_pushee->GetName()),  a, mu, c, false);
+                               kenv_world->getObject(cur_pushee->GetName()),  a, mu, c, false);
 
-     
+
      math::Pose pose = pusher_->GetRelativePose();
      math::Vector3 trans = pose.pos;
      set_ode(pusher_, true);
      set_ode(cur_pushee, true);
-     pusher_->SetAngularVel(math::Vector3(0,0,0));
+     cur_pushee->SetAngularVel(math::Vector3(0,0,0));
+     
      
 
   } else {
      math::Pose pose = pusher_->GetRelativePose();
      math::Vector3 trans = pose.pos;
     if(cur_pushee_set){
-      std::cout << "Stop Pushee\n";
        cur_pushee->SetLinearVel(math::Vector3(0,0,0));
        cur_pushee->SetAngularVel(math::Vector3(0,0,0));
     }
     //Comment this out when integrating with state estimator
 
-    pusher_->SetLinearVel(math::Vector3(pusher_vel_[0],pusher_vel_[1], pusher_vel_[2]));
+    // pusher_->SetLinearVel(math::Vector3(pusher_vel_[0],pusher_vel_[1], pusher_vel_[2]));
     pusher_->SetAngularVel(math::Vector3(0,0,0));
 
     //THIS IS FOR STATE ESTIMATOR
@@ -240,12 +239,19 @@ void Quasistatic_World_Plugin::OnUpdate(common::UpdateInfo const &info)
 /* check if pusher has contact  */
 boost::unordered_map<physics::ModelPtr, physics::Contact> Quasistatic_World_Plugin::get_pusher_contacts()
 {
-  std::vector<physics::Contact*> contacts = contact_manager_->GetContacts();
-  std::cout << "num contacts " << contacts.size() << '\n';
-
+  std::vector<physics::Contact*> contacts_tmp = contact_manager_->GetContacts();
+  std::vector<physics::Contact*> contacts;
+  //Filter contacts 
+  if(contact_manager_ -> GetContactCount() == 0){
+     cur_pushee_set = false;
+  }
+  for(int i = 0; i < contact_manager_ -> GetContactCount(); i++){
+    contacts.push_back(contacts_tmp.at(i));
+  }
   boost::unordered_map<physics::ModelPtr, physics::Contact> pusher_contacts;
 
   for (physics::Contact const *const contact : contact_manager_->GetContacts()) {
+    cur_pushee_set = false;
     physics::Collision *const collision1 = contact->collision1;
     physics::Collision *const collision2 = contact->collision2;
 
@@ -262,9 +268,16 @@ boost::unordered_map<physics::ModelPtr, physics::Contact> Quasistatic_World_Plug
 
     // Check if contact is with the pushee.
     physics::ModelPtr pushee = normalized_contact.collision2->GetModel();
-    if (pushees_.find(pushee) == pushees_.end()) {
-      continue;
+    try {
+        pushees_[pushee];
+        cur_pushee = pushee;
+        cur_pushee_set = true;
+        break;
+    } catch (int e)
+    {
+      continue; 
     }
+    
 
     // TODO: Do something with the contacts.
     auto result = pusher_contacts.insert(std::pair<physics::ModelPtr, physics::Contact>(pushee, normalized_contact));
