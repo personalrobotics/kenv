@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+  <world name="default">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+  <include>
+         <uri>model://bh280_standalone</uri>
+         <pose>0 0.5 0.75 0 1.57 0</pose>
+         <plugin name = "plugin_test" filename="libplugin_test.so"/>
+  </include>
+
+ <model name="pushee">
+  <pose>.5 .5 0.75 0 0 0</pose>
+  <static>false</static>
+  <link name="link">
+      <collision name="box_collision">
+        <geometry>
+          <box>
+            <size>.1 .1 .1</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+       <geometry>
+               <box>
+                 <size>.1 .1 .1</size>
+               </box>
+       </geometry>
+      </visual>
+      <sensor name='my_contact' type='contact'>
+        <contact>
+          <collision>box_collision</collision>
+        </contact>
+      </sensor>
+    </link>
+  </model>
+      <plugin name = "quasistatic_world" filename="libgazebo_quasistatic_plugin.so">
+        <pusher>Hand</pusher>
+        <pushee>pushee</pushee>
+      </plugin>
+  </world>
+</sdf>
