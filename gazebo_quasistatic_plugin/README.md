@@ -16,32 +16,32 @@ conversion between [NumPy](http://www.numpy.org/) datatypes (in Python) and
 Unfortunately, Debian packages are not available for these dependencies.  You
 can easily build Debian packages youself by running:
   
-  # Boost.NumPy
-  $ cd /tmp
-  $ git clone https://github.com/personalrobotics/Boost.NumPy.git
-  $ cd Boost.NumPy
-  $ cmake -DCPACK_GENERATOR=DEB .
-  $ make && make package
-  $ sudo dpkg -i boost-numpy-*.deb
-  
-  # Boost.NumPy_Eigen
-  $ cd /tmp
-  $ git clone https://github.com/personalrobotics/Boost.NumPy_Eigen.git
-  $ cd Boost.NumPy_Eigen
-  $ cmake -DCPACK_GENERATOR=DEB .
-  $ make && make package
-  $ sudo dpkg -i boost-numpy-eigen-*.deb
+    # Boost.NumPy
+    $ cd /tmp
+    $ git clone https://github.com/personalrobotics/Boost.NumPy.git
+    $ cd Boost.NumPy
+    $ cmake -DCPACK_GENERATOR=DEB .
+    $ make && make package
+    $ sudo dpkg -i boost-numpy-*.deb
+    
+    # Boost.NumPy_Eigen
+    $ cd /tmp
+    $ git clone https://github.com/personalrobotics/Boost.NumPy_Eigen.git
+    $ cd Boost.NumPy_Eigen
+    $ cmake -DCPACK_GENERATOR=DEB .
+    $ make && make package
+    $ sudo dpkg -i boost-numpy-eigen-*.deb
 
 Installation
 ------------
 Checkout this Git repository into a Catkin workspace. Build the plugin:
 
-  $ catkin_make --only-pkg-with-deps gazebo_quasistatic_plugin
+    $ catkin_make --only-pkg-with-deps gazebo_quasistatic_plugin
 
 This builds a plugin called `libquasistatic_plugin.so`. Add the directory
 that contains this library to the Gazebo plugin search path:
 
-  $ export GAZEBO_PLUGIN_PATH=<workspace>/devel/lib:${GAZEBO_PLUGIN_PATH}
+    $ export GAZEBO_PLUGIN_PATH=<workspace>/devel/lib:${GAZEBO_PLUGIN_PATH}
 
 Usage
 -----
@@ -62,6 +62,4 @@ quasistatic_add_pushee
 
 Example World
 -------------
-
 kenv/gazebo_quasistatic_plugin/models/blank_world.world
-
