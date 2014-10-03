@@ -151,7 +151,7 @@ void QuasistaticPushingModel::Simulate_Step(kenv::Object::Ptr pusher, kenv::Obje
                 original_pose.pretranslate(to3D(step.linear_displacement()));
                 pushee->setTransform(original_pose);
             }
-            MoveHand(pusher, step);    
+            // MoveHand(pusher, step);    
         }
     }
     

@@ -215,6 +215,7 @@ void Quasistatic_World_Plugin::OnUpdate(common::UpdateInfo const &info)
      math::Vector3 trans = pose.pos;
      set_ode(pusher_, true);
      set_ode(cur_pushee, true);
+     cur_pushee->SetLinearVel(math::Vector3(0,0,0));
      cur_pushee->SetAngularVel(math::Vector3(0,0,0));
 
      
