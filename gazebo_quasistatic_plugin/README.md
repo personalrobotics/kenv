@@ -62,4 +62,11 @@ quasistatic_add_pushee
 
 Example World
 -------------
-kenv/gazebo_quasistatic_plugin/models/blank_world.world
+Build the test plugin:
+
+    $ catkin_make --only-pkg-with-deps test_plugin
+
+Run the test world:
+
+    $ roscd gazebo_quasistatic_plugin
+    $ gazebo models/blank_world.world
