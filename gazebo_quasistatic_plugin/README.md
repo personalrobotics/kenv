@@ -32,6 +32,8 @@ can easily build Debian packages youself by running:
     $ make && make package
     $ sudo dpkg -i boost-numpy-eigen-*.deb
 
+**TODO:** It shouldn't be necessary to build the Python bindings if you're only using the C++ API. We should split the Python bindings into a separate package.
+
 Installation
 ------------
 Checkout this Git repository into a Catkin workspace. Build the plugin:
