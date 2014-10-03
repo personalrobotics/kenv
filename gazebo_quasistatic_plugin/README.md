@@ -43,6 +43,14 @@ that contains this library to the Gazebo plugin search path:
 
     $ export GAZEBO_PLUGIN_PATH=<workspace>/devel/lib:${GAZEBO_PLUGIN_PATH}
 
+This currently does not install the protobuf headers into the correct
+include directory. You must do so manually:
+
+    $ mkdir -p <workspace>/devel/include
+    $ cp -r <workspace>/build/kenv/gazebo_quasistatic_plugin/proto_msg/* <workspace>/devel/include
+    
+**TODO:** How do we change the output directory for `protobuf_generate_cpp` in CMake?
+
 Usage
 -----
 To set objects usign quasistatic physics using SDF:
