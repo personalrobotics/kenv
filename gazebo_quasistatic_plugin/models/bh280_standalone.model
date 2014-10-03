@@ -19,7 +19,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/hand_base_collision.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/hand_base_collision.STL</uri>
           </mesh>
         </geometry>
       </collision>
@@ -28,7 +28,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/hand_base.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/hand_base.STL</uri>
           </mesh>
         </geometry>
       </visual>
@@ -61,7 +61,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/finger0_0_collision.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/finger0_0_collision.STL</uri>
           </mesh>
         </geometry>
       </collision>
@@ -70,7 +70,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/finger0_0.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/finger0_0.STL</uri>
           </mesh>
         </geometry>
       </visual>
@@ -115,7 +115,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/finger0_1_collision.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/finger0_1_collision.STL</uri>
           </mesh>
         </geometry>
       </collision>
@@ -124,7 +124,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/finger0_1.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/finger0_1.STL</uri>
           </mesh>
         </geometry>
       </visual>
@@ -154,7 +154,7 @@
             <pose>-0.0244 -0.119936 0.0784 1.5708 -0.698132 -1.5708</pose>
       <inertial>
         <pose>0.0253323 0.00167106 0.000102872 0 -0 0</pose>
-        <mass>19342.3</mass>
+        <mass>0.193423</mass>
         <inertia>
           <ixx>1.3063</ixx>
           <ixy>0.244496</ixy>
@@ -169,7 +169,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/finger0_2_collision.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/finger0_2_collision.STL</uri>
           </mesh>
         </geometry>
       </collision>
@@ -178,7 +178,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/finger0_2.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/finger0_2.STL</uri>
           </mesh>
         </geometry>
       </visual>
@@ -223,7 +223,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/finger1_0_collision.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/finger1_0_collision.STL</uri>
           </mesh>
         </geometry>
       </collision>
@@ -232,7 +232,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/finger1_0.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/finger1_0.STL</uri>
           </mesh>
         </geometry>
       </visual>
@@ -277,7 +277,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/finger1_1_collision.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/finger1_1_collision.STL</uri>
           </mesh>
         </geometry>
       </collision>
@@ -286,7 +286,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/finger1_1.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/finger1_1.STL</uri>
           </mesh>
         </geometry>
       </visual>
@@ -316,7 +316,7 @@
             <pose>0.0255996 -0.119917 0.0788087 1.5708 -0.705925 -1.5708</pose>
       <inertial>
         <pose>0.0253323 0.00167106 0.000102872 0 -0 0</pose>
-        <mass>19342.3</mass>
+        <mass>0.193423</mass>
         <inertia>
           <ixx>1.3063</ixx>
           <ixy>0.244496</ixy>
@@ -331,7 +331,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/finger1_2_collision.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/finger1_2_collision.STL</uri>
           </mesh>
         </geometry>
       </collision>
@@ -340,7 +340,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/finger1_2.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/finger1_2.STL</uri>
           </mesh>
         </geometry>
       </visual>
@@ -385,7 +385,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/finger2_1_collision.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/finger2_1_collision.STL</uri>
           </mesh>
         </geometry>
       </collision>
@@ -394,7 +394,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/finger2_1.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/finger2_1.STL</uri>
           </mesh>
         </geometry>
       </visual>
@@ -424,7 +424,7 @@
       <pose>-0.0006 0.119936 0.0784 1.5708 -0.698132 1.5708</pose>
       <inertial>
         <pose>0.0253323 0.00167106 0.000102872 0 -0 0</pose>
-        <mass>19342.3</mass>
+        <mass>0.193423</mass>
         <inertia>
           <ixx>1.3063</ixx>
           <ixy>0.244496</ixy>
@@ -439,7 +439,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/finger2_2_collision.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/finger2_2_collision.STL</uri>
           </mesh>
         </geometry>
       </collision>
@@ -448,7 +448,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file:///opt/pr/herb_description/meshes/finger2_2.STL</uri>
+            <uri>file:///home/vsunder/Herb/vsunder/Gazebo_ws/src/herb_description/meshes/finger2_2.STL</uri>
           </mesh>
         </geometry>
       </visual>
