@@ -8,8 +8,9 @@
     <include>
       <uri>model://sun</uri>
     </include>
+
   <model name="pusher">
-  <pose>0 .5 0.75 0 0 0</pose>
+  <pose>0 1 0.75 0 0 0</pose>
   <static>false</static>
   <link name="link">
     <collision name="box_collision">
@@ -32,7 +33,9 @@
       </contact>
     </sensor>
   </link>
+  <plugin name = "plugin_test" filename="libplugin_test.so"/>
 </model>
+
  <model name="pushee">
   <pose>2 .5 0.75 0 0 0</pose>
   <static>false</static>

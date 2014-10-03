@@ -22,6 +22,7 @@
 #include "ros/ros.h"
 #include "kenv/Environment.h"
 #include "kenv/CollisionChecker.h"
+
 #include "gz_kenv/gz_kenv.h"
 #include "quasistatic_pushing/QuasistaticPushingModel.h"
 #include "gazebo/transport/transport.hh"
@@ -33,7 +34,6 @@ GZ_REGISTER_WORLD_PLUGIN(Quasistatic_World_Plugin)
 
 Quasistatic_World_Plugin::Quasistatic_World_Plugin()
 {
-  std::cout << "Initializing Plugin\n";
   int argc = 0;
   ros::init(argc, NULL, "Quasistatic_World_Plugin");
 
@@ -60,7 +60,6 @@ void Quasistatic_World_Plugin::Load(physics::WorldPtr parent, sdf::ElementPtr sd
   
   sdf::ElementPtr child_sdf = sdf->GetFirstElement();
   while (child_sdf) {
-    std::cout << "Stuff happened\n";
     std::string const child_name = child_sdf->GetName();
     // Load a single pusher from SDF.
     if (child_name == "pusher") {
@@ -131,6 +130,8 @@ void Quasistatic_World_Plugin::Load(physics::WorldPtr parent, sdf::ElementPtr sd
   has_contact_ = false;
   objects_loaded_ = false;
   cur_pushee_set = false;
+
+  /* Used for testing purposes */
   pusher_vel_[0] = 0.03;
   pusher_vel_[1] = 0;
   pusher_vel_[2] = 0;
@@ -192,6 +193,7 @@ void Quasistatic_World_Plugin::OnUpdate(common::UpdateInfo const &info)
   if (!pusher_ || pushees_.empty()) {
     return;
   }
+   // pusher_->SetLinearVel(math::Vector3(0.03,0,0));
 
    boost::unordered_map<physics::ModelPtr, physics::Contact> contacts = get_pusher_contacts(); 
   
@@ -214,7 +216,7 @@ void Quasistatic_World_Plugin::OnUpdate(common::UpdateInfo const &info)
      set_ode(pusher_, true);
      set_ode(cur_pushee, true);
      cur_pushee->SetAngularVel(math::Vector3(0,0,0));
-     
+
      
 
   } else {
