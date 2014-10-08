@@ -28,13 +28,11 @@ void Pusher_Plugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 	pusher_->SetAngularVel(math::Vector3(0,0,0));
 	physics::Joint_V joints = pusher_ -> GetJoints();
 	physics::Link_V links = pusher_ -> GetLinks();
-	for(int i = 0; i < joints.size(); i++){
+	for(int i = 0; i < pusher_->GetJointCount(); i++){
 		physics::JointPtr j = joints.at(i);
 		j->Reset();
 		j->SetStiffness(0, 100);
-		j->SetStiffness(1, 100);	
-		j->SetStiffness(2, 100);
-	}
+ 	}
 	for(int i = 0; i < links.size(); i++){
 		physics::LinkPtr l = links.at(i);
 	}
