@@ -79,4 +79,6 @@ Build the test plugin:
 Run the test world:
 
     $ roscd gazebo_quasistatic_plugin
-    $ gazebo models/blank_world.world
+    Possible simulations 
+    - $ gazebo worlds/box_pushing_world.world
+    - $ gazebo worlds/bh280_pushing.world
