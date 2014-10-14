@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g -O3")
+
 find_package(catkin REQUIRED COMPONENTS kenv)
 catkin_package(
     INCLUDE_DIRS "include/"
@@ -12,11 +16,8 @@ catkin_python_setup()
 find_package(Boost REQUIRED COMPONENTS python system)
 find_package(Eigen REQUIRED)
 find_package(OpenRAVE REQUIRED)
-find_package(PythonLibs)
+find_package(PythonLibs REQUIRED)
 pkg_check_modules(YamlCpp QUIET yaml-cpp)
-
-#message(STATUS "Found OpenRAVE at ${OpenRAVE_LIBRARY_DIRS}")
-message(STATUS "Found OpenRAVE at ${OpenRAVE_LIBRARY_DIRS}")
 
 # TODO: The headers should be in "or_kenv", not "kenv".
 include_directories(
@@ -38,7 +39,6 @@ link_directories(
 )
 add_definitions(
     ${EIGEN_DEFINITIONS}
-    -frounding-math
 )
 
 # TODO: Don't hardcode openrave-core
@@ -65,6 +65,6 @@ target_link_libraries("${PROJECT_NAME}_ext"
     "openrave${OpenRAVE_LIBRARY_SUFFIX}-core"
 )
 set_target_properties("${PROJECT_NAME}_ext" PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/pythonsrc"
+    LIBRARY_OUTPUT_DIRECTORY "${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}"
     PREFIX ""
 )

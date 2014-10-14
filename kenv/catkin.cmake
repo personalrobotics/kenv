@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g -O3")
 
 # NOTE: This is used by packages that depend on you. List of dependencies that
 # dependencies might need. For Catkin and non-Catkin packages. INCLUDE_DIRS and
@@ -10,10 +14,11 @@ catkin_package(
 )
 catkin_python_setup()
 
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 find_package(Eigen3 REQUIRED)
 find_package(PythonLibs REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
+
+include(DetectCXX11Flags)
 
 include_directories(
     "include/"
@@ -27,9 +32,6 @@ add_library("${PROJECT_NAME}"
     src/CollisionChecker.cpp
     src/ObjectPool.cpp
 )
-set_target_properties("${PROJECT_NAME}" PROPERTIES
-    COMPILE_FLAGS -std=c++0x
-)
 
 add_library("${PROJECT_NAME}_ext"
     src/python/python.cpp
@@ -42,7 +44,6 @@ target_link_libraries("${PROJECT_NAME}_ext"
     boost_numpy_eigen
 )
 set_target_properties("${PROJECT_NAME}_ext" PROPERTIES
-    COMPILE_FLAGS -std=c++0x
-    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/pythonsrc"
+    LIBRARY_OUTPUT_DIRECTORY "${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}"
     PREFIX ""
 )
