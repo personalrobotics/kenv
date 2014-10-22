@@ -55,6 +55,6 @@ add_library("${PROJECT_NAME}_ext"
 )
 target_link_libraries("${PROJECT_NAME}_ext" ${catkin_LIBRARIES} kenv gz_kenv)
 set_target_properties("${PROJECT_NAME}_ext" PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/pythonsrc"
+    LIBRARY_OUTPUT_DIRECTORY "${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}"
     PREFIX ""
 )                                             

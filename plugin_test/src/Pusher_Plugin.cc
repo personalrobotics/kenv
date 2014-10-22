@@ -1,12 +1,10 @@
+#include <sdf/sdf.hh>
+#include <gazebo/gazebo.hh>
+#include <gazebo/common/common.hh>
+#include <gazebo/physics/physics.hh>
+#include <gazebo/sensors/sensors.hh>
+#include <gazebo_quasistatic_plugin/Quasistatic_World_Plugin.hh>
 #include "Pusher_Plugin.hh"
-#include "gazebo/gazebo.hh"
-#include "gazebo/physics/physics.hh"
-#include "gazebo/common/common.hh"
-#include "Quasistatic_World_Plugin.hh"
-#include "gazebo/sensors/sensors.hh"
-#include "gazebo/transport/transport.hh" 
-#include "gazebo/transport/transport.hh"
-#include "sdf/sdf.hh"
 
 using namespace gazebo;
 GZ_REGISTER_MODEL_PLUGIN(Pusher_Plugin)
