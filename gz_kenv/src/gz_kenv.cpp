@@ -260,8 +260,16 @@ namespace kenv {
   Object::Ptr GazeboEnvironment::createObject(std::string const &type, std::string const &name, bool anonymous)
   {
     std::string loading = types_.at(type);
+    env_ -> InsertModelFile(loading);
+    physics::Model_V models = env_ -> GetModels();
+    physics::ModelPtr new_model;
+    if(models.size() > 0)
+    {
+      new_model = models.at(models.size()-1);
+      new_model -> SetName(name);
+      return this->getObject(new_model->GetName()); 
+    }
     return Object::Ptr();
-
   }
 
   void GazeboEnvironment::remove(Object::Ptr object)
