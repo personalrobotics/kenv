@@ -10,8 +10,8 @@
 #include <kenv/Environment.h>
 #include <gz_kenv/gz_kenv.h>
 #include <quasistatic_pushing/QuasistaticPushingModel.h>
-#include <set_pusher_request.pb.h>
-#include <add_pushee_request.pb.h>
+#include <gazebo_quasistatic_plugin/set_pusher_request.pb.h>
+#include <gazebo_quasistatic_plugin/add_pushee_request.pb.h>
 
 // TODO: This should be in a namespace.
 struct Pushee {
