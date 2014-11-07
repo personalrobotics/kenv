@@ -1,4 +1,4 @@
-#include <gz_kenv/gz_kenv.h>
+#include "gz_kenv.h"
 #include <boost/python.hpp>
 #include <geos/geom/Geometry.h>
 #include <geos/geom/GeometryFactory.h>
@@ -19,6 +19,4 @@ void python_GazeboEnvironment()
          .def_pickle(kenv_util::empty_pickle_wrapper<GazeboEnvironment>())
          .def("getGazeboEnvironment", &GazeboEnvironment::getGazeboEnvironment)
          ;
-   
-
 }

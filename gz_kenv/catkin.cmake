@@ -30,6 +30,8 @@ include_directories(
  ${EIGEN_INCLUDE_DIRS}
  ${catkin_INCLUDE_DIRS}
  ${GAZEBO_INCLUDE_DIRS}
+ ${PYTHON_INCLUDE_DIRS}
+
 )
 add_definitions(${EIGEN_DEFINITIONS})
 
@@ -52,8 +54,10 @@ set_target_properties("${PROJECT_NAME}" PROPERTIES COMPILE_FLAGS -std=c++0x)
 
 add_library("${PROJECT_NAME}_ext"
     src/python/python.cpp
+    src/python/python_GazeboEnvironment.cpp
 )
-target_link_libraries("${PROJECT_NAME}_ext" ${catkin_LIBRARIES} kenv gz_kenv)
+target_link_libraries("${PROJECT_NAME}_ext" ${catkin_LIBRARIES} ${Boost_LIBRARIES} kenv gz_kenv)
+
 set_target_properties("${PROJECT_NAME}_ext" PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}"
     PREFIX ""
