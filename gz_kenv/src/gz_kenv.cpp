@@ -52,7 +52,7 @@ namespace kenv {
   }
   
   AlignedBox3d GazeboLink::computeLocalAABB() {
-    throw std::runtime_error("not implemented");
+    throw std::runtime_error("compute AABB not implemented");
   }
   
   //Gazebo Model
@@ -95,7 +95,7 @@ namespace kenv {
 
   std::string GazeboObject::getKinematicsGeometryHash(void) const
   {
-    throw std::runtime_error("not implemented");
+    throw std::runtime_error("getKinematicGeometryHash not implemented");
   }
 
   physics::ModelPtr GazeboObject::getModelPtr(void) const
@@ -164,7 +164,7 @@ namespace kenv {
 
   void GazeboObject::setVisible(bool flag)
   {
-    throw std::runtime_error("not implemented");
+    return;
   }
 
   Eigen::Affine3d GazeboObject::getTransform(void) const
@@ -183,17 +183,17 @@ namespace kenv {
 
   AlignedBox3d GazeboObject::getAABB(void) const
   {
-    throw std::runtime_error("not implemented");
+    throw std::runtime_error("aabb not implemented");
   }
 
   void GazeboObject::setTransparency(double x)
   {
-    throw std::runtime_error("not implemented");
+    throw std::runtime_error("transperancy not implemented");
   }
 
   void GazeboObject::setColor(Eigen::Vector4d const &color)
   {
-    throw std::runtime_error("not implemented");
+    throw std::runtime_error("setColor not implemented");
   }
 
   std::vector<Link::Ptr> GazeboObject::getLinks(void) const
@@ -216,12 +216,31 @@ namespace kenv {
 
   Eigen::VectorXd GazeboObject::getDOFValues(void) const
   {
-    throw std::runtime_error("not implemented");
+    Eigen::VectorXd dof_values(model_->GetJoints().size());
+    for (size_t i = 0; i < model_->GetJoints().size(); ++i) {
+        dof_values[i] = *(model_->GetJoints().at(i)->GetAngle(0));
+    }
+    return dof_values;
   }
 
   void GazeboObject::setDOFValues(Eigen::VectorXd const &dof_values)
   {
-    throw std::runtime_error("not implemented");
+    std::cout << "Set DOF " << model_->GetName() << " " << (dof_values.size()) << " " << model_->GetLinks().size() << '\n'; 
+    // BOOST_ASSERT(dof_values.size() == static_cast<int>(model_->GetJoints().size()));
+
+    bool invalidated = false;
+
+    for (size_t i = 0; i < model_->GetJoints().size(); ++i) {
+        if (*(model_->GetJoints().at(i)->GetAngle(0)) != dof_values[i]) {
+            // FIXME: This triggers |joints_| updates. It only needs to trigger one.
+            model_->GetJoints().at(i)->SetAngle(0,math::Angle(dof_values[i]));
+            invalidated = true;
+        }
+    }
+
+    // if (invalidated) {
+    //     cached_geometry_.reset();
+    // }
   }
 
 
@@ -260,6 +279,10 @@ namespace kenv {
   Object::Ptr GazeboEnvironment::createObject(std::string const &type, std::string const &name, bool anonymous)
   {
     std::string loading = types_.at(type);
+    if(env_ == 0)
+    {
+      std::cout << "Environment not present\n";
+    }
     env_ -> InsertModelFile(loading);
     physics::Model_V models = env_ -> GetModels();
     physics::ModelPtr new_model;
@@ -279,7 +302,7 @@ namespace kenv {
   void GazeboEnvironment::runWorld(int steps)
   {
     gazebo::runWorld(env_,steps);
-  }
+   }
 
   boost::shared_ptr<void> GazeboEnvironment::drawLine(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
                                                   double width, Eigen::Vector4d const &color)

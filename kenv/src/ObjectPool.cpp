@@ -33,7 +33,6 @@ Object::Ptr ObjectPool::Create()
         owned_objects_.push_back(object);
         inactive_objects_.push_back(object.get());
     }
-
     Object *object = inactive_objects_.back();
     inactive_objects_.pop_back();
     active_objects_.insert(object);
@@ -77,10 +76,12 @@ MultiObjectPool::MultiObjectPool(Environment::Ptr env)
 Object::Ptr MultiObjectPool::Create(std::string const &type)
 {
     ObjectPool::Ptr pool;
+    
     BOOST_AUTO(it, pools_.find(type));
     if (it == pools_.end()) {
         it = pools_.insert(std::make_pair(type, boost::make_shared<ObjectPool>(env_, type))).first;
     }
+
     return it->second->Create();
 }
 

@@ -16,7 +16,7 @@ catkin_python_setup()
 
 find_package(Eigen3 REQUIRED)
 find_package(PythonLibs REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system python)
 
 include(DetectCXX11Flags)
 
