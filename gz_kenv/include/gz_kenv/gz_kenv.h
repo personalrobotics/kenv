@@ -108,6 +108,9 @@ public:
     						const boost::multi_array<float,3>& texture);
     
     void addType(std::string const &type, std::string const &kinbody_path);
+
+    static void setupServer();
+
 private:
     physics::WorldPtr env_;
     std::map<std::string, std::string> types_;
