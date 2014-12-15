@@ -10,6 +10,7 @@ namespace kenv {
 
 class OREnvironment;
 class ORObject;
+class ORRobot;
 
 class ORViewer : private boost::noncopyable {
 public:
@@ -72,7 +73,12 @@ public:
     virtual std::string getType(void) const;
     virtual std::string getKinematicsGeometryHash(void) const;
 
+    virtual void saveState(void);
+    virtual void restoreState(void);
+
     virtual bool checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts = NULL,
+                                std::vector<std::pair<Link::Ptr, Link::Ptr> > *links = NULL) const;
+    virtual bool checkCollision(std::vector<Contact> *contacts = NULL, 
                                 std::vector<std::pair<Link::Ptr, Link::Ptr> > *links = NULL) const;
 
     virtual std::vector<Link::Ptr> getLinks(void) const;
@@ -91,14 +97,145 @@ public:
     virtual void setColor(Eigen::Vector4d const &color);
     virtual void setTransparency(double p);
 
-private:
+protected:
     boost::weak_ptr<OREnvironment> parent_;
     OpenRAVE::KinBodyPtr kinbody_;
+    std::stack<OpenRAVE::KinBody::KinBodyStateSaverPtr> stateSavers_;
     std::map<std::string, ORLink::Ptr> links_;
     std::string type_;
 
     OpenRAVE::CollisionAction checkCollisionCallback(OpenRAVE::CollisionReportPtr report, bool is_physics,
                                                      std::vector<std::pair<Link::Ptr, Link::Ptr> > *links) const;
+};
+
+/**
+ * A kenv wrapper for an OpenRAVE manipulator
+ */
+class ORManipulator : public kenv::Manipulator, public::boost::enable_shared_from_this<ORManipulator> {
+
+public:
+	/**
+	 * Shared Ptr
+	 */
+	typedef boost::shared_ptr<ORManipulator> Ptr;
+
+	/**
+	 * Const Shared Ptr
+	 */
+	typedef boost::shared_ptr<ORManipulator const> ConstPtr;
+
+	/**
+	 * Constructor
+	 * @param robot The robot this manipulator belongs to
+	 * @param manip The OpenRAVE Manipulator to decorate
+	 */
+	ORManipulator(boost::weak_ptr<ORRobot> robot, OpenRAVE::RobotBase::ManipulatorPtr manip);
+
+	/**
+	 * @return The decorated OpenRAVE manipulator
+	 */
+	OpenRAVE::RobotBase::ManipulatorPtr getORManipulator() const;
+
+	/**
+	 * @return The end-effector for this manipulator
+	 */
+    virtual Eigen::Affine3d getEndEffectorTransform(void) const;
+
+	/**
+	 * @return The Jacobian associated with the current pose of the robot.  
+	 *   The Jacobian is in world frame.
+	 */
+	virtual Jacobian::Ptr getJacobian(void) const;
+
+	/**
+	 * Calculate an IK solution for the given end-effector transform
+	 *
+	 * @param ee_pose The end-effector transform
+	 * @param ik The ik
+	 * @param check_collision If true, return collision free ik
+	 * @return True if a solution is found
+	 */
+	virtual bool findIK(const Eigen::Affine3d &ee_pose, Eigen::VectorXd &ik, bool check_collision = false) const;
+
+private: 
+	boost::weak_ptr<ORRobot> robot_;
+	OpenRAVE::RobotBase::ManipulatorPtr manip_;
+};
+
+/**
+ * A kenv wrapper for an OpenRAVE robot
+ */
+class ORRobot : virtual public Robot, public ORObject {
+    public:
+	    /**
+		 * Shared Ptr
+		 */
+        typedef boost::shared_ptr<ORRobot> Ptr;
+
+		/**
+		 * Const Shared Ptr
+		 */
+        typedef boost::shared_ptr<ORRobot const> ConstPtr;
+
+		/**
+		 * Constructor
+		 * @param parent The environment this robot is a member of
+		 * @param robot The OpenRAVE Robot to decorate
+		 * @param type TODO? What is this used for?
+		 */
+        ORRobot(boost::weak_ptr<OREnvironment> parent, OpenRAVE::RobotBasePtr robot, std::string const &type);
+
+		/**
+		 * @return The OpenRAVE KinBody that this object decorates
+		 */
+        OpenRAVE::RobotBasePtr getORRobot(void) const;
+
+		/**
+		 * Save the current state of this robot
+		 */
+        virtual void saveState();
+
+		/**
+		 * @return The active manipulator on the robot
+		 */
+		virtual Manipulator::Ptr getActiveManipulator();
+
+		/**
+		 * @return The joint values for all joints marked active on the robot
+		 */
+        virtual Eigen::VectorXd getActiveDOFValues() const;
+
+		/**
+		 * @return The indices of the joints marked active on the robot
+		 */
+        virtual Eigen::VectorXi getActiveDOFIndices() const;
+
+		/**
+		 * @param dof_values The joint values to set
+		 * @param dof_indices The indices of each joint to set
+		 */
+		virtual void setDOFValues(const Eigen::VectorXd &dof_values, const Eigen::VectorXi &dof_indices);
+
+		/**
+		 * @param lower A vector to fill with the lower limits for the joints marked active on the robot 
+		 * @param higher A vector to fill with the upper limits for the joints marked active on the robot 
+		 */
+        virtual void getActiveDOFLimits(Eigen::VectorXd& lower, Eigen::VectorXd& higher) const;
+
+		/**
+		 * @return True if the robot is in self collision, False otherwise
+		 */
+		virtual bool checkSelfCollision() const;
+		
+		/**
+		 * @param dof_values The dof_values to check
+		 * @return True if the given dof_values are within limits, false otherwise
+		 */
+		virtual bool checkLimits(const Eigen::VectorXd &dof_values) const;
+
+
+    private:
+        OpenRAVE::RobotBasePtr robot_;
 };
 
 class OREnvironment : public Environment, public boost::enable_shared_from_this<OREnvironment> {
@@ -110,11 +247,22 @@ public:
     OREnvironment(OpenRAVE::EnvironmentBasePtr or_env);
     OpenRAVE::EnvironmentBasePtr getOREnvironment(void) const;
     virtual Object::Ptr getObject(std::string const &name);
+    virtual void getObjects(std::vector<Object::Ptr>& objects);
+    virtual Object::Ptr createObject(std::string const &type, std::string const &name, bool anonymous = false);
+    virtual void remove(Object::Ptr object);
+
+    virtual Robot::Ptr getRobot(std::string const &name);
+    virtual Robot::Ptr createRobot(std::string const &type, std::string const &name, bool anonymous = false);
 
     virtual void runWorld(int);
 
-    virtual Object::Ptr createObject(std::string const &type, std::string const &name, bool anonymous = false);
-    virtual void remove(Object::Ptr object);
+    virtual boost::recursive_try_mutex& getMutex();
+    virtual void saveFullState();
+    virtual void restoreFullState();
+    
+    virtual bool checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts = NULL) const;
+    virtual bool checkCollision(Object::ConstPtr obj1, Object::ConstPtr obj2, std::vector<Contact> *contacts = NULL) const;
+    virtual bool checkCollision(Object::ConstPtr entity, const std::vector<Object::ConstPtr> &objects, std::vector< std::vector<Contact> > *contacts = NULL) const;
 
     virtual Handle drawLine(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
                             double width, Eigen::Vector4d const &color);
@@ -137,7 +285,9 @@ public:
 private:
     OpenRAVE::EnvironmentBasePtr env_;
     std::map<std::string, std::string> types_;
-    std::map<OpenRAVE::KinBodyPtr, ORObject::Ptr> objects_;
+
+    typedef std::map<OpenRAVE::KinBodyPtr, ORObject::Ptr> ObjectMapType;
+    ObjectMapType objects_;
 
     bool addObject(ORObject::Ptr object, std::string const name, bool anonymous);
 };

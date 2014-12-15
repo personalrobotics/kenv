@@ -11,6 +11,9 @@
 #include <Eigen/Geometry>
 #include "eigen_serialization.h"
 #include <boost/multi_array.hpp>
+#include <boost/thread.hpp>
+
+#include <kenv/Jacobian.h>
 
 namespace kenv {
 
@@ -106,6 +109,11 @@ public:
     virtual AlignedBox3d getAABB(void) const = 0;
     virtual bool checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts = NULL,
                                 std::vector<std::pair<Link::Ptr, Link::Ptr> > *links = NULL) const = 0;
+    virtual bool checkCollision(std::vector<Contact> *contacts = NULL, 
+                                std::vector<std::pair<Link::Ptr, Link::Ptr> > *links = NULL) const = 0;
+
+    virtual void saveState() = 0;
+    virtual void restoreState() = 0;
 
     virtual std::vector<Link::Ptr> getLinks(void) const = 0;
     virtual Link::Ptr getLink(std::string const name) const = 0;
@@ -120,15 +128,70 @@ public:
     virtual void setTransparency(double p) = 0;
 };
 
+class Manipulator : private boost::noncopyable {
+public:
+    typedef boost::shared_ptr<Manipulator> Ptr;
+    typedef boost::shared_ptr<Manipulator const> ConstPtr;
+    
+    virtual Eigen::Affine3d getEndEffectorTransform(void) const = 0;
+    virtual Jacobian::Ptr getJacobian(void) const = 0;
+    virtual bool findIK(const Eigen::Affine3d& ee_pose, Eigen::VectorXd& ik, bool check_collision = false) const = 0;
+};
+
+class Robot : public virtual kenv::Object {
+public:
+    typedef boost::shared_ptr<Robot> Ptr;
+    typedef boost::shared_ptr<Robot const> ConstPtr;
+
+    virtual Manipulator::Ptr getActiveManipulator() = 0;
+    virtual Eigen::VectorXd getActiveDOFValues() const = 0;
+    virtual Eigen::VectorXi getActiveDOFIndices() const = 0;
+    virtual void getActiveDOFLimits(Eigen::VectorXd& lower, Eigen::VectorXd& higher) const = 0;
+    
+    virtual void setDOFValues(const Eigen::VectorXd& dof_values, const Eigen::VectorXi& dof_indices) = 0;
+    virtual bool checkSelfCollision() const = 0;
+    virtual bool checkLimits(const Eigen::VectorXd& dof_values) const = 0;
+};
+    
+
 class Environment : private boost::noncopyable {
 public:
     typedef boost::shared_ptr<Environment> Ptr;
     typedef boost::shared_ptr<Environment const> ConstPtr;
+    typedef boost::lock_guard<boost::recursive_try_mutex> Lock;
 
     virtual Object::Ptr getObject(std::string const &name) = 0;
+    virtual void getObjects(std::vector<Object::Ptr>&) = 0;
     virtual Object::Ptr createObject(std::string const &type, std::string const &name, bool anonymous = false) = 0;
+
+    virtual Robot::Ptr getRobot(std::string const &name) = 0;
+    virtual Robot::Ptr createRobot(std::string const &type, std::string const &name, bool anonymous=false) = 0;
+
     virtual void remove(Object::Ptr object) = 0;
     virtual void runWorld(int steps) = 0;
+    
+    virtual boost::recursive_try_mutex& getMutex() = 0;
+    
+    virtual void saveFullState() = 0;
+    virtual void restoreFullState() = 0;
+    
+    /**
+     * Check for collisions for an object entity
+     * @return True iff collision found
+     */
+    virtual bool checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts = NULL) const = 0;
+
+    /**
+     * Check for collisions between obj1 and obj2
+     * @return True iff collision found
+     */
+    virtual bool checkCollision(Object::ConstPtr obj1, Object::ConstPtr obj2, std::vector<Contact> *contacts = NULL) const = 0;
+
+    /**
+     * Check for collisions between entity and all given objects
+     * @return True iff collision found
+     */
+    virtual bool checkCollision(Object::ConstPtr entity, const std::vector<Object::ConstPtr> &objects, std::vector<std::vector<Contact> > *contacts = NULL) const = 0;
 
     virtual Handle drawLine(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
                             double width, Eigen::Vector4d const &color) = 0;

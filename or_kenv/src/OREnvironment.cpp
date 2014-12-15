@@ -14,7 +14,7 @@
 #include "OREnvironment.h"
 #include "or_conversions.h"
 
-namespace kenv {
+using namespace kenv;
 
 /*
  * ORLogger
@@ -173,6 +173,97 @@ void OREnvironment::remove(Object::Ptr object)
     //kinbody->Destroy();
 }
 
+Robot::Ptr OREnvironment::getRobot(std::string const &name){
+
+    OpenRAVE::RobotBasePtr robot = env_->GetRobot(name);
+    if (robot) {
+        BOOST_AUTO(result, objects_.insert(std::make_pair(robot, ORRobot::Ptr())));
+		ORRobot::Ptr krobot = boost::make_shared<ORRobot>(shared_from_this(), robot, "");
+        if (result.second) {
+            // TODO: Use a special name for "unknown" types.
+            result.first->second = krobot;
+        }
+		
+        return krobot;
+    }
+    return Robot::Ptr();
+}
+
+Robot::Ptr OREnvironment::createRobot(std::string const &type, std::string const &name, bool anonymous){
+    // Create the OpenRAVE object and add it to the environment.
+    OpenRAVE::RobotBasePtr robot;
+    try {
+        robot = env_->ReadRobotXMLFile(OpenRAVE::RobotBasePtr(), type);
+    } catch (OpenRAVE::openrave_exception const &e) {
+        RAVELOG_ERROR("Unable to create robot of type [%s]: %s\n", type.c_str(), e.what());
+        return Robot::Ptr();
+    }
+
+    if (!robot) {
+        RAVELOG_ERROR("Unable to create robot of type [%s]: An unknown error has occured.\n", type.c_str());
+        return Robot::Ptr();
+    }
+
+    // Add the kinbody to the environment.
+    robot->SetName(name);
+    env_->Add(robot, anonymous);
+
+	ORRobot::Ptr krobot;
+    try {
+        krobot = boost::make_shared<ORRobot>(shared_from_this(), robot, type);
+        krobot->initialize();
+    } catch (OpenRAVE::openrave_exception const &e) {
+        RAVELOG_ERROR("Unable to add robot to the environment.\n");
+        return Robot::Ptr();
+    }
+
+    // The name might have changed if anonymous is true.
+    std::string const actual_name = robot->GetName();
+    objects_[robot] = krobot;
+    return krobot;
+}
+
+boost::recursive_try_mutex& OREnvironment::getMutex() {
+    return env_->GetMutex();
+}
+
+void OREnvironment::saveFullState() {
+    BOOST_FOREACH(ObjectMapType::value_type pair, objects_) {
+        pair.second->saveState(); 
+    }
+}
+
+void OREnvironment::restoreFullState() {
+    BOOST_FOREACH(ObjectMapType::value_type pair, objects_) {
+        pair.second->restoreState(); 
+    }   
+}
+
+bool OREnvironment::checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts) const{
+    return entity->checkCollision(contacts);
+}
+
+bool OREnvironment::checkCollision(Object::ConstPtr obj1, Object::ConstPtr obj2, std::vector<Contact> *contacts) const {
+    return obj1->checkCollision(obj2, contacts);
+}
+
+bool OREnvironment::checkCollision(Object::ConstPtr entity, const std::vector<Object::ConstPtr> &objects, std::vector< std::vector<Contact> > *contacts) const {
+    bool collision = false;
+    bool findContacts = contacts != NULL;
+    BOOST_FOREACH(Object::ConstPtr obj, objects) {
+		if(obj->getName() == entity->getName()){
+			continue;
+		}
+        std::vector<Contact>* pContacts = NULL;
+        if (findContacts) {
+            contacts->push_back(std::vector<Contact>());
+            pContacts = &((*contacts)[contacts->size() - 1]);
+        }
+        collision |= entity->checkCollision(obj, pContacts);
+    }
+    return collision;
+}
+
 boost::shared_ptr<void> OREnvironment::drawLine(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
                                                 double width, Eigen::Vector4d const &color)
 {
@@ -272,6 +363,156 @@ void ORViewer::redraw(void)
     or_viewer_->GetEnv()->UpdatePublishedBodies();
 }
 
+/**
+ * ORManipulator
+ */
+ORManipulator::ORManipulator(boost::weak_ptr<ORRobot> robot, OpenRAVE::RobotBase::ManipulatorPtr manip)
+	: robot_(robot), manip_(manip) {
+
+}
+
+OpenRAVE::RobotBase::ManipulatorPtr ORManipulator::getORManipulator() const {
+	return manip_;
+}
+
+Eigen::Affine3d ORManipulator::getEndEffectorTransform(void) const {
+
+	OpenRAVE::Transform or_tf = manip_->GetEndEffectorTransform();
+    return kenv::toEigen(or_tf);
+}
+
+Jacobian::Ptr ORManipulator::getJacobian() const {
+	
+	boost::multi_array<OpenRAVE::dReal, 2> Jtrans;
+	manip_->CalculateJacobian(Jtrans);
+
+	// Compute the rotational jacobian
+	boost::multi_array<OpenRAVE::dReal, 2> Jrot;
+	manip_->CalculateAngularVelocityJacobian(Jrot);
+
+	Jacobian::Ptr jacobian = boost::make_shared<Jacobian>(Jtrans, Jrot);
+	return jacobian;
+}
+
+bool ORManipulator::findIK(const Eigen::Affine3d &ee_pose, Eigen::VectorXd &ik, bool check_collision) const {
+	
+	OpenRAVE::IkParameterization ik_param(toOR(ee_pose), OpenRAVE::IKP_Transform6D);
+	std::vector<OpenRAVE::dReal> ik_solution;
+
+	int foptions = 0;
+	if(check_collision){
+		foptions = OpenRAVE::IKFO_CheckEnvCollisions;
+	}
+	bool success = manip_->FindIKSolution(ik_param, ik_solution, foptions);
+
+	if(success){
+		ik.resize(ik_solution.size());
+		for(unsigned int idx=0; idx < ik_solution.size(); idx++){
+			ik[idx] = ik_solution[idx];
+		}
+	}
+
+	return success;
+	
+}
+
+/*
+ * ORRobot
+ */
+ORRobot::ORRobot(boost::weak_ptr<OREnvironment> parent, OpenRAVE::RobotBasePtr robot, std::string const &type) : 
+    ORObject(parent, boost::dynamic_pointer_cast<OpenRAVE::KinBody>(robot), type),
+    robot_(robot) {
+    BOOST_ASSERT(!parent_.expired());
+    BOOST_ASSERT(kinbody_);
+    BOOST_ASSERT(robot_);
+}
+
+OpenRAVE::RobotBasePtr ORRobot::getORRobot() const {
+	return robot_;
+}
+
+void ORRobot::saveState() {
+    stateSavers_.push(boost::dynamic_pointer_cast<OpenRAVE::KinBody::KinBodyStateSaver>(boost::make_shared<OpenRAVE::RobotBase::RobotStateSaver>(robot_)));
+}
+
+Manipulator::Ptr ORRobot::getActiveManipulator() {
+
+	OpenRAVE::RobotBase::ManipulatorPtr active_manip = robot_->GetActiveManipulator();
+	ORObject::Ptr this_object = shared_from_this();
+	ORRobot::Ptr this_robot = boost::dynamic_pointer_cast<ORRobot>(this_object);
+
+	ORManipulator::Ptr or_manip = boost::make_shared<ORManipulator>(this_robot, active_manip);
+	return or_manip;
+}	
+
+Eigen::VectorXd ORRobot::getActiveDOFValues() const{
+    std::vector<OpenRAVE::dReal> dof_values;
+    robot_->GetActiveDOFValues(dof_values);
+    Eigen::VectorXd eigenValues(dof_values.size());
+    for(unsigned int i = 0; i < dof_values.size(); ++i) {
+        eigenValues[i] = dof_values[i];
+    }
+    return eigenValues;
+
+}
+
+Eigen::VectorXi ORRobot::getActiveDOFIndices() const {
+    std::vector<int> indices = robot_->GetActiveDOFIndices();
+    Eigen::VectorXi eigenIndices(indices.size());
+    for (unsigned int i = 0; i < indices.size(); ++i) {
+        eigenIndices[i] = indices[i];
+    }
+    return eigenIndices;
+}
+
+void ORRobot::setDOFValues(const Eigen::VectorXd& dof_values, const Eigen::VectorXi &dof_indices){
+	std::vector<OpenRAVE::dReal> vals(dof_values.size());
+	std::vector<int> inds(dof_indices.size());
+	for(unsigned int i=0; i < vals.size(); i++){
+		vals[i] = dof_values[i];
+		inds[i] = dof_indices[i];
+	}
+
+	robot_->SetDOFValues(vals, 1, inds);
+
+}
+
+void ORRobot::getActiveDOFLimits(Eigen::VectorXd& lower, Eigen::VectorXd& higher) const {
+    std::vector<OpenRAVE::dReal> lowers;
+    std::vector<OpenRAVE::dReal> highers;
+    robot_->GetActiveDOFLimits(lowers, highers);
+    lower.resize(lowers.size());
+    higher.resize(highers.size());
+    BOOST_ASSERT(lowers.size() == highers.size());
+    for (unsigned int i = 0; i < lowers.size(); ++i) {
+        lower[i] = lowers[i];
+        higher[i] = highers[i];
+    }
+}
+
+bool ORRobot::checkSelfCollision() const {
+
+	return robot_->CheckSelfCollision();
+}
+
+bool ORRobot::checkLimits(const Eigen::VectorXd &dof_values) const {
+
+	Eigen::VectorXd lower;
+	Eigen::VectorXd upper;
+	getActiveDOFLimits(lower, upper);
+
+	if(lower.size() != dof_values.size() || upper.size() != dof_values.size()){
+		return false;
+	}
+
+	for(unsigned int idx=0; idx < lower.size(); idx++){
+		if(dof_values[idx] < lower[idx] || dof_values[idx] > upper[idx]){
+			return false;
+		}
+	}
+	return true;
+}
+
 /*
  * ORObject
  */
@@ -315,9 +556,35 @@ std::string ORObject::getKinematicsGeometryHash(void) const
     return kinbody_->GetKinematicsGeometryHash();
 }
 
+void ORObject::saveState(void) {
+    stateSavers_.push(boost::make_shared<OpenRAVE::KinBody::KinBodyStateSaver>(kinbody_));
+}
+
+void ORObject::restoreState(void) {
+    OpenRAVE::KinBody::KinBodyStateSaverPtr saver = stateSavers_.top();
+    if (saver) {
+        stateSavers_.pop();
+        saver->Restore();    
+    }
+}
+
 OpenRAVE::KinBodyPtr ORObject::getKinBody(void) const
 {
     return kinbody_;
+}
+
+bool ORObject::checkCollision(std::vector<Contact> *contacts,  std::vector<std::pair<Link::Ptr, Link::Ptr> > *links) const {
+    std::vector< Object::Ptr > objects;
+    Environment::Ptr env = getEnvironment();
+    env->getObjects(objects);
+    bool collision = false;
+    Object::Ptr myself = env->getObject(kinbody_->GetName());
+    BOOST_FOREACH(Object::Ptr obj, objects) {
+        if (obj != myself) {
+            collision |= checkCollision(obj, contacts, links);
+        }
+    }
+    return collision;
 }
 
 bool ORObject::checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts,
@@ -421,6 +688,8 @@ OpenRAVE::CollisionAction ORObject::checkCollisionCallback(
     }
     return OpenRAVE::CA_Ignore;
 }
+
+
 
 void ORObject::enable(bool flag)
 {
@@ -557,7 +826,5 @@ void ORViewer::mainLoop(OpenRAVE::EnvironmentBasePtr or_env)
     or_env->AddViewer(or_viewer_);
     or_viewer_->main(true);
     is_running_ = false;
-}
-
 }
 

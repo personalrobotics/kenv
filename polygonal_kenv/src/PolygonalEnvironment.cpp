@@ -214,6 +214,13 @@ AlignedBox3d PolygonalObject::getAABB(void) const
     return ComputeAABB(geometry.get());
 }
 
+bool PolygonalObject::checkCollision(std::vector<Contact> *contacts, 
+                                     std::vector<std::pair<Link::Ptr, Link::Ptr> > *links) const {
+
+    throw std::runtime_error("not implemented");
+}
+
+
 bool PolygonalObject::checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts,
                                      std::vector<std::pair<Link::Ptr, Link::Ptr> > *links) const
 {
@@ -337,6 +344,14 @@ bool PolygonalObject::checkCollision(Object::ConstPtr entity, std::vector<Contac
     else {
         return geom1->intersects(geom2.get());
     }
+}
+
+void PolygonalObject::saveState() {
+    throw std::runtime_error("not implemented");
+}
+
+void PolygonalObject::restoreState() {
+    throw std::runtime_error("not implemented");
 }
 
 std::vector<Link::Ptr> PolygonalObject::getLinks(void) const
@@ -495,6 +510,10 @@ Object::Ptr PolygonalEnvironment::getObject(std::string const &name)
     }
 }
 
+void PolygonalEnvironment::getObjects(std::vector<Object::Ptr>& objects) {
+    objects = getObjects();
+}
+
 std::vector<Object::Ptr> PolygonalEnvironment::getObjects() const
 {
     std::vector<Object::Ptr> objects;
@@ -553,6 +572,38 @@ void PolygonalEnvironment::remove(Object::Ptr object)
         throw std::runtime_error(boost::str(
             boost::format("There is no object named [%s].") % object->getName()));
     }
+}
+
+boost::recursive_try_mutex& PolygonalEnvironment::getMutex() {
+    throw std::runtime_error("not implemented");
+}
+
+void PolygonalEnvironment::saveFullState() {
+    throw std::runtime_error("not implemented");
+}
+
+void PolygonalEnvironment::restoreFullState() {
+    throw std::runtime_error("not implemented");
+}
+
+kenv::Robot::Ptr PolygonalEnvironment::getRobot(const std::string& name) {
+    throw std::runtime_error("not implemented");
+}
+
+kenv::Robot::Ptr PolygonalEnvironment::createRobot(std::string const &type, std::string const &name, bool anonymous) {
+    throw std::runtime_error("not implemented");
+}
+
+bool PolygonalEnvironment::checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts) const {
+    throw std::runtime_error("not implemented");
+}
+
+bool PolygonalEnvironment::checkCollision(Object::ConstPtr obj1, Object::ConstPtr obj2, std::vector<Contact> *contacts) const {
+    throw std::runtime_error("not implemented");
+}
+
+bool PolygonalEnvironment::checkCollision(Object::ConstPtr entity, const std::vector<Object::ConstPtr> &objects, std::vector< std::vector<Contact> > *contacts) const {
+    throw std::runtime_error("not implemented");
 }
 
 Handle PolygonalEnvironment::drawGeometry(geos::geom::Geometry *geom, Eigen::Vector4d const &color)

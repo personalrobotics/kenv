@@ -76,12 +76,17 @@ public:
     virtual std::string getType(void) const;
     virtual std::string getKinematicsGeometryHash(void) const;
 
+    virtual void saveState();
+    virtual void restoreState();
+
     virtual void enable(bool flag);
     virtual void setVisible(bool flag);
     virtual bool getVisible() const;
 
     virtual AlignedBox3d getAABB(void) const;
     virtual bool checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts = NULL,
+                                std::vector<std::pair<Link::Ptr, Link::Ptr> > *links = NULL) const;
+    virtual bool checkCollision(std::vector<Contact> *contacts = NULL, 
                                 std::vector<std::pair<Link::Ptr, Link::Ptr> > *links = NULL) const;
 
     virtual std::vector<Link::Ptr> getLinks(void) const;
@@ -125,10 +130,24 @@ public:
     PolygonalEnvironment();
 
     virtual Object::Ptr getObject(std::string const &name);
+    virtual void getObjects(std::vector<Object::Ptr>& objects);
     virtual std::vector<Object::Ptr> getObjects() const;
     virtual Object::Ptr createObject(std::string const &type, std::string const &name, bool anonymous = false);
+
+    virtual Robot::Ptr getRobot(std::string const &name);
+    virtual Robot::Ptr createRobot(std::string const &type, std::string const &name, bool anonymous = false);
+
     virtual void remove(Object::Ptr object);
     virtual void runWorld(int steps);
+    
+    virtual boost::recursive_try_mutex& getMutex();
+    
+    virtual void saveFullState();
+    virtual void restoreFullState();
+
+    virtual bool checkCollision(Object::ConstPtr entity, std::vector<Contact> *contacts = NULL) const;
+    virtual bool checkCollision(Object::ConstPtr obj1, Object::ConstPtr obj2, std::vector<Contact> *contacts = NULL) const;
+    virtual bool checkCollision(Object::ConstPtr entity, const std::vector<Object::ConstPtr> &objects, std::vector<std::vector<Contact> > *contacts = NULL) const;
 
     virtual Handle drawGeometry(geos::geom::Geometry *geom, Eigen::Vector4d const &color);
     virtual Handle drawLine(Eigen::Vector3d const &start, Eigen::Vector3d const &end,
