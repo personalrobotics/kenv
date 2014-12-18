@@ -119,6 +119,12 @@ Object::Ptr OREnvironment::getObject(std::string const &name)
     return Object::Ptr();
 }
 
+void OREnvironment::getObjects(std::vector< Object::Ptr >& objects) {
+    BOOST_FOREACH(ObjectMapType::value_type pair, objects_) {
+        objects.push_back(pair.second);
+    }
+}
+
 Object::Ptr OREnvironment::createObject(std::string const &type, std::string const &name, bool anonymous)
 {
     // Create the OpenRAVE object and add it to the environment.
