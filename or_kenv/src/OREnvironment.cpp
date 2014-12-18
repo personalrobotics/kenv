@@ -606,7 +606,9 @@ bool ORObject::checkCollision(Object::ConstPtr entity, std::vector<Contact> *con
     // full set of pairwise link collisions.
     if (!contacts && !links) {
         OpenRAVE::CollisionReportPtr report = boost::make_shared<OpenRAVE::CollisionReport>();
-        return env->CheckCollision(kinbody_, other_kinbody, report);
+        bool incollision = env->CheckCollision(kinbody_, other_kinbody, report);
+        bool is_collision = incollision || (report->contacts.size() > 0);
+        return is_collision;
     }
 
     // Request contacts if necessary.
@@ -662,7 +664,8 @@ bool ORObject::checkCollision(Object::ConstPtr entity, std::vector<Contact> *con
         OpenRAVE::CollisionReportPtr report = boost::make_shared<OpenRAVE::CollisionReport>();
         OpenRAVE::UserDataPtr handle = env->RegisterCollisionCallback(
             boost::bind(&ORObject::checkCollisionCallback, this, _1, _2, links));
-        bool const is_collision = env->CheckCollision(kinbody_, other_kinbody, report);
+        bool const reported_collision = env->CheckCollision(kinbody_, other_kinbody, report);
+        bool const is_collision = reported_collision || (report->contacts.size() > 0);
 
         if (contacts) {
             contacts->reserve(report->contacts.size());
