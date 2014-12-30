@@ -54,7 +54,16 @@ Box2DBodyPtr Box2DWorld::CreateBody(std::string const &name,
 Box2DBodyPtr Box2DWorld::CreateBody(std::string const &name,
                                     std::string const &path)
 {
+    using boost::format;
+    using boost::str;
+
     std::ifstream stream(path.c_str());
+
+    if (!stream.good()) {
+        throw std::runtime_error(
+            str(format("Unable to read body '%s' from '%s'.") % name % path));
+    }
+
     return CreateBody(name, stream);
 }
 

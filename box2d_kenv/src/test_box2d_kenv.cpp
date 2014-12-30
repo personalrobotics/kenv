@@ -1,15 +1,16 @@
 #include <boost/make_shared.hpp>
-#include <kenv/ObjectPool.h>
-#include <polygonal_kenv/PolygonalEnvironment.h>
-#include "transition/Box2DTransitionModel.h"
-#include "util/Box2DVisualizer.h"
+#include <SFML/System/Time.hpp>
+#include "Box2DBody.h"
+#include "Box2DWorld.h"
 
-using manifold_pf3::util::Box2DVisualizer;
-using contact_manipulation::continuous::Box2DTransitionModel;
+using box2d_kenv::Box2DBodyPtr;
+using box2d_kenv::Box2DWorld;
+using box2d_kenv::Box2DWorldPtr;
 
 int main(int argc, char **argv)
 {
     sf::Time render_period = sf::milliseconds(2);
+    double physics_scale = 1000.;
     unsigned int physics_multiplier = 10;
     unsigned int velocity_iterations = 10;
     unsigned int position_iterations = 5;
@@ -18,12 +19,14 @@ int main(int argc, char **argv)
     unsigned int window_height = 720;
     double window_scale = 1000.;
     std::string window_name = "Box2D Test";
-    std::string hand_type = "data/barretthand_twofinger.object.yaml";
-    std::string object_type = "data/ricepilaf.object.yaml";
+    std::string hand_path = "data/barretthand_twofinger.object.yaml";
+    std::string object_path = "data/ricepilaf.object.yaml";
 
-    auto const env = boost::make_shared<kenv::PolygonalEnvironment>();
-    auto const pool = boost::make_shared<kenv::MultiObjectPool>(env);
+    Box2DWorldPtr const world = boost::make_shared<Box2DWorld>(physics_scale);
+    Box2DBodyPtr const hand_body = world->CreateBody("hand", hand_path);
+    Box2DBodyPtr const object_body = world->CreateBody("object", object_path);
 
+#if 0
     Box2DTransitionModel transition_model(pool, hand_type, object_type);
     b2World *b2_world = transition_model.GetBox2DWorld();
 
@@ -73,6 +76,7 @@ int main(int argc, char **argv)
 
         clock.restart();
     }
+#endif
 
     return 0;
 }

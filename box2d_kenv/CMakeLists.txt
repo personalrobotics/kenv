@@ -7,9 +7,14 @@ find_package(catkin REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(Box2D REQUIRED)
 find_package(CGAL REQUIRED)
+find_package(GEOS REQUIRED)
 find_package(Eigen REQUIRED)
-find_package(SFML REQUIRED)
+find_package(SFML REQUIRED COMPONENTS graphics system window)
 find_package(YAMLCpp REQUIRED)
+
+# GMP is a transitive dependency is CGAL that is not correctly specified in the
+# current FindCGAL.cmake file.
+find_package(GMP REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -32,13 +37,13 @@ catkin_package(
 
 include_directories(
   include/${PROJECT_NAME}
-  ${catkin_INCLUDE_DIRS}
   ${BOOST_INCLUDE_DIRS}
   ${BOX2D_INCLUDE_DIRS}
   ${Eigen_INCLUDE_DIRS}
+  ${GEOS_INCLUDE_DIRS}
   ${CGAL_INCLUDE_DIRS}
   ${SFML_INCLUDE_DIRS}
-  ${YAML_INCLUDE_DIRS}
+  ${YAMLCPP_INCLUDE_DIR}
 )
 
 add_library(${PROJECT_NAME}
@@ -50,18 +55,28 @@ add_library(${PROJECT_NAME}
   src/geometry_utils.cpp
 )
 target_link_libraries(${PROJECT_NAME}
-  ${catkin_LIBRARIES}
   ${BOOST_LIBRARIES}
   ${BOX2D_LIBRARIES}
   ${CGAL_LIBRARIES}
-  ${YAML_LIBRARIES}
+  ${GMP_LIBRARIES}
+  ${GEOS_LIBRARIES}
+  ${YAMLCPP_LIBRARY}
+)
+
+add_executable(test_${PROJECT_NAME}
+  src/test_box2d_kenv.cpp
+)
+target_link_libraries(test_${PROJECT_NAME}
+  ${PROJECT_NAME}
+  ${BOX2D_LIBRARIES}
+  ${SFML_LIBRARIES}
 )
 
 #############
 ## Install ##
 #############
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} test_${PROJECT_NAME}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
