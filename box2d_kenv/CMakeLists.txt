@@ -1,0 +1,86 @@
+cmake_minimum_required(VERSION 2.8.3)
+project(box2d_kenv)
+
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
+find_package(catkin REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system)
+find_package(Box2D REQUIRED)
+find_package(CGAL REQUIRED)
+find_package(Eigen REQUIRED)
+find_package(SFML REQUIRED)
+find_package(YAMLCpp REQUIRED)
+
+## Uncomment this if the package has a setup.py. This macro ensures
+## modules and global scripts declared therein get installed
+## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
+# catkin_python_setup()
+
+###################################
+## catkin specific configuration ##
+###################################
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES ${PROJECT_NAME}
+  CATKIN_DEPENDS
+  DEPENDS boost eigen box2d-dev cgal sfml-dev
+)
+
+###########
+## Build ##
+###########
+
+include_directories(
+  include/${PROJECT_NAME}
+  ${catkin_INCLUDE_DIRS}
+  ${BOOST_INCLUDE_DIRS}
+  ${BOX2D_INCLUDE_DIRS}
+  ${Eigen_INCLUDE_DIRS}
+  ${CGAL_INCLUDE_DIRS}
+  ${SFML_INCLUDE_DIRS}
+  ${YAML_INCLUDE_DIRS}
+)
+
+add_library(${PROJECT_NAME}
+  src/Box2DBody.cpp
+  src/Box2DLink.cpp
+  src/Box2DJoint.cpp
+  src/Box2DWorld.cpp
+  src/Box2DFactory.cpp
+  src/geometry_utils.cpp
+)
+target_link_libraries(${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ${BOOST_LIBRARIES}
+  ${BOX2D_LIBRARIES}
+  ${CGAL_LIBRARIES}
+  ${YAML_LIBRARIES}
+)
+
+#############
+## Install ##
+#############
+
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY include/${PROJECT_NAME}/
+   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+   FILES_MATCHING PATTERN "*.h"
+ )
+
+#############
+## Testing ##
+#############
+
+## Add gtest based cpp test target and link libraries
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_box2d_kenv.cpp)
+# if(TARGET ${PROJECT_NAME}-test)
+#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
+# endif()
+
+## Add folders to be run by python nosetests
+# catkin_add_nosetests(test)
