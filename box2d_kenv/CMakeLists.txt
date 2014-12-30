@@ -63,11 +63,22 @@ target_link_libraries(${PROJECT_NAME}
   ${YAMLCPP_LIBRARY}
 )
 
-add_executable(test_${PROJECT_NAME}
+add_library(${PROJECT_NAME}_visualizer
+  src/Box2DVisualizer.cpp
+)
+target_link_libraries(${PROJECT_NAME}_visualizer
+  ${BOOST_LIBRARIES}
+  ${BOX2D_LIBRARIES}
+  ${SFML_LIBRARIES}
+)
+
+add_executable(${PROJECT_NAME}_demo
   src/test_box2d_kenv.cpp
 )
-target_link_libraries(test_${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME}_demo
   ${PROJECT_NAME}
+  ${PROJECT_NAME}_visualizer
+  ${BOOST_LIBRARIES}
   ${BOX2D_LIBRARIES}
   ${SFML_LIBRARIES}
 )
@@ -76,7 +87,7 @@ target_link_libraries(test_${PROJECT_NAME}
 ## Install ##
 #############
 
-install(TARGETS ${PROJECT_NAME} test_${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_visualizer ${PROJECT_NAME}_demo
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

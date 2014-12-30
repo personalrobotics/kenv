@@ -1,15 +1,19 @@
 #include <boost/make_shared.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Time.hpp>
 #include "Box2DBody.h"
 #include "Box2DWorld.h"
+#include "Box2DVisualizer.h"
 
 using box2d_kenv::Box2DBodyPtr;
 using box2d_kenv::Box2DWorld;
 using box2d_kenv::Box2DWorldPtr;
+using box2d_kenv::Box2DVisualizer;
 
 int main(int argc, char **argv)
 {
     sf::Time render_period = sf::milliseconds(2);
+    double render_scale = 1000.;
     double physics_scale = 1000.;
     unsigned int physics_multiplier = 10;
     unsigned int velocity_iterations = 10;
@@ -22,28 +26,25 @@ int main(int argc, char **argv)
     std::string hand_path = "data/barretthand_twofinger.object.yaml";
     std::string object_path = "data/ricepilaf.object.yaml";
 
+    // Setup the physics simulator.
     Box2DWorldPtr const world = boost::make_shared<Box2DWorld>(physics_scale);
     Box2DBodyPtr const hand_body = world->CreateBody("hand", hand_path);
     Box2DBodyPtr const object_body = world->CreateBody("object", object_path);
+    b2World *b2_world = world->b2_world();
 
-#if 0
-    Box2DTransitionModel transition_model(pool, hand_type, object_type);
-    b2World *b2_world = transition_model.GetBox2DWorld();
+    // Create a window.
+    sf::VideoMode const video_mode(window_width, window_height);
+    sf::RenderWindow window(video_mode, window_name);
+    window.setVerticalSyncEnabled(true);
 
-    Box2DVisualizer b2_visualizer(
-        window_width, window_height,
-        window_width / -2., window_height / -2.,
-        1., window_name
-    );
+    Box2DVisualizer b2_visualizer(&window, render_scale / physics_scale,
+                                  window_width / 2., window_height / 2.);
     b2_visualizer.SetFlags(
         b2Draw::e_shapeBit
       | b2Draw::e_jointBit
       | b2Draw::e_centerOfMassBit
     );
 	b2_world->SetDebugDraw(&b2_visualizer);
-
-    sf::RenderWindow &window = b2_visualizer.window();
-    window.setVerticalSyncEnabled(true);
 
     sf::Clock clock;
     unsigned int iteration = 0;
@@ -76,7 +77,6 @@ int main(int argc, char **argv)
 
         clock.restart();
     }
-#endif
 
     return 0;
 }

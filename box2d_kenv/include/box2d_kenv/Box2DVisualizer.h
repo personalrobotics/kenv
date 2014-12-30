@@ -3,20 +3,12 @@
 #include <Box2D/Common/b2Draw.h>
 #include <SFML/Graphics.hpp>
 
-namespace manifold_pf3 {
-namespace util {
+namespace box2d_kenv {
 
 class Box2DVisualizer : public b2Draw {
 public:
-    Box2DVisualizer(unsigned int width, unsigned int height,
-                    double offset_x, double offset_y,
-                    double scale, std::string const &name);
-
-    void Step();
-    void Spin();
-    bool IsDone() const;
-
-    sf::RenderWindow &window();
+    Box2DVisualizer(sf::RenderWindow *window, double scale,
+                    double center_x, double center_y);
 
 	virtual void DrawPolygon(b2Vec2 const *vertices, int32 vertexCount,
                              b2Color const &color);
@@ -36,17 +28,17 @@ public:
 	virtual void DrawTransform(b2Transform const &xf);
 
 private:
-    sf::RenderWindow window_;
-    sf::Color color_fill_;
-    sf::Color color_edge_;
-    double offset_x_;
-    double offset_y_;
+    sf::RenderWindow *window_;
+    double center_x_;
+    double center_y_;
     double scale_;
+    double axis_length_;
 
+    sf::Color b2ToColor(b2Color const &color) const;
     sf::Vector2f b2ToVector(b2Vec2 const &p) const;
     sf::Vertex b2ToVertex(b2Vec2 const &p) const;
 };
 
 }
-}
+
 #endif
