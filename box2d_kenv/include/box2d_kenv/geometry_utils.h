@@ -8,10 +8,20 @@
 #include <CGAL/Partition_traits_2.h>
 #include <CGAL/partition_2.h>
 #include <CGAL/Quotient.h>
+#include <Eigen/Dense>
 #include <geos/geom/Polygon.h>
+#include <geos/geom/CoordinateFilter.h>
+
+namespace geos {
+namespace geom {
+
+class Coordinate;
+class CoordinateFilter;
+
+}
+}
 
 namespace box2d_kenv {
-
 namespace util {
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
@@ -33,8 +43,16 @@ size_t RecursivelySplitCGALPolygon(Polygon_2 const &polygon, size_t max_vertices
 
 b2PolygonShape ConvertPolygonCGALtoBox2D(Polygon_2 const &polygon);
 
-}
+class AffineTransformFilter : public geos::geom::CoordinateFilter {
+public:
+    AffineTransformFilter(Eigen::Affine2d const &transform);
+    virtual void filter_rw(geos::geom::Coordinate *coord) const;
 
+private:
+    Eigen::Affine2d const transform_;
+};
+
+}
 }
 
 #endif

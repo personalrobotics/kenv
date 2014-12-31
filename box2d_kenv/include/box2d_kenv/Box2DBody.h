@@ -14,7 +14,7 @@ private:
     Box2DWorldWeakPtr world_;
     Box2DLinkPtr root_link_;
 
-    friend class Box2DWorld;
+    friend class Box2DFactory;
 };
 
 }

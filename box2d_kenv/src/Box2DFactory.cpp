@@ -9,10 +9,14 @@
 #include <geos/io/WKTReader.h>
 #include <yaml-cpp/yaml.h>
 #include "geometry_utils.h"
-#include "Box2DFactory.h"
+#include "yaml_utils.h"
+#include "Box2DBody.h"
 #include "Box2DLink.h"
+#include "Box2DFactory.h"
 #include "Box2DJoint.h"
 #include "Box2DWorld.h"
+
+using boost::make_shared;
 
 namespace box2d_kenv {
 
@@ -24,17 +28,34 @@ Box2DFactory::Box2DFactory(Box2DWorldPtr const &world)
     BOOST_ASSERT(world);
 }
 
+Box2DBodyPtr Box2DFactory::CreateBody(std::string const &name,
+                                      YAML::Node const &node)
+{
+    Box2DBodyPtr const body = make_shared<Box2DBody>(world_, name);
+    body->root_link_ = CreateLink(body, node);
+
+    // Set the links' initial poses. Otherwise, the links could overlap and
+    // generate a large transient force.
+
+    return body;
+}
+
 Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
                                       YAML::Node const &node)
 {
+    using namespace box2d_kenv::util;
+
     typedef boost::shared_ptr<geos::geom::Geometry> GeometryPtr;
 
     BOOST_ASSERT(parent_body);
 
     std::string name;
     std::string geometry_wkt;
+    Eigen::Affine2d relative_pose;
+
     node["name"] >> name;
     node["relative_geometry"] >> geometry_wkt;
+    node["relative_pose"] >> relative_pose;
 
     // Deserialize the link's geometry (from WKT). To simplify the conversion,
     // we'll only support polygons. This constraint could be relaxed.
@@ -45,7 +66,6 @@ Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
                           " are supported.")
                 % name % geometry->getGeometryType()
         ));
-
     }
     geos::geom::Polygon const &polygon
         = dynamic_cast<geos::geom::Polygon const &>(*geometry);
@@ -60,7 +80,8 @@ Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
     b2_bodydef.type = b2_dynamicBody;
 
     b2Body *b2_body = b2_world_->CreateBody(&b2_bodydef);
-    std::vector<b2PolygonShape> const b2_shapes = ConvertGeometry(polygon);
+    std::vector<b2PolygonShape> const b2_shapes
+        = ConvertGeometry(polygon, relative_pose);
 
     BOOST_FOREACH (b2PolygonShape const &b2_shape, b2_shapes) {
         // TODO: Load these properties from YAML.
@@ -74,9 +95,7 @@ Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
     }
 
     // Create this link.
-    Box2DLinkPtr const link = boost::make_shared<Box2DLink>(parent_body, name,
-                                                            b2_body);
-
+    Box2DLinkPtr const link = make_shared<Box2DLink>(parent_body, name, b2_body);
     // Recursively construct this link's children.
     for (size_t i = 0; i < node["joints"].size(); ++i) {
         YAML::Node const &joint_node = node["joints"][i];
@@ -97,16 +116,30 @@ Box2DJointPtr Box2DFactory::CreateJoint(Box2DLinkPtr const &parent_link,
                                         Box2DLinkPtr const &child_link,
                                         YAML::Node const &node)
 {
+    using namespace ::box2d_kenv::util;
+
     BOOST_ASSERT(parent_link);
     BOOST_ASSERT(child_link);
+
+    double const scale = world_->scale();
+
+    Eigen::Affine2d relative_origin;
+    node["relative_origin"] >> relative_origin;
 
     b2RevoluteJointDef b2_jointdef;
     b2_jointdef.collideConnected = false;
     b2_jointdef.bodyA = parent_link->b2_body();
     b2_jointdef.bodyB = child_link->b2_body();
-    // TODO: Set localAnchorA.
-    // TODO: Set localAnchorB.
-    // TODO: Set referenceAngle.
+    b2_jointdef.localAnchorA = b2Vec2(
+        scale * relative_origin.translation()[0], 
+        scale * relative_origin.translation()[1]
+    );
+    b2_jointdef.localAnchorB = b2Vec2(0., 0.);
+
+    // Set the initial angle of the joint. By convention, this is the x-axis.
+    Eigen::Rotation2Dd rotation(0.);
+    rotation.fromRotationMatrix(relative_origin.rotation());
+    b2_jointdef.referenceAngle = rotation.angle();
     
     // TODO: Read joint limits from YAML.
     b2_jointdef.enableLimit = false;
@@ -117,15 +150,6 @@ Box2DJointPtr Box2DFactory::CreateJoint(Box2DLinkPtr const &parent_link,
     b2_jointdef.enableMotor = true;
     b2_jointdef.maxMotorTorque = 10.;
 
-#if 0
-    b2_jointdef.localAnchorA = b2Vec2(joint->origin().translation()[0],
-                                      joint->origin().translation()[1]);
-    b2_jointdef.localAnchorB = b2Vec2(0., 0.);
-    // TODO: We need to read the joint limits from the YAML file.
-    b2_jointdef.referenceAngle = std::atan2(joint->origin().linear()(1, 0),
-                                            joint->origin().linear()(0, 0));
-#endif
-
     b2RevoluteJoint *b2_joint = static_cast<b2RevoluteJoint *>(
         b2_world_->CreateJoint(&b2_jointdef));
 
@@ -133,16 +157,24 @@ Box2DJointPtr Box2DFactory::CreateJoint(Box2DLinkPtr const &parent_link,
 }
 
 std::vector<b2PolygonShape> Box2DFactory::ConvertGeometry(
-        geos::geom::Polygon const &geom)
+        geos::geom::Polygon const &geom, Eigen::Affine2d const &transform)
 {
     using namespace ::box2d_kenv::util;
+
+    typedef boost::shared_ptr<geos::geom::Polygon> PolygonPtr;
 
     double const scale = world_->scale();
     double const weld_distance = 0.5 * b2_linearSlop / scale;
 
+    // Transform the geometry into the link frame.
+    PolygonPtr geom_clone(static_cast<geos::geom::Polygon *>(geom.clone()));
+    AffineTransformFilter transform_filter(transform);
+    geom_clone->apply_rw(&transform_filter);
+
     // First, convert the GEOS polygon returned by polygonal_kenv to a CGAL
     // polygon datatype. We use CGAL to perform the convex decomposition.
-    Polygon_2 const input_polygon = ConvertPolygonGEOStoCGAL(geom, scale, weld_distance);
+    Polygon_2 const input_polygon = ConvertPolygonGEOStoCGAL(*geom_clone, scale,
+                                                             weld_distance);
     Polygon_list const convex_polygons = DecomposeCGALPolygon(input_polygon);
 
     // Next, split each polygon into chunks that are small enough to be used in

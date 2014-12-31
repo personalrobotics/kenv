@@ -39,8 +39,7 @@ Box2DBodyPtr Box2DWorld::CreateBody(std::string const &name,
     parser.GetNextDocument(node);
 
     Box2DFactory factory(shared_from_this());
-    Box2DBodyPtr const body = make_shared<Box2DBody>(shared_from_this(), name);
-    body->root_link_ = factory.CreateLink(body, node);
+    Box2DBodyPtr const body = factory.CreateBody(name, node);
 
     std::pair<BodyIterator, bool> const result = bodies_.insert(
         std::make_pair(name, body));

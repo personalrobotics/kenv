@@ -16,6 +16,17 @@ Box2DJoint::Box2DJoint(Box2DLinkPtr parent_link,
     BOOST_ASSERT(b2_joint);
 }
 
+Eigen::Affine2d Box2DJoint::origin() const
+{
+    b2Vec2 const anchor = b2_joint_->GetLocalAnchorA();
+
+    Eigen::Affine2d origin = Eigen::Affine2d::Identity();
+    origin.rotate(Eigen::Rotation2Dd(b2_joint_->GetReferenceAngle()));
+    origin.pretranslate(Eigen::Vector2d(anchor.x, anchor.y));
+
+    return origin;
+}
+
 Box2DLinkPtr Box2DJoint::parent_link() const
 {
     return parent_link_.lock();

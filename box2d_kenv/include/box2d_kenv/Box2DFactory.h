@@ -1,7 +1,8 @@
 #ifndef BOX2DFACTORY_H_
 #define BOX2DFACTORY_H_
-#include "box2d_kenv.hh"
+#include <Eigen/Dense>
 #include <geos/io/WKTReader.h>
+#include "box2d_kenv.hh"
 
 class b2PolygonShape;
 class b2World;
@@ -21,7 +22,7 @@ class Box2DFactory {
 public:
     Box2DFactory(Box2DWorldPtr const &world);
 
-    Box2DLinkPtr CreateLink(Box2DBodyPtr const &parent_body,
+    Box2DBodyPtr CreateBody(std::string const &name,
                             YAML::Node const &node);
 
 private:
@@ -29,12 +30,15 @@ private:
     b2World *b2_world_;
     geos::io::WKTReader wkt_reader_;
 
+    Box2DLinkPtr CreateLink(Box2DBodyPtr const &parent_body,
+                            YAML::Node const &node);
+
     Box2DJointPtr CreateJoint(Box2DLinkPtr const &parent_link,
                               Box2DLinkPtr const &child_link,
                               YAML::Node const &node);
 
     std::vector<b2PolygonShape> ConvertGeometry(
-            geos::geom::Polygon const &geom);
+        geos::geom::Polygon const &geom, Eigen::Affine2d const &transform);
 };
 
 }

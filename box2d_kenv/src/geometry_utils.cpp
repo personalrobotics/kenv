@@ -1,4 +1,5 @@
 #include <boost/format.hpp>
+#include <geos/geom/Coordinate.h>
 #include <geos/geom/CoordinateSequence.h>
 #include "geometry_utils.h"
 
@@ -163,6 +164,22 @@ size_t RecursivelySplitCGALPolygon(Polygon_2 const &polygon, size_t max_vertices
     }
 
     return num_added;
+}
+
+/*
+ * AffineTransformFilter
+ */
+AffineTransformFilter::AffineTransformFilter(Eigen::Affine2d const &transform)
+    : transform_(transform)
+{
+}
+
+void AffineTransformFilter::filter_rw(geos::geom::Coordinate *coord) const
+{
+    Eigen::Vector2d const eigen_before(coord->x, coord->y);
+    Eigen::Vector2d const eigen_after = transform_ * eigen_before;
+    coord->x = eigen_after[0];
+    coord->y = eigen_after[1];
 }
 
 }
