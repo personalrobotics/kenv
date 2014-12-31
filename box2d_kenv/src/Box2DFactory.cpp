@@ -36,6 +36,7 @@ Box2DBodyPtr Box2DFactory::CreateBody(std::string const &name,
 
     // Set the links' initial poses. Otherwise, the links could overlap and
     // generate a large transient force.
+    SetZero(body->root_link_, Eigen::Affine2d::Identity());
 
     return body;
 }
@@ -193,6 +194,17 @@ std::vector<b2PolygonShape> Box2DFactory::ConvertGeometry(
     }
 
     return b2_polygons;
+}
+
+void Box2DFactory::SetZero(Box2DLinkPtr const &link,
+                           Eigen::Affine2d const &pose)
+{
+    link->set_pose(pose);
+
+    BOOST_FOREACH (Box2DJointPtr const &joint, link->child_joints()) {
+        Eigen::Affine2d const child_pose = pose * joint->origin();
+        SetZero(joint->child_link(), child_pose);
+    }
 }
 
 }

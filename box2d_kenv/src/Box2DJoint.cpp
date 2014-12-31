@@ -1,5 +1,7 @@
 #include <stdexcept>
+#include "Box2DLink.h"
 #include "Box2DJoint.h"
+#include "Box2DWorld.h"
 
 namespace box2d_kenv {
 
@@ -19,10 +21,11 @@ Box2DJoint::Box2DJoint(Box2DLinkPtr parent_link,
 Eigen::Affine2d Box2DJoint::origin() const
 {
     b2Vec2 const anchor = b2_joint_->GetLocalAnchorA();
+    double const scale = parent_link()->world()->scale();
 
     Eigen::Affine2d origin = Eigen::Affine2d::Identity();
     origin.rotate(Eigen::Rotation2Dd(b2_joint_->GetReferenceAngle()));
-    origin.pretranslate(Eigen::Vector2d(anchor.x, anchor.y));
+    origin.pretranslate(Eigen::Vector2d(anchor.x / scale, anchor.y / scale));
 
     return origin;
 }

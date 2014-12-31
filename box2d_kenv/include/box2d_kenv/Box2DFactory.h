@@ -30,6 +30,9 @@ private:
     b2World *b2_world_;
     geos::io::WKTReader wkt_reader_;
 
+    void SetZero(Box2DLinkPtr const &link,
+                 Eigen::Affine2d const &parent_transform);
+
     Box2DLinkPtr CreateLink(Box2DBodyPtr const &parent_body,
                             YAML::Node const &node);
 
