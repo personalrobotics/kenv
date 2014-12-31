@@ -1,4 +1,5 @@
 #include <boost/make_shared.hpp>
+#include <Eigen/Dense>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Time.hpp>
 #include "Box2DBody.h"
@@ -31,6 +32,12 @@ int main(int argc, char **argv)
     Box2DBodyPtr const hand_body = world->CreateBody("hand", hand_path);
     Box2DBodyPtr const object_body = world->CreateBody("object", object_path);
     b2World *b2_world = world->b2_world();
+
+    Eigen::Affine2d object_pose = Eigen::Affine2d::Identity();
+    object_pose.pretranslate(Eigen::Vector2d(-0.2, 0.));
+
+    object_body->set_pose(object_pose);
+    hand_body->set_twist(Eigen::Vector3d(-0.01, 0., 0.));
 
     // Create a window.
     sf::VideoMode const video_mode(window_width, window_height);
