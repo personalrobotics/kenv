@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <boost/make_shared.hpp>
@@ -16,7 +17,9 @@
 #include "Box2DJoint.h"
 #include "Box2DWorld.h"
 
+using boost::format;
 using boost::make_shared;
+using boost::str;
 
 namespace box2d_kenv {
 
@@ -32,12 +35,8 @@ Box2DBodyPtr Box2DFactory::CreateBody(std::string const &name,
                                       YAML::Node const &node)
 {
     Box2DBodyPtr const body = make_shared<Box2DBody>(world_, name);
-    body->root_link_ = CreateLink(body, node);
-
-    // Set the links' initial poses. Otherwise, the links could overlap and
-    // generate a large transient force.
-    SetZero(body->root_link_, Eigen::Affine2d::Identity());
-
+    Box2DLinkPtr const root_link = CreateLink(body, node);
+    body->Initialize(root_link);
     return body;
 }
 
@@ -53,10 +52,20 @@ Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
     std::string name;
     std::string geometry_wkt;
     Eigen::Affine2d relative_pose;
+    double density, friction, restitution;
 
-    node["name"] >> name;
-    node["relative_geometry"] >> geometry_wkt;
-    node["relative_pose"] >> relative_pose;
+    try {
+        node["name"] >> name;
+        node["relative_geometry"] >> geometry_wkt;
+        node["relative_pose"] >> relative_pose;
+        node["density"] >> density;
+        node["friction"] >> friction;
+        node["restitution"] >> restitution;
+    } catch (YAML::Exception const &e) {
+        throw std::runtime_error(
+            str(format("Failed loading link '%s': %s") % name % e.what())
+        );
+    }
 
     // Deserialize the link's geometry (from WKT). To simplify the conversion,
     // we'll only support polygons. This constraint could be relaxed.
@@ -87,10 +96,18 @@ Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
     BOOST_FOREACH (b2PolygonShape const &b2_shape, b2_shapes) {
         // TODO: Load these properties from YAML.
         b2FixtureDef b2_fixturedef;
-        b2_fixturedef.density = 1000.;
-        b2_fixturedef.friction = 0.5; // TODO: What does this mean?
-        b2_fixturedef.restitution = 0.0; // TODO: What does this mean?
         b2_fixturedef.shape = &b2_shape;
+        b2_fixturedef.density = density;
+
+        // NOTE: Box2D computes the effective coefficient of friction as the
+        // geometric mean of the coefficients of friction of the two contacting
+        // bodies. It's not clear if this is desirable.
+        b2_fixturedef.friction = friction;
+
+        // NOTE: Box2D computes the effective restitution value as the max of
+        // the restitution values of the two contacting bodies. It's not clear
+        // if this is desirable.
+        b2_fixturedef.restitution = restitution;
 
         b2_body->CreateFixture(&b2_fixturedef);
     }
@@ -123,9 +140,16 @@ Box2DJointPtr Box2DFactory::CreateJoint(Box2DLinkPtr const &parent_link,
     BOOST_ASSERT(child_link);
 
     double const scale = world_->scale();
-
     Eigen::Affine2d relative_origin;
-    node["relative_origin"] >> relative_origin;
+
+    try {
+        node["relative_origin"] >> relative_origin;
+    } catch (YAML::Exception const &e) {
+        throw std::runtime_error(
+            str(format("Failed loading joint '%s' <-> '%s': %s")
+                % parent_link->name() % child_link->name() % e.what())
+        );
+    }
 
     b2RevoluteJointDef b2_jointdef;
     b2_jointdef.collideConnected = false;
@@ -143,13 +167,19 @@ Box2DJointPtr Box2DFactory::CreateJoint(Box2DLinkPtr const &parent_link,
     b2_jointdef.referenceAngle = rotation.angle();
     
     // TODO: Read joint limits from YAML.
+#if 0
     b2_jointdef.enableLimit = false;
     b2_jointdef.lowerAngle = -b2_pi;
     b2_jointdef.upperAngle =  b2_pi;
+#else
+    b2_jointdef.enableLimit = true;
+    b2_jointdef.lowerAngle = 0.;
+    b2_jointdef.upperAngle = 0.;
+#endif
 
     // TODO: Read the maximum motor torque from YAML.
     b2_jointdef.enableMotor = true;
-    b2_jointdef.maxMotorTorque = 10.;
+    b2_jointdef.maxMotorTorque = 1.;
 
     b2RevoluteJoint *b2_joint = static_cast<b2RevoluteJoint *>(
         b2_world_->CreateJoint(&b2_jointdef));
@@ -194,17 +224,6 @@ std::vector<b2PolygonShape> Box2DFactory::ConvertGeometry(
     }
 
     return b2_polygons;
-}
-
-void Box2DFactory::SetZero(Box2DLinkPtr const &link,
-                           Eigen::Affine2d const &pose)
-{
-    link->set_pose(pose);
-
-    BOOST_FOREACH (Box2DJointPtr const &joint, link->child_joints()) {
-        Eigen::Affine2d const child_pose = pose * joint->origin();
-        SetZero(joint->child_link(), child_pose);
-    }
 }
 
 }

@@ -53,6 +53,11 @@ b2Body const *Box2DLink::b2_body() const
     return b2_body_;
 }
 
+std::string Box2DLink::name() const
+{
+    return name_;
+}
+
 std::vector<b2Fixture const *> Box2DLink::fixtures() const
 {
     std::vector<b2Fixture const *> fixtures;
@@ -115,6 +120,28 @@ void Box2DLink::set_twist(Eigen::Vector3d const &twist) const
     b2_body_->SetLinearVelocity(b2Vec2(scale * twist[0],
                                        scale * twist[1]));
     b2_body_->SetAngularVelocity(twist[2]);
+}
+
+double Box2DLink::mass() const
+{
+    return b2_body_->GetMass();
+}
+
+double Box2DLink::rotational_inertia() const
+{
+    return b2_body_->GetInertia();
+}
+
+void Box2DLink::set_inertia(double mass, double rotational_inertia)
+{
+    b2MassData b2_mass;
+    b2_body_->GetMassData(&b2_mass);
+
+    std::cout << "m = " << mass << ", I = " << rotational_inertia << std::endl;
+    b2_mass.mass = mass;
+    b2_mass.I = rotational_inertia;
+
+    b2_body_->SetMassData(&b2_mass);
 }
 
 void Box2DLink::AddChildJoint(Box2DJointPtr const &joint)

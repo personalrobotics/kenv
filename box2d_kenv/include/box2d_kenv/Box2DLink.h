@@ -24,11 +24,17 @@ public:
     b2Body *b2_body();
     b2Body const *b2_body() const;
 
+    std::string name() const;
+
     Eigen::Affine2d pose() const;
     void set_pose(Eigen::Affine2d const &pose);
 
     Eigen::Vector3d twist() const;
     void set_twist(Eigen::Vector3d const &twist) const;
+
+    double mass() const;
+    double rotational_inertia() const;
+    void set_inertia(double mass, double rotation_inertia);
 
     std::vector<b2Fixture const *> fixtures() const;
 

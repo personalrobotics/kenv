@@ -1,19 +1,30 @@
+#include <boost/foreach.hpp>
 #include <boost/make_shared.hpp>
 #include <Eigen/Dense>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Time.hpp>
 #include "Box2DBody.h"
+#include "Box2DLink.h"
 #include "Box2DWorld.h"
 #include "Box2DVisualizer.h"
 
 using box2d_kenv::Box2DBodyPtr;
+using box2d_kenv::Box2DLinkPtr;
 using box2d_kenv::Box2DWorld;
 using box2d_kenv::Box2DWorldPtr;
 using box2d_kenv::Box2DVisualizer;
 
+static void SetInertiaRecursive(Box2DBodyPtr const &body,
+                                double mass, double rotational_inertia)
+{
+    BOOST_FOREACH (Box2DLinkPtr const &link, body->links()) {
+        link->set_inertia(mass, rotational_inertia);
+    }
+}
+
 int main(int argc, char **argv)
 {
-    sf::Time render_period = sf::milliseconds(2);
+    sf::Time render_period = sf::milliseconds(100);
     double render_scale = 1000.;
     double physics_scale = 1000.;
     unsigned int physics_multiplier = 10;
@@ -35,9 +46,11 @@ int main(int argc, char **argv)
 
     Eigen::Affine2d object_pose = Eigen::Affine2d::Identity();
     object_pose.pretranslate(Eigen::Vector2d(-0.2, 0.));
+    //SetInertiaRecursive(hand_body, 1000., 10000.);
 
     object_body->set_pose(object_pose);
     hand_body->set_twist(Eigen::Vector3d(-0.01, 0., 0.));
+    //SetInertiaRecursive(hand_body, 0.1, 0.1);
 
     // Create a window.
     sf::VideoMode const video_mode(window_width, window_height);
