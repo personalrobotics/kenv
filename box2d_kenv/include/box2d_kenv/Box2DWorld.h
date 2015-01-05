@@ -16,6 +16,7 @@ public:
 
     Box2DBodyPtr CreateBody(std::string const &name, std::istream &stream);
     Box2DBodyPtr CreateBody(std::string const &name, std::string const &path);
+    Box2DBodyPtr CreateEmptyBody(std::string const &name);
 
 private:
     b2World b2_world_;

@@ -42,6 +42,7 @@ int main(int argc, char **argv)
 
     // Setup the physics simulator.
     Box2DWorldPtr const world = boost::make_shared<Box2DWorld>(physics_scale);
+    Box2DBodyPtr const ground_body = world->CreateEmptyBody("ground");
     Box2DBodyPtr const hand_body = world->CreateBody("hand", hand_path);
     Box2DBodyPtr const object_body = world->CreateBody("object", object_path);
     b2World *b2_world = world->b2_world();

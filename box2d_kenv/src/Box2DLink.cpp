@@ -137,7 +137,6 @@ void Box2DLink::set_inertia(double mass, double rotational_inertia)
     b2MassData b2_mass;
     b2_body_->GetMassData(&b2_mass);
 
-    std::cout << "m = " << mass << ", I = " << rotational_inertia << std::endl;
     b2_mass.mass = mass;
     b2_mass.I = rotational_inertia;
 
@@ -162,5 +161,49 @@ void Box2DLink::AddChildJoint(Box2DJointPtr const &joint)
         throw std::runtime_error("Attempted to add a duplicate joint.");
     }
 }
+
+#if 0
+double Box2DBody::friction_coefficient() const
+{
+    if (!b2_friction_) {
+        throw std::runtime_error(
+            str(format("Body '%s' does not have friction enabled.") % name_)
+        );
+    }
+
+    double const scale = world()->scale();
+    double const mass = 
+
+    return b2_friction_->GetMaxForce() / (scale * b2_body->GetMass());
+}
+
+double Box2DBody::pressure_radius() const
+{
+    if (!b2_friction_) {
+        throw std::runtime_error(
+            str(format("Body '%s' does not have friction enabled.") % name_)
+        );
+    }
+
+    double const scale = world()->scale();
+    double const mu = friction_coefficient();
+
+    return b2_friction_->GetMaxTorque() / (scale * mu * b2_body->GetMass());
+}
+
+void Box2DBody::set_friction(double mu, double c)
+{
+    if (!b2_friction_) {
+        throw std::runtime_error(
+            str(format("Body '%s' does not have friction enabled.") % name_)
+        );
+    }
+
+    double const scale = world()->scale()
+
+    b2_friction_->SetMaxForce(scale * mu * b2_body->GetMass());
+    b2_friction_->SetMaxTorque(scale * mu * c * b2_body->GetMass());
+}
+#endif
 
 }

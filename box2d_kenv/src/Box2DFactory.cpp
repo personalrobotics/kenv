@@ -37,6 +37,19 @@ Box2DBodyPtr Box2DFactory::CreateBody(std::string const &name,
     Box2DBodyPtr const body = make_shared<Box2DBody>(world_, name);
     Box2DLinkPtr const root_link = CreateLink(body, node);
     body->Initialize(root_link);
+
+    return body;
+}
+
+Box2DBodyPtr Box2DFactory::CreateEmptyBody(std::string const &name)
+{
+    b2BodyDef b2_bodydef;
+    b2Body *b2_body = b2_world_->CreateBody(&b2_bodydef);
+
+    Box2DBodyPtr const body = make_shared<Box2DBody>(world_, name);
+    Box2DLinkPtr const link = make_shared<Box2DLink>(body, "", b2_body);
+    body->Initialize(link);
+
     return body;
 }
 

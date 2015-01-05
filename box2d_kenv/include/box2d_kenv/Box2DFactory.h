@@ -25,6 +25,8 @@ public:
     Box2DBodyPtr CreateBody(std::string const &name,
                             YAML::Node const &node);
 
+    Box2DBodyPtr CreateEmptyBody(std::string const &name);
+
 private:
     Box2DWorldPtr world_;
     b2World *b2_world_;
