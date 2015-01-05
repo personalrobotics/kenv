@@ -5,11 +5,13 @@
 #include <SFML/System/Time.hpp>
 #include "Box2DBody.h"
 #include "Box2DLink.h"
+#include "Box2DJoint.h"
 #include "Box2DWorld.h"
 #include "Box2DVisualizer.h"
 
 using box2d_kenv::Box2DBodyPtr;
 using box2d_kenv::Box2DLinkPtr;
+using box2d_kenv::Box2DJointPtr;
 using box2d_kenv::Box2DWorld;
 using box2d_kenv::Box2DWorldPtr;
 using box2d_kenv::Box2DVisualizer;
@@ -24,10 +26,10 @@ static void SetInertiaRecursive(Box2DBodyPtr const &body,
 
 int main(int argc, char **argv)
 {
-    sf::Time render_period = sf::milliseconds(100);
+    sf::Time physics_period = sf::milliseconds(10);
+    unsigned int render_skip = 3;
     double render_scale = 1000.;
     double physics_scale = 1000.;
-    unsigned int physics_multiplier = 10;
     unsigned int velocity_iterations = 10;
     unsigned int position_iterations = 5;
 
@@ -45,11 +47,10 @@ int main(int argc, char **argv)
     b2World *b2_world = world->b2_world();
 
     Eigen::Affine2d object_pose = Eigen::Affine2d::Identity();
-    object_pose.pretranslate(Eigen::Vector2d(-0.2, 0.));
+    object_pose.pretranslate(Eigen::Vector2d(-0.2, 0.1));
     //SetInertiaRecursive(hand_body, 1000., 10000.);
 
     object_body->set_pose(object_pose);
-    hand_body->set_twist(Eigen::Vector3d(-0.01, 0., 0.));
     //SetInertiaRecursive(hand_body, 0.1, 0.1);
 
     // Create a window.
@@ -78,21 +79,28 @@ int main(int argc, char **argv)
         }
 
         // Run a physics timestep.
-        if (iteration % physics_multiplier == 0) {
-            float const physics_period = physics_multiplier * render_period.asSeconds();
-            b2_world->Step(physics_period, position_iterations, velocity_iterations);
-            iteration = 0;
-        }
+        hand_body->set_twist(Eigen::Vector3d(-0.01, 0., 0.));
+        object_body->set_twist(Eigen::Vector3d::Zero());
+        b2_world->Step(physics_period.asSeconds(), position_iterations,
+                       velocity_iterations);
 
-        window.clear(sf::Color::Black);
-        b2_world->DrawDebugData();
-        window.display();
+        // Update the viewer.
+        if (iteration % render_skip == 0) {
+            window.clear(sf::Color::Black);
+            b2_world->DrawDebugData();
+            window.display();
+
+            iteration = 0;
+        } else {
+            iteration++;
+        }
 
         // Sleep to maintain a constant framerate.
         sf::Time const skew = clock.getElapsedTime();
 
-        if (render_period > skew) {
-            sf::sleep(render_period - skew);
+        if (physics_period > skew) {
+            sf::sleep(physics_period - skew);
+        } else {
         }
 
         clock.restart();

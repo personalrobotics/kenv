@@ -167,10 +167,8 @@ Box2DJointPtr Box2DFactory::CreateJoint(Box2DLinkPtr const &parent_link,
     b2_jointdef.referenceAngle = rotation.angle();
     
     // TODO: Read joint limits from YAML.
-#if 0
+#if 1
     b2_jointdef.enableLimit = false;
-    b2_jointdef.lowerAngle = -b2_pi;
-    b2_jointdef.upperAngle =  b2_pi;
 #else
     b2_jointdef.enableLimit = true;
     b2_jointdef.lowerAngle = 0.;
@@ -179,7 +177,7 @@ Box2DJointPtr Box2DFactory::CreateJoint(Box2DLinkPtr const &parent_link,
 
     // TODO: Read the maximum motor torque from YAML.
     b2_jointdef.enableMotor = true;
-    b2_jointdef.maxMotorTorque = 1.;
+    b2_jointdef.maxMotorTorque = 1e8;
 
     b2RevoluteJoint *b2_joint = static_cast<b2RevoluteJoint *>(
         b2_world_->CreateJoint(&b2_jointdef));

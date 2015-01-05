@@ -55,9 +55,14 @@ double Box2DJoint::value() const
     return b2_joint_->GetJointAngle();
 }
 
-void Box2DJoint::set_value(double value)
+double Box2DJoint::velocity() const
 {
-    throw std::runtime_error("not implemented");
+    return b2_joint_->GetJointSpeed();
+}
+
+void Box2DJoint::set_desired_velocity(double velocity)
+{
+    b2_joint_->SetMotorSpeed(velocity);
 }
 
 }
