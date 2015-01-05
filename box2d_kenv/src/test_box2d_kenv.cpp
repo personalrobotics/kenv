@@ -48,10 +48,14 @@ int main(int argc, char **argv)
 
     Eigen::Affine2d object_pose = Eigen::Affine2d::Identity();
     object_pose.pretranslate(Eigen::Vector2d(-0.2, 0.1));
-    //SetInertiaRecursive(hand_body, 1000., 10000.);
-
     object_body->set_pose(object_pose);
+
+    //SetInertiaRecursive(hand_body, 1000., 10000.);
     //SetInertiaRecursive(hand_body, 0.1, 0.1);
+
+    // Close the hand at a constant velocity.
+    hand_body->GetJoint("J01")->set_desired_velocity(0.3);
+    hand_body->GetJoint("J21")->set_desired_velocity(0.3);
 
     // Create a window.
     sf::VideoMode const video_mode(window_width, window_height);
@@ -100,9 +104,7 @@ int main(int argc, char **argv)
 
         if (physics_period > skew) {
             sf::sleep(physics_period - skew);
-        } else {
         }
-
         clock.restart();
     }
 

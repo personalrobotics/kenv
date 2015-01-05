@@ -22,8 +22,11 @@ public:
     Eigen::Vector3d twist() const;
     void set_twist(Eigen::Vector3d const &twist);
 
-    std::vector<Box2DLinkPtr> links() const;
-    std::vector<Box2DJointPtr> joints() const;
+    Box2DLinkPtr GetLink(std::string const &name);
+    Box2DJointPtr GetJoint(std::string const &name);
+
+    std::vector<Box2DLinkPtr> links();
+    std::vector<Box2DJointPtr> joints();
 
     void Initialize(Box2DLinkPtr const &root_link);
 
@@ -33,12 +36,12 @@ private:
     Box2DLinkPtr root_link_;
     std::vector<Box2DLinkPtr> links_;
     std::vector<Box2DJointPtr> joints_;
+    boost::unordered_map<std::string, Box2DLinkPtr> links_map_;
+    boost::unordered_map<std::string, Box2DJointPtr> joints_map_;
 
     void CheckInitialized() const;
 
-    void GetChildren(Box2DLinkPtr const &root_link,
-                     std::vector<Box2DLinkPtr> *links,
-                     std::vector<Box2DJointPtr> *joints) const;
+    void GetChildren(Box2DLinkPtr const &root_link);
     void SetZero(Box2DLinkPtr const &link, Eigen::Affine2d const &pose);
 };
 

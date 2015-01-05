@@ -1,6 +1,7 @@
 #include <list>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
+#include <boost/typeof/typeof.hpp>
 #include "Box2DBody.h"
 #include "Box2DLink.h"
 #include "Box2DJoint.h"
@@ -61,24 +62,40 @@ void Box2DBody::set_twist(Eigen::Vector3d const &twist)
     return root_link_->set_twist(twist);
 }
 
-std::vector<Box2DLinkPtr> Box2DBody::links() const
+Box2DLinkPtr Box2DBody::GetLink(std::string const &name)
 {
-    CheckInitialized();
-
-    std::vector<Box2DLinkPtr> links;
-    GetChildren(root_link_, &links, NULL);
-
-    return links;
+    BOOST_AUTO(it, links_map_.find(name));
+    if (it != links_map_.end()) {
+        return it->second;
+    } else {
+        throw std::runtime_error(
+            str(format("There is no link named '%s'.") % name));
+    }
 }
 
-std::vector<Box2DJointPtr> Box2DBody::joints() const
+Box2DJointPtr Box2DBody::GetJoint(std::string const &name)
+{
+    BOOST_AUTO(it, joints_map_.find(name));
+    if (it != joints_map_.end()) {
+        return it->second;
+    } else {
+        throw std::runtime_error(
+            str(format("There is no joint named '%s'.") % name));
+    }
+}
+
+std::vector<Box2DLinkPtr> Box2DBody::links()
 {
     CheckInitialized();
 
-    std::vector<Box2DJointPtr> joints;
-    GetChildren(root_link_, NULL, &joints);
+    return links_;
+}
 
-    return joints;
+std::vector<Box2DJointPtr> Box2DBody::joints()
+{
+    CheckInitialized();
+
+    return joints_;
 }
 
 void Box2DBody::Initialize(Box2DLinkPtr const &root_link)
@@ -99,7 +116,9 @@ void Box2DBody::Initialize(Box2DLinkPtr const &root_link)
     // Generate a list of all links and joints attached to this body.:w
     links_.clear();
     joints_.clear();
-    GetChildren(root_link, &links_, &joints_);
+    links_map_.clear();
+    joints_map_.clear();
+    GetChildren(root_link);
 
     // Set the links' initial poses. Otherwise, the links could overlap and
     // generate a large transient force.
@@ -116,9 +135,7 @@ void Box2DBody::CheckInitialized() const
     }
 }
 
-void Box2DBody::GetChildren(Box2DLinkPtr const &root_link,
-                            std::vector<Box2DLinkPtr> *links,
-                            std::vector<Box2DJointPtr> *joints) const
+void Box2DBody::GetChildren(Box2DLinkPtr const &root_link)
 {
     std::list<Box2DLinkPtr> pending_links;
     pending_links.push_front(root_link);
@@ -126,16 +143,27 @@ void Box2DBody::GetChildren(Box2DLinkPtr const &root_link,
     while (!pending_links.empty()) {
         Box2DLinkPtr const &link = pending_links.front();
 
-        if (links != NULL) {
-            links->push_back(link);
+        // Build the list of links.
+        links_.push_back(link);
+        BOOST_AUTO(link_result, links_map_.insert(
+            std::make_pair(link->name(), link)));
+        if (!link_result.second) {
+            throw std::runtime_error(
+                str(format("Duplicate link named '%s'.") % link->name()));
         }
 
         BOOST_FOREACH (Box2DJointPtr const &joint, link->child_joints()) {
-            if (joints != NULL) {
-                joints->push_back(joint);
+            // Build the list of joints.
+            joints_.push_back(joint);
+            BOOST_AUTO(joint_result, joints_map_.insert(
+                std::make_pair(joint->name(), joint)));
+            if (!joint_result.second) {
+                throw std::runtime_error(
+                    str(format("Duplicate joint named '%s'.") % joint->name()));
             }
 
-            GetChildren(joint->child_link(), links, joints);
+            // Recursively process the remainder of the links in this subtree.
+            GetChildren(joint->child_link());
         }
 
         pending_links.pop_front();

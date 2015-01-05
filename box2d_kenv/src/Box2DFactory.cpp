@@ -140,10 +140,14 @@ Box2DJointPtr Box2DFactory::CreateJoint(Box2DLinkPtr const &parent_link,
     BOOST_ASSERT(child_link);
 
     double const scale = world_->scale();
+    std::string name;
     Eigen::Affine2d relative_origin;
+    double direction;
 
     try {
+        node["name"] >> name;
         node["relative_origin"] >> relative_origin;
+        node["direction"] >> direction;
     } catch (YAML::Exception const &e) {
         throw std::runtime_error(
             str(format("Failed loading joint '%s' <-> '%s': %s")
@@ -166,14 +170,14 @@ Box2DJointPtr Box2DFactory::CreateJoint(Box2DLinkPtr const &parent_link,
     rotation.fromRotationMatrix(relative_origin.rotation());
     b2_jointdef.referenceAngle = rotation.angle();
     
-    // TODO: Read joint limits from YAML.
-#if 1
-    b2_jointdef.enableLimit = false;
-#else
-    b2_jointdef.enableLimit = true;
-    b2_jointdef.lowerAngle = 0.;
-    b2_jointdef.upperAngle = 0.;
-#endif
+    if (direction == 0.) {
+        b2_jointdef.enableLimit = true;
+        b2_jointdef.lowerAngle = 0.;
+        b2_jointdef.upperAngle = 0.;
+    } else {
+        // TODO: Read joint limits from YAML.
+        b2_jointdef.enableLimit = false;
+    }
 
     // TODO: Read the maximum motor torque from YAML.
     b2_jointdef.enableMotor = true;
@@ -182,7 +186,8 @@ Box2DJointPtr Box2DFactory::CreateJoint(Box2DLinkPtr const &parent_link,
     b2RevoluteJoint *b2_joint = static_cast<b2RevoluteJoint *>(
         b2_world_->CreateJoint(&b2_jointdef));
 
-    return boost::make_shared<Box2DJoint>(parent_link, child_link, b2_joint);
+    return make_shared<Box2DJoint>(name, parent_link, child_link,
+                                   b2_joint, direction);
 }
 
 std::vector<b2PolygonShape> Box2DFactory::ConvertGeometry(
