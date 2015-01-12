@@ -7,7 +7,7 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g -O3")
 # NOTE: This is used by packages that depend on you. List of dependencies that
 # dependencies might need. For Catkin and non-Catkin packages. INCLUDE_DIRS and
 # LIBRARIES are exported from this package.
-find_package(catkin REQUIRED COMPONENTS kenv)
+find_package(catkin REQUIRED COMPONENTS cmake_modules kenv)
 catkin_package(
     INCLUDE_DIRS "include/"
     LIBRARIES "${PROJECT_NAME}"

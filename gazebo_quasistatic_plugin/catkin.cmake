@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 set(CMAKE_CXX_FLAGS "-g -Wall")
 
-find_package(catkin REQUIRED COMPONENTS kenv gz_kenv quasistatic_pushing roscpp)
+find_package(catkin REQUIRED COMPONENTS cmake_modules kenv gz_kenv quasistatic_pushing roscpp)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(Eigen REQUIRED)
 
