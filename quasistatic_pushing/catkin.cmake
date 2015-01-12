@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 
-find_package(catkin REQUIRED COMPONENTS kenv)
+find_package(catkin REQUIRED COMPONENTS cmake_modules kenv)
 catkin_package(
     INCLUDE_DIRS "include/"
     LIBRARIES "${PROJECT_NAME}"

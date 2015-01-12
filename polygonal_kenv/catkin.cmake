@@ -5,7 +5,7 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g -O3")
 
-find_package(catkin REQUIRED COMPONENTS kenv)
+find_package(catkin REQUIRED COMPONENTS cmake_modules kenv)
 catkin_package(
     INCLUDE_DIRS "include/"
     LIBRARIES "${PROJECT_NAME}"
