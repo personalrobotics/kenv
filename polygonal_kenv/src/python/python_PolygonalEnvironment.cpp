@@ -1,5 +1,6 @@
 #include "PolygonalEnvironment.h"
 #include <boost/python.hpp>
+#include <boost/version.hpp>
 #include <geos/geom/Geometry.h>
 #include <geos/geom/GeometryFactory.h>
 #include <geos/io/WKBWriter.h>
@@ -28,6 +29,7 @@ struct geos_to_python {
     }
 };
 
+#if 0
 struct geos_from_python
 {
     geos_from_python()
@@ -76,6 +78,7 @@ struct geos_from_python
 #endif
     }
 };
+#endif
 
 // This is a hack to work around Boost.Python's poor support for const.
 template <class T, class Delegate>
@@ -87,11 +90,27 @@ struct ptr_to_python {
 };
 
 template <class T, class Delegate>
+struct geos_ptr_to_python {
+    static PyObject *convert(boost::shared_ptr<T> const &ptr)
+    {
+        return geos_to_python::convert(*ptr);
+    }
+};
+
+template <class T, class Delegate>
 void ptr_to_python_converter()
 {
+#if BOOST_VERSION > 104601
+    // to_python converters are broken for abstract classes, like
+    // geos::Geometry in new versions of Boost.Python. Previously, this worked
+    // since the object is passed by reference.
+    to_python_converter<boost::shared_ptr<T>, geos_ptr_to_python<T, Delegate> >();
+    to_python_converter<boost::shared_ptr<T const>, geos_ptr_to_python<T const, Delegate> >();
+#else 
     to_python_converter<T, Delegate>();
     to_python_converter<boost::shared_ptr<T>, ptr_to_python<T, Delegate> >();
     to_python_converter<boost::shared_ptr<T const>, ptr_to_python<T const, Delegate> >();
+#endif
 }
 
 void python_PolygonalEnvironment()
