@@ -528,6 +528,9 @@ Object::Ptr PolygonalEnvironment::createObject(std::string const &type, std::str
         }
         return createObject(type, unique_name, false);
     } else {
+#ifdef YAMLCPP_NEWAPI
+        YAML::Node document = YAML::LoadFile(type);
+#else
         std::ifstream fin(type.c_str());
         YAML::Parser parser(fin);
         YAML::Node document;
@@ -535,6 +538,7 @@ Object::Ptr PolygonalEnvironment::createObject(std::string const &type, std::str
             throw std::runtime_error(boost::str(
                 boost::format("Unable to load YAML from [%s].") % type));
         }
+#endif
 
         ::PolygonalLink::Ptr polygonal_link = boost::make_shared< ::PolygonalLink>();
         polygonal_link->deserialize(document);

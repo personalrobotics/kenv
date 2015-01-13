@@ -23,6 +23,13 @@ find_package(Eigen REQUIRED)
 find_package(PythonLibs REQUIRED)
 pkg_check_modules(YamlCpp REQUIRED yaml-cpp)
 
+if (${YamlCpp_VERSION} VERSION_LESS 0.5.0)
+    message(STATUS "Using the old-style yaml-cpp (< 0.5.0) API.")
+else ()
+    add_definitions(-DYAMLCPP_NEWAPI)
+    message(STATUS "Using the new-style yaml-cpp (>= 0.5.0) API.")
+endif ()
+
 include(DetectCXX11Flags)
 
 include_directories(

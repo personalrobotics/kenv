@@ -21,7 +21,7 @@ inline void deserialize(YAML::Node const &node, Eigen::MatrixBase<Derived> &matr
         matrix.resize(rows, 1);
 
         for (size_t i = 0; i < rows; ++i) {
-            node[i] >> matrix(i, 0);
+            matrix(i, 0) = node[i].as<typename Derived::Scalar>();
         }
     } else if (node.Tag() == "!Matrix") {
         size_t const cols = node[0].size();
@@ -42,7 +42,7 @@ inline void deserialize(YAML::Node const &node, Eigen::MatrixBase<Derived> &matr
             }
 
             for (size_t c = 0; c < cols; ++c) {
-                node[r][c] >> matrix(r, c);
+                matrix(r, c) = node[r][c].as<typename Derived::Scalar>();
             }
         }
     } else {
@@ -50,6 +50,71 @@ inline void deserialize(YAML::Node const &node, Eigen::MatrixBase<Derived> &matr
             boost::format("Unknown type of matrix '%s'.") % node.Tag()));
     }
 }
+
+
+// TODO: I should really specialize the YAML::convert class.
+#ifdef YAMLCPP_NEWAPI
+
+template <class Derived>
+inline YAML::Node serialize(Eigen::MatrixBase<Derived> const &matrix)
+{
+    YAML::Node node;
+
+    if (Eigen::MatrixBase<Derived>::IsVectorAtCompileTime) {
+        node.SetTag("Vector");
+
+        for (int i = 0; i < matrix.size(); ++i) {
+            node.push_back(matrix(i, 0));
+        }
+    } else {
+        node.SetTag("Matrix");
+
+        for (int r = 0; r < matrix.rows(); ++r) {
+            YAML::Node subnode;
+
+            for (int c = 0; c < matrix.cols(); ++c) {
+                subnode.push_back(matrix(r, c));
+            }
+
+            node.push_back(subnode);
+        }
+    }
+    return node;
+}
+
+namespace YAML {
+
+template<>
+struct convert<Eigen::Affine2d> {
+    static Node encode(Eigen::Affine2d const &pose)
+    {
+        return serialize(pose.matrix());
+    }
+
+    static bool decode(YAML::Node const &node, Eigen::Affine2d &pose)
+    {
+        deserialize(node, pose.matrix());
+        return true;
+    }
+};
+
+template<>
+struct convert<Eigen::Affine3d> {
+    static Node encode(Eigen::Affine3d const &pose)
+    {
+        return serialize(pose.matrix());
+    }
+
+    static bool decode(YAML::Node const &node, Eigen::Affine3d &pose)
+    {
+        deserialize(node, pose.matrix());
+        return true;
+    }
+};
+
+}
+
+#else
 
 template <class Derived>
 inline YAML::Emitter &operator<<(YAML::Emitter &emitter, Eigen::MatrixBase<Derived> const &matrix)
@@ -102,5 +167,6 @@ inline void operator>>(YAML::Node const &node, Eigen::Affine3d &pose)
 {
     deserialize(node, pose.matrix());
 }
+#endif
 
 #endif
