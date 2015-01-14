@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     hand_body->GetJoint("J21")->set_desired_velocity(0.3);
 
     // Create a window.
-    sf::VideoMode const video_mode(window_width, window_height);
+    sf::VideoMode const video_mode(window_width, window_height, 24);
     sf::RenderWindow window(video_mode, window_name);
     window.setVerticalSyncEnabled(true);
 

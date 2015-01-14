@@ -9,8 +9,8 @@
 #include <geos/geom/Geometry.h>
 #include <geos/io/WKTReader.h>
 #include <yaml-cpp/yaml.h>
+#include <kenv/eigen_yaml.h>
 #include "geometry_utils.h"
-#include "yaml_utils.h"
 #include "Box2DBody.h"
 #include "Box2DLink.h"
 #include "Box2DFactory.h"
@@ -68,12 +68,21 @@ Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
     double density, friction, restitution;
 
     try {
+#ifdef YAMLCPP_NEWAPI
+        name = node["name"].as<std::string>();
+        geometry_wkt = node["relative_geometry"].as<std::string>();
+        relative_pose = node["relative_pose"].as<Eigen::Affine2d>();
+        density = node["density"].as<double>();
+        friction = node["friction"].as<double>();
+        restitution = node["restitution"].as<double>();
+#else
         node["name"] >> name;
         node["relative_geometry"] >> geometry_wkt;
         node["relative_pose"] >> relative_pose;
         node["density"] >> density;
         node["friction"] >> friction;
         node["restitution"] >> restitution;
+#endif
     } catch (YAML::Exception const &e) {
         throw std::runtime_error(
             str(format("Failed loading link '%s': %s") % name % e.what())
@@ -158,9 +167,15 @@ Box2DJointPtr Box2DFactory::CreateJoint(Box2DLinkPtr const &parent_link,
     double direction;
 
     try {
+#ifdef YAMLCPP_NEWAPI
+        name = node["name"].as<std::string>();
+        relative_origin = node["relative_origin"].as<Eigen::Affine2d>();
+        direction = node["direction"].as<double>();
+#else
         node["name"] >> name;
         node["relative_origin"] >> relative_origin;
         node["direction"] >> direction;
+#endif
     } catch (YAML::Exception const &e) {
         throw std::runtime_error(
             str(format("Failed loading joint '%s' <-> '%s': %s")
@@ -214,7 +229,7 @@ std::vector<b2PolygonShape> Box2DFactory::ConvertGeometry(
     double const weld_distance = 0.5 * b2_linearSlop / scale;
 
     // Transform the geometry into the link frame.
-    PolygonPtr geom_clone(static_cast<geos::geom::Polygon *>(geom.clone()));
+    PolygonPtr geom_clone(dynamic_cast<geos::geom::Polygon *>(geom.clone()));
     AffineTransformFilter transform_filter(transform);
     geom_clone->apply_rw(&transform_filter);
 

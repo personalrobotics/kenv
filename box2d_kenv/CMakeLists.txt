@@ -3,7 +3,7 @@ project(box2d_kenv)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS cmake_modules kenv)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(Box2D REQUIRED)
 find_package(CGAL REQUIRED)
@@ -12,14 +12,33 @@ find_package(Eigen REQUIRED)
 find_package(SFML REQUIRED COMPONENTS graphics system window)
 find_package(YAMLCpp REQUIRED)
 
+# TODO: This should be handled by find_package(Box2D)
+set(BOX2D_LIBRARIES Box2D)
+
 # GMP is a transitive dependency is CGAL that is not correctly specified in the
 # current FindCGAL.cmake file.
+# TODO: This should be handled by find_package(CGAL)
 find_package(GMP REQUIRED)
+add_definitions(-frounding-math)
+
+# This is necessary for the yaml_utils.h header.
+# TODO: Move this into kenv.
+include(FindPkgConfig)
+pkg_check_modules(YamlCpp REQUIRED yaml-cpp)
+
+if (${YamlCpp_VERSION} VERSION_LESS 0.5.0)
+  message(STATUS "Using the old-style yaml-cpp (< 0.5.0) API.")
+else ()
+  add_definitions(-DYAMLCPP_NEWAPI)
+  message(STATUS "Using the new-style yaml-cpp (>= 0.5.0) API.")
+endif ()
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 # catkin_python_setup()
+
+message(STATUS "BOX2D_LIBRARIES = ${BOX2D_LIBRARIES}")
 
 ###################################
 ## catkin specific configuration ##
@@ -44,6 +63,7 @@ include_directories(
   ${CGAL_INCLUDE_DIRS}
   ${SFML_INCLUDE_DIRS}
   ${YAMLCPP_INCLUDE_DIR}
+  ${catkin_INCLUDE_DIRS}
 )
 
 add_library(${PROJECT_NAME}

@@ -34,9 +34,13 @@ double Box2DWorld::scale() const
 Box2DBodyPtr Box2DWorld::CreateBody(std::string const &name,
                                     std::istream &stream)
 {
+#ifdef YAMLCPP_NEWAPI
+    YAML::Node node = YAML::Load(stream);
+#else
     YAML::Parser parser(stream);
     YAML::Node node;
     parser.GetNextDocument(node);
+#endif
 
     Box2DFactory factory(shared_from_this());
     Box2DBodyPtr const body = factory.CreateBody(name, node);
