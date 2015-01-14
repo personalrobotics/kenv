@@ -9,8 +9,10 @@ find_package(catkin REQUIRED COMPONENTS cmake_modules kenv)
 catkin_package(
     INCLUDE_DIRS "include/"
     LIBRARIES "${PROJECT_NAME}"
-    CATKIN_DEPENDS kenv
-    DEPENDS cgal eigen
+    CATKIN_DEPENDS
+    DEPENDS
+        cgal
+        eigen
 )
 catkin_python_setup()
 

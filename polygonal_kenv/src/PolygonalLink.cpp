@@ -10,7 +10,7 @@
 #include <geos/geom/GeometryFactory.h>
 #include <geos/io/WKTReader.h>
 
-#include "eigen_yaml.h"
+#include <kenv/eigen_yaml.h>
 #include "AffineTransformFilter.h"
 #include "PolygonalLink.h"
 
