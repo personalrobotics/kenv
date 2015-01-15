@@ -132,10 +132,17 @@ class Manipulator : private boost::noncopyable {
 public:
     typedef boost::shared_ptr<Manipulator> Ptr;
     typedef boost::shared_ptr<Manipulator const> ConstPtr;
-    
+
+    virtual boost::shared_ptr<Environment> getEnvironment(void) const = 0;
     virtual Eigen::Affine3d getEndEffectorTransform(void) const = 0;
     virtual Jacobian::Ptr getJacobian(void) const = 0;
     virtual bool findIK(const Eigen::Affine3d& ee_pose, Eigen::VectorXd& ik, bool check_collision = false) const = 0;
+    virtual void setDOFValues(const Eigen::VectorXd& dof_values, const Eigen::VectorXi& dof_indices) = 0;
+    virtual Eigen::VectorXd getDOFValues() const = 0;
+    virtual Eigen::VectorXi getDOFIndices() const = 0;
+
+    virtual void getDOFLimits(Eigen::VectorXd& lower, Eigen::VectorXd& higher) const = 0;
+    virtual bool checkLimits(const Eigen::VectorXd& dof_values) const = 0;
 };
 
 class Robot : public virtual kenv::Object {
@@ -143,6 +150,7 @@ public:
     typedef boost::shared_ptr<Robot> Ptr;
     typedef boost::shared_ptr<Robot const> ConstPtr;
 
+    
     virtual Manipulator::Ptr getActiveManipulator() = 0;
     virtual Eigen::VectorXd getActiveDOFValues() const = 0;
     virtual Eigen::VectorXi getActiveDOFIndices() const = 0;

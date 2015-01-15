@@ -136,6 +136,11 @@ public:
 	 */
 	OpenRAVE::RobotBase::ManipulatorPtr getORManipulator() const;
 
+    /**
+     * @return The environment this manipulator is in
+     */
+    boost::shared_ptr<Environment> getEnvironment(void) const { return robot_->getEnvironment(); }
+
 	/**
 	 * @return The end-effector for this manipulator
 	 */
@@ -156,6 +161,37 @@ public:
 	 * @return True if a solution is found
 	 */
 	virtual bool findIK(const Eigen::Affine3d &ee_pose, Eigen::VectorXd &ik, bool check_collision = false) const;
+
+    /**
+     * Sets the dof values on the manipulator
+     * @param dof_values The values for the manipulator
+     * @param dof_indices The associated indices
+     */
+    virtual void setDOFValues(const Eigen::VectorXd& dof_values, const Eigen::VectorXi& dof_indices);
+
+    /**
+     * @return A list of DOF values
+     */
+    virtual Eigen::VectorXd getDOFValues() const;
+
+    /**
+     * @return A list of dof indices
+     */
+    virtual Eigen::VectorXi getDOFIndices() const;
+
+    /**
+     * @param lower The returned lower limits
+     * @param higher The returned upper limits
+     */
+    virtual void getDOFLimits(Eigen::VectorXd& lower, Eigen::VectorXd& higher) const;
+
+    /**
+     * Check the given arm configuration for joint limit violations
+     *
+     * @param dof_values The configuration to check
+     */
+    virtual bool checkLimits(const Eigen::VectorXd& dof_values) const;
+
 
 private: 
 	boost::weak_ptr<ORRobot> robot_;

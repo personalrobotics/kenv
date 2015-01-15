@@ -422,6 +422,68 @@ bool ORManipulator::findIK(const Eigen::Affine3d &ee_pose, Eigen::VectorXd &ik, 
 	
 }
 
+void ORManipulator::setDOFValues(const Eigen::VectorXd& dof_values, const Eigen::VectorXi& dof_indices) {
+	std::vector<OpenRAVE::dReal> vals(dof_values.size());
+	std::vector<int> inds(dof_indices.size());
+	for(unsigned int i=0; i < vals.size(); i++){
+		vals[i] = dof_values[i];
+		inds[i] = dof_indices[i];
+	}
+
+	manip_->GetRobot()->SetDOFValues(vals, 1, inds);
+}
+
+Eigen::VectorXd ORManipulator::getDOFValues() const {
+    std::vector<OpenRAVE::dReal> dof_values;
+    manip_->GetRobot()->GetDOFValues(dof_values, manip_->GetArmIndices());
+    Eigen::VectorXd eigenValues(dof_values.size());
+    for(unsigned int i = 0; i < dof_values.size(); ++i) {
+        eigenValues[i] = dof_values[i];
+    }
+    return eigenValues;
+}
+
+Eigen::VectorXi ORManipulator::getDOFIndices() const {
+    std::vector<int> indices = manip_->GetArmIndices();
+    Eigen::VectorXi eigenIndices(indices.size());
+    for (unsigned int i = 0; i < indices.size(); ++i) {
+        eigenIndices[i] = indices[i];
+    }
+    return eigenIndices;
+}
+
+bool ORManipulator::checkLimits(const Eigen::VectorXd &dof_values) const {
+    
+	Eigen::VectorXd lower;
+	Eigen::VectorXd upper;
+    getDOFLimits(lower, upper);
+
+
+	if(lower.size() != dof_values.size() || upper.size() != dof_values.size()){
+		return false;
+	}
+
+	for(unsigned int idx=0; idx < lower.size(); idx++){
+		if(dof_values[idx] < lower[idx] || dof_values[idx] > upper[idx]){
+			return false;
+		}
+	}
+	return true;
+}
+
+void ORManipulator::getDOFLimits(Eigen::VectorXd& lower, Eigen::VectorXd& higher) const {
+    std::vector<OpenRAVE::dReal> lowers;
+    std::vector<OpenRAVE::dReal> highers;
+    robot_->GetDOFLimits(lowers, highers, manip_->GetArmIndices());
+    lower.resize(lowers.size());
+    higher.resize(highers.size());
+    BOOST_ASSERT(lowers.size() == highers.size());
+    for (unsigned int i = 0; i < lowers.size(); ++i) {
+        lower[i] = lowers[i];
+        higher[i] = highers[i];
+    }
+}
+
 /*
  * ORRobot
  */

@@ -24,6 +24,7 @@ inline Eigen::Affine3d toEigen(OpenRAVE::Transform const &or_tf)
                          or_matrix.m[4], or_matrix.m[5], or_matrix.m[6],
                          or_matrix.m[8], or_matrix.m[9], or_matrix.m[10];
     eigen_tf.translation() << or_matrix.trans.x, or_matrix.trans.y, or_matrix.trans.z;
+
     return eigen_tf;
 }
 
