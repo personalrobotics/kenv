@@ -386,6 +386,11 @@ boost::shared_ptr<Environment> ORManipulator::getEnvironment() const {
     return robot->getEnvironment();
 }
 
+boost::shared_ptr<Robot> ORManipulator::getRobot() const {
+   kenv::Robot::Ptr robot = robot_;
+   return robot;
+}
+
 Eigen::Affine3d ORManipulator::getEndEffectorTransform(void) const {
 
 	OpenRAVE::Transform or_tf = manip_->GetEndEffectorTransform();

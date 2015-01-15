@@ -141,6 +141,11 @@ public:
      */
     boost::shared_ptr<Environment> getEnvironment(void) const;
 
+    /**
+     * @return The robot this manipulator is attached ot
+     */
+    boost::shared_ptr<Robot> getRobot(void) const;
+
 	/**
 	 * @return The end-effector for this manipulator
 	 */

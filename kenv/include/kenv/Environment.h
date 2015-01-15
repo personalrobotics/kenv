@@ -19,6 +19,7 @@ namespace kenv {
 
 class Environment;
 class Object;
+class Robot;
 
 typedef Eigen::AlignedBox<double, 3> AlignedBox3d;
 typedef boost::shared_ptr<void> Handle;
@@ -134,6 +135,7 @@ public:
     typedef boost::shared_ptr<Manipulator const> ConstPtr;
 
     virtual boost::shared_ptr<Environment> getEnvironment(void) const = 0;
+    virtual boost::shared_ptr<Robot> getRobot(void) const = 0;
     virtual Eigen::Affine3d getEndEffectorTransform(void) const = 0;
     virtual Jacobian::Ptr getJacobian(void) const = 0;
     virtual bool findIK(const Eigen::Affine3d& ee_pose, Eigen::VectorXd& ik, bool check_collision = false) const = 0;
