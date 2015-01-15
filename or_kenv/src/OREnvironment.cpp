@@ -372,13 +372,18 @@ void ORViewer::redraw(void)
 /**
  * ORManipulator
  */
-ORManipulator::ORManipulator(boost::weak_ptr<ORRobot> robot, OpenRAVE::RobotBase::ManipulatorPtr manip)
+ORManipulator::ORManipulator(boost::shared_ptr<ORRobot> robot, OpenRAVE::RobotBase::ManipulatorPtr manip)
 	: robot_(robot), manip_(manip) {
 
 }
 
 OpenRAVE::RobotBase::ManipulatorPtr ORManipulator::getORManipulator() const {
 	return manip_;
+}
+
+boost::shared_ptr<Environment> ORManipulator::getEnvironment() const {
+    kenv::Robot::Ptr robot = robot_;
+    return robot->getEnvironment();
 }
 
 Eigen::Affine3d ORManipulator::getEndEffectorTransform(void) const {
@@ -474,7 +479,7 @@ bool ORManipulator::checkLimits(const Eigen::VectorXd &dof_values) const {
 void ORManipulator::getDOFLimits(Eigen::VectorXd& lower, Eigen::VectorXd& higher) const {
     std::vector<OpenRAVE::dReal> lowers;
     std::vector<OpenRAVE::dReal> highers;
-    robot_->GetDOFLimits(lowers, highers, manip_->GetArmIndices());
+    manip_->GetRobot()->GetDOFLimits(lowers, highers, manip_->GetArmIndices());
     lower.resize(lowers.size());
     higher.resize(highers.size());
     BOOST_ASSERT(lowers.size() == highers.size());

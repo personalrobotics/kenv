@@ -129,7 +129,7 @@ public:
 	 * @param robot The robot this manipulator belongs to
 	 * @param manip The OpenRAVE Manipulator to decorate
 	 */
-	ORManipulator(boost::weak_ptr<ORRobot> robot, OpenRAVE::RobotBase::ManipulatorPtr manip);
+	ORManipulator(boost::shared_ptr<ORRobot> robot, OpenRAVE::RobotBase::ManipulatorPtr manip);
 
 	/**
 	 * @return The decorated OpenRAVE manipulator
@@ -139,7 +139,7 @@ public:
     /**
      * @return The environment this manipulator is in
      */
-    boost::shared_ptr<Environment> getEnvironment(void) const { return robot_->getEnvironment(); }
+    boost::shared_ptr<Environment> getEnvironment(void) const;
 
 	/**
 	 * @return The end-effector for this manipulator
@@ -194,7 +194,7 @@ public:
 
 
 private: 
-	boost::weak_ptr<ORRobot> robot_;
+	boost::shared_ptr<ORRobot> robot_;
 	OpenRAVE::RobotBase::ManipulatorPtr manip_;
 };
 
