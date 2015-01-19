@@ -1,10 +1,15 @@
 #include <stdexcept>
+#include <boost/format.hpp>
 #include <Box2D/Dynamics/b2Body.h>
 #include <Box2D/Dynamics/b2Fixture.h>
+#include <Box2D/Dynamics/Joints/b2FrictionJoint.h>
 #include "Box2DBody.h"
 #include "Box2DLink.h"
 #include "Box2DJoint.h"
 #include "Box2DWorld.h"
+
+using boost::format;
+using boost::str;
 
 namespace box2d_kenv {
 
@@ -13,6 +18,7 @@ Box2DLink::Box2DLink(Box2DBodyPtr body, std::string const &name,
     : parent_body_(body)
     , name_(name)
     , b2_body_(b2_body)
+    , b2_friction_(NULL)
 {
     BOOST_ASSERT(body);
     BOOST_ASSERT(b2_body_);
@@ -163,7 +169,7 @@ void Box2DLink::AddChildJoint(Box2DJointPtr const &joint)
 }
 
 #if 0
-double Box2DBody::friction_coefficient() const
+double Box2DLink::friction_coefficient() const
 {
     if (!b2_friction_) {
         throw std::runtime_error(
@@ -177,7 +183,7 @@ double Box2DBody::friction_coefficient() const
     return b2_friction_->GetMaxForce() / (scale * b2_body->GetMass());
 }
 
-double Box2DBody::pressure_radius() const
+double Box2DLink::pressure_radius() const
 {
     if (!b2_friction_) {
         throw std::runtime_error(
@@ -190,20 +196,41 @@ double Box2DBody::pressure_radius() const
 
     return b2_friction_->GetMaxTorque() / (scale * mu * b2_body->GetMass());
 }
+#endif
 
-void Box2DBody::set_friction(double mu, double c)
+void Box2DLink::enable_friction(Box2DLinkPtr const &surface)
 {
+    if (b2_friction_) {
+        throw std::runtime_error(
+            str(format("Body '%s' already has friction enabled with '%s'.")
+                % name_ % surface->name())
+        );
+    }
+
+    b2FrictionJointDef b2_jointdef;
+    b2_jointdef.Initialize(b2_body_, surface->b2_body_, b2Vec2(0., 0.));
+    b2_jointdef.maxForce = 0.;
+    b2_jointdef.maxTorque = 0.;
+
+    b2_friction_ = static_cast<b2FrictionJoint *>(
+        world()->b2_world()->CreateJoint(&b2_jointdef));
+}
+
+void Box2DLink::set_friction(double mu, double c)
+{
+    static double const gravity = 9.81;
+
     if (!b2_friction_) {
         throw std::runtime_error(
             str(format("Body '%s' does not have friction enabled.") % name_)
         );
     }
 
-    double const scale = world()->scale()
+    double const scale = world()->scale();
+    double const max_normal_force = scale * gravity * b2_body_->GetMass();
 
-    b2_friction_->SetMaxForce(scale * mu * b2_body->GetMass());
-    b2_friction_->SetMaxTorque(scale * mu * c * b2_body->GetMass());
+    b2_friction_->SetMaxForce(mu * max_normal_force);
+    b2_friction_->SetMaxTorque(mu * c * max_normal_force);
 }
-#endif
 
 }

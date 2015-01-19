@@ -48,8 +48,11 @@ int main(int argc, char **argv)
     b2World *b2_world = world->b2_world();
 
     Eigen::Affine2d object_pose = Eigen::Affine2d::Identity();
-    object_pose.pretranslate(Eigen::Vector2d(-0.2, 0.1));
+    object_pose.pretranslate(Eigen::Vector2d(-0.2, 0.15));
     object_body->set_pose(object_pose);
+
+    object_body->root_link()->enable_friction(ground_body->root_link());
+    object_body->root_link()->set_friction(0.5, 0.05);
 
     //SetInertiaRecursive(hand_body, 1000., 10000.);
     //SetInertiaRecursive(hand_body, 0.1, 0.1);
@@ -85,6 +88,7 @@ int main(int argc, char **argv)
         }
 
         // Run a physics timestep.
+        // TODO: Also set the hand pose to prevent drift.
         hand_body->set_twist(Eigen::Vector3d(-0.01, 0., 0.));
         object_body->set_twist(Eigen::Vector3d::Zero());
         b2_world->Step(physics_period.asSeconds(), position_iterations,

@@ -8,6 +8,7 @@
 
 class b2Body;
 class b2Fixture;
+class b2FrictionJoint;
 
 namespace box2d_kenv {
 
@@ -36,6 +37,9 @@ public:
     double rotational_inertia() const;
     void set_inertia(double mass, double rotation_inertia);
 
+    void enable_friction(Box2DLinkPtr const &surface);
+    void set_friction(double mu, double c);
+
     std::vector<b2Fixture const *> fixtures() const;
 
     void AddChildJoint(Box2DJointPtr const &joint);
@@ -47,6 +51,7 @@ private:
 
     std::string name_;
     b2Body *b2_body_;
+    b2FrictionJoint *b2_friction_;
 };
 
 }
