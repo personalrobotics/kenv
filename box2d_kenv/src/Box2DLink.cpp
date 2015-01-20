@@ -4,8 +4,9 @@
 #include <Box2D/Dynamics/b2Fixture.h>
 #include <Box2D/Dynamics/Joints/b2FrictionJoint.h>
 #include "Box2DBody.h"
-#include "Box2DLink.h"
 #include "Box2DJoint.h"
+#include "Box2DLink.h"
+#include "Box2DSensor.h"
 #include "Box2DWorld.h"
 
 using boost::format;
@@ -48,6 +49,12 @@ std::vector<Box2DJointPtr> Box2DLink::child_joints() const
 {
     return std::vector<Box2DJointPtr>(child_joints_.begin(),
                                       child_joints_.end());
+}
+
+std::vector<Box2DSensorPtr> Box2DLink::child_sensors() const
+{
+    return std::vector<Box2DSensorPtr>(child_sensors_.begin(),
+                                       child_sensors_.end());
 }
 
 b2Body *Box2DLink::b2_body() {
@@ -167,6 +174,39 @@ void Box2DLink::AddChildJoint(Box2DJointPtr const &joint)
         throw std::runtime_error("Attempted to add a duplicate joint.");
     }
 }
+
+void Box2DLink::AddSensor(Box2DSensorPtr const &sensor)
+{
+    if (sensor->parent_link().get() != this) {
+        throw std::runtime_error("Sensor does not have thislink as its parent.");
+    }
+
+    std::pair<std::set<Box2DSensorPtr>::iterator, bool> const result
+        = child_sensors_.insert(sensor);
+
+    if (!result.second) {
+        throw std::runtime_error("Attempted to add a duplicate sensor.");
+    }
+}
+
+#if 0
+    // Create a Box2D sensor fixture. This fixture will generate contact
+    // events, but will not influence the physics simulation.
+    // TODO: Should I setup the contact filter?
+    b2FixtureDef b2_fixturedef;
+    b2_fixturedef.shape = geometry;
+    b2_fixturedef.density = 0.;
+    b2_fixturedef.friction = 0.;
+    b2_fixturedef.restitution = 0.;
+    b2_fixturedef.isSensor = true;
+    b2Fixture *fixture = b2_body_->CreateFixture(&b2_fixturedef);
+
+    // Create the wrapper object.
+    Box2DSensorPtr const sensor = boost::make_shared<Box2DSensor>(
+        shared_from_this(), fixture);
+    child_sensors_.insert(sensor);
+    return sensor;
+#endif
 
 #if 0
 double Box2DLink::friction_coefficient() const

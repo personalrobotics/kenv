@@ -17,6 +17,10 @@ class Box2DLink;
 typedef boost::shared_ptr<Box2DLink> Box2DLinkPtr;
 typedef boost::weak_ptr<Box2DLink> Box2DLinkWeakPtr;
 
+class Box2DSensor;
+typedef boost::shared_ptr<Box2DSensor> Box2DSensorPtr;
+typedef boost::weak_ptr<Box2DSensor> Box2DSensorWeakPtr;
+
 class Box2DJoint;
 typedef boost::shared_ptr<Box2DJoint> Box2DJointPtr;
 typedef boost::weak_ptr<Box2DJoint> Box2DJointWeakPtr;

@@ -54,7 +54,7 @@ catkin_package(
 ## Build ##
 ###########
 
-include_directories(
+include_directories(SYSTEM
   include/${PROJECT_NAME}
   ${BOOST_INCLUDE_DIRS}
   ${BOX2D_INCLUDE_DIRS}
@@ -68,10 +68,11 @@ include_directories(
 
 add_library(${PROJECT_NAME}
   src/Box2DBody.cpp
-  src/Box2DLink.cpp
-  src/Box2DJoint.cpp
-  src/Box2DWorld.cpp
   src/Box2DFactory.cpp
+  src/Box2DJoint.cpp
+  src/Box2DLink.cpp
+  src/Box2DSensor.cpp
+  src/Box2DWorld.cpp
   src/geometry_utils.cpp
 )
 target_link_libraries(${PROJECT_NAME}

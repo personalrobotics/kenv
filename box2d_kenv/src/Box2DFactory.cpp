@@ -12,14 +12,17 @@
 #include <kenv/eigen_yaml.h>
 #include "geometry_utils.h"
 #include "Box2DBody.h"
-#include "Box2DLink.h"
 #include "Box2DFactory.h"
 #include "Box2DJoint.h"
+#include "Box2DLink.h"
+#include "Box2DSensor.h"
 #include "Box2DWorld.h"
 
 using boost::format;
 using boost::make_shared;
 using boost::str;
+
+typedef boost::shared_ptr<geos::geom::Geometry> GeometryPtr;
 
 namespace box2d_kenv {
 
@@ -54,12 +57,64 @@ Box2DBodyPtr Box2DFactory::CreateEmptyBody(std::string const &name)
     return body;
 }
 
+void Box2DFactory::CreateSensors(Box2DBodyPtr const &body,
+                                 YAML::Node const &node)
+{
+    static Eigen::Affine2d const identity = Eigen::Affine2d::Identity();
+
+    std::vector<Box2DSensorPtr> all_sensors;
+
+    for (size_t i = 0; i < node.size(); ++i) {
+        YAML::Node const &sensor_node = node[i];
+        std::string const geometry_wkt
+            = sensor_node["geometry"].as<std::string>();
+        
+        // Find the parent link.
+        std::string const parent_link_name
+            = sensor_node["parent_link"].as<std::string>();
+        Box2DLinkPtr const parent_link = body->GetLink(parent_link_name);
+        b2Body *const b2_body = parent_link->b2_body();
+
+        // Load the sensor geometry.
+        GeometryPtr const geometry(wkt_reader_.read(geometry_wkt));
+        if (geometry->getGeometryTypeId() != geos::geom::GEOS_POLYGON) {
+            throw std::runtime_error(boost::str(
+                boost::format("Sensor for link '%s' has type '%s'; only polygons"
+                              " are supported.")
+                    % parent_link_name % geometry->getGeometryType()
+            ));
+        }
+        geos::geom::Polygon const &polygon
+            = dynamic_cast<geos::geom::Polygon const &>(*geometry);
+        std::vector<b2PolygonShape> const b2_shapes
+            = ConvertGeometry(polygon, identity);
+
+        // Create mass-less fixtures for the sensor. These fixtures are flagged
+        // with the isSensor flag, so they will not impact the physics simulation.
+        std::vector<b2Fixture *> b2_fixtures;
+
+        BOOST_FOREACH (b2PolygonShape const &b2_shape, b2_shapes) {
+            b2FixtureDef b2_fixturedef;
+            b2_fixturedef.shape = &b2_shape;
+            b2_fixturedef.density = 0.;
+            b2_fixturedef.isSensor = true;
+
+            b2Fixture *const b2_fixture = b2_body->CreateFixture(&b2_fixturedef);
+            b2_fixtures.push_back(b2_fixture);
+        }
+
+        // Create the wrapper object.
+        Box2DSensorPtr const sensor = boost::make_shared<Box2DSensor>(
+            parent_link, b2_fixtures);
+        parent_link->AddSensor(sensor);
+        all_sensors.push_back(sensor);
+    }
+}
+
 Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
                                       YAML::Node const &node)
 {
     using namespace box2d_kenv::util;
-
-    typedef boost::shared_ptr<geos::geom::Geometry> GeometryPtr;
 
     BOOST_ASSERT(parent_body);
 

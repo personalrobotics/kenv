@@ -18,6 +18,9 @@ public:
     Box2DBodyPtr CreateBody(std::string const &name, std::string const &path);
     Box2DBodyPtr CreateEmptyBody(std::string const &name);
 
+    void CreateSensors(Box2DBodyPtr const &body, std::istream &stream);
+    void CreateSensors(Box2DBodyPtr const &body, std::string const &path);
+
 private:
     b2World b2_world_;
     std::map<std::string, Box2DBodyPtr> bodies_;

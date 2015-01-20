@@ -27,8 +27,6 @@ namespace kenv {
 		BOOST_STATIC_ASSERT(Derived::IsVectorAtCompileTime);
 		if(eigen_v.size() == 3) {
 			return math::Vector3(eigen_v[0], eigen_v[1], eigen_v[2]);
-		} else if (eigen_v.size() == 4) {
-			return math::Vector4(eigen_v[0], eigen_v[1], eigen_v[2], eigen_v[3]);
 		} else {
 			throw std::invalid_argument(boost::str(
 				boost::format("Expected 3 or 4 element vector; got %d element(s).") 

@@ -43,9 +43,9 @@ int main(int argc, char **argv)
     // Setup the physics simulator.
     Box2DWorldPtr const world = boost::make_shared<Box2DWorld>(physics_scale);
     Box2DBodyPtr const ground_body = world->CreateEmptyBody("ground");
-    Box2DBodyPtr const hand_body = world->CreateBody("hand", hand_path);
     Box2DBodyPtr const object_body = world->CreateBody("object", object_path);
-    b2World *b2_world = world->b2_world();
+    Box2DBodyPtr const hand_body = world->CreateBody("hand", hand_path);
+    world->CreateSensors(hand_body, "data/barretthand_fingertip.sensors.yaml");
 
     Eigen::Affine2d object_pose = Eigen::Affine2d::Identity();
     object_pose.pretranslate(Eigen::Vector2d(-0.2, 0.15));
@@ -67,6 +67,7 @@ int main(int argc, char **argv)
     sf::RenderWindow window(video_mode, window_name);
     window.setVerticalSyncEnabled(true);
 
+    b2World *b2_world = world->b2_world();
     Box2DVisualizer b2_visualizer(&window, render_scale / physics_scale,
                                   window_width / 2., window_height / 2.);
     b2_visualizer.SetFlags(
