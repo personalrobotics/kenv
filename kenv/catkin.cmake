@@ -30,6 +30,7 @@ include_directories(
 add_library("${PROJECT_NAME}"
     src/Environment.cpp
     src/CollisionChecker.cpp
+    src/Jacobian.cpp
     src/ObjectPool.cpp
 )
 
