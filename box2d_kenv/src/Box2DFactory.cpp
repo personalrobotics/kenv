@@ -79,13 +79,16 @@ std::vector<Box2DSensorPtr> Box2DFactory::CreateSensors(
 
         // Load the sensor geometry. If the sensor is a LineString, convert it
         // to a Polygon that will be accepted by Box2D.
-        GeometryPtr geometry(wkt_reader_.read(geometry_wkt));
+        GeometryPtr const geometry(wkt_reader_.read(geometry_wkt));
+        GeometryPtr modified_geometry = geometry;
         if (geometry->getGeometryTypeId() == geos::geom::GEOS_LINESTRING) {
             // TODO: In theory, (2 * b2_linearSlop + epsilon) should work. Why
             // do I need such a large value here?
-            geometry.reset(geometry->buffer(100. * b2_linearSlop / scale, 1));
+            modified_geometry.reset(
+                geometry->buffer(100. * b2_linearSlop / scale, 1)
+            );
         }
-        if (geometry->getGeometryTypeId() != geos::geom::GEOS_POLYGON) {
+        if (modified_geometry->getGeometryTypeId() != geos::geom::GEOS_POLYGON) {
             throw std::runtime_error(boost::str(
                 boost::format("Sensor for link '%s' has type '%s'; only polygons"
                               " are supported.")
@@ -93,7 +96,7 @@ std::vector<Box2DSensorPtr> Box2DFactory::CreateSensors(
             ));
         }
         geos::geom::Polygon const &polygon
-            = dynamic_cast<geos::geom::Polygon const &>(*geometry);
+            = dynamic_cast<geos::geom::Polygon const &>(*modified_geometry);
         std::vector<b2PolygonShape> const b2_shapes
             = ConvertGeometry(polygon, identity);
 
@@ -113,7 +116,7 @@ std::vector<Box2DSensorPtr> Box2DFactory::CreateSensors(
 
         // Create the wrapper object.
         Box2DSensorPtr const sensor = boost::make_shared<Box2DSensor>(
-            parent_link, name, b2_fixtures);
+            parent_link, name, geometry, b2_fixtures);
         parent_link->AddSensor(sensor);
         all_sensors.push_back(sensor);
     }

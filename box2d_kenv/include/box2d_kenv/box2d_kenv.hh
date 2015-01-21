@@ -3,6 +3,14 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
+namespace geos {
+namespace geom {
+
+class Geometry;
+
+}
+}
+
 namespace box2d_kenv {
 
 class Box2DWorld;
@@ -24,6 +32,9 @@ typedef boost::weak_ptr<Box2DSensor> Box2DSensorWeakPtr;
 class Box2DJoint;
 typedef boost::shared_ptr<Box2DJoint> Box2DJointPtr;
 typedef boost::weak_ptr<Box2DJoint> Box2DJointWeakPtr;
+
+typedef boost::shared_ptr<geos::geom::Geometry> GeometryPtr;
+typedef boost::shared_ptr<geos::geom::Geometry const> GeometryConstPtr;
 
 }
 
