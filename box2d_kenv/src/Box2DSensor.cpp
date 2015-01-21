@@ -12,6 +12,11 @@ Box2DSensor::Box2DSensor(Box2DLinkPtr const &parent_link,
     , b2_fixtures_(b2_fixtures)
 {
     BOOST_ASSERT(parent_link);
+
+    // Add back-references from Box2D.
+    BOOST_FOREACH (b2Fixture *const b2_fixture, b2_fixtures) {
+        b2_fixture->SetUserData(this);
+    }
 }
 
 Box2DBodyPtr Box2DSensor::parent_body() const

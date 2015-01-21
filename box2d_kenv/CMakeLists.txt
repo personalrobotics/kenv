@@ -72,6 +72,7 @@ add_library(${PROJECT_NAME}
   src/Box2DJoint.cpp
   src/Box2DLink.cpp
   src/Box2DSensor.cpp
+  src/Box2DSensorMonitor.cpp
   src/Box2DWorld.cpp
   src/geometry_utils.cpp
 )

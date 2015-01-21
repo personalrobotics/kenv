@@ -1,5 +1,6 @@
 #ifndef BOX2DSENSOR_H_
 #define BOX2DSENSOR_H_
+#include <vector>
 #include "box2d_kenv.hh"
 
 class b2Body;

@@ -1,3 +1,4 @@
+#include <fstream>
 #include <list>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
@@ -99,6 +100,14 @@ std::vector<Box2DJointPtr> Box2DBody::joints()
     return joints_;
 }
 
+std::vector<Box2DSensorPtr> Box2DBody::sensors()
+{
+    CheckInitialized();
+
+    return sensors_;
+}
+
+
 void Box2DBody::Initialize(Box2DLinkPtr const &root_link)
 {
     BOOST_ASSERT(root_link);
@@ -128,6 +137,39 @@ void Box2DBody::Initialize(Box2DLinkPtr const &root_link)
     root_link_ = root_link;
 }
 
+
+void Box2DBody::CreateSensors(std::istream &stream)
+{
+#ifdef YAMLCPP_NEWAPI
+    YAML::Node node = YAML::Load(stream);
+#else
+    YAML::Parser parser(stream);
+    YAML::Node node;
+    parser.GetNextDocument(node);
+#endif
+
+    Box2DFactory factory(world());
+    std::vector<Box2DSensorPtr> const sensors
+        = factory.CreateSensors(shared_from_this(), node);
+    sensors_.insert(sensors_.end(), sensors.begin(), sensors.end());
+}
+
+void Box2DBody::CreateSensors(std::string const &path)
+{
+    std::ifstream stream(path.c_str());
+
+    if (!stream.good()) {
+        throw std::runtime_error(
+            str(format("Unable to read sensors for body '%s' from '%s'.")
+                % name_ % path));
+    }
+    return CreateSensors(stream);
+}
+
+
+/*
+ * Private
+ */
 void Box2DBody::CheckInitialized() const
 {
     if (!root_link_) {

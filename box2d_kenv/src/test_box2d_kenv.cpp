@@ -8,13 +8,17 @@
 #include "Box2DJoint.h"
 #include "Box2DWorld.h"
 #include "Box2DVisualizer.h"
+#include "Box2DSensor.h"
+#include "Box2DSensorMonitor.h"
 
 using box2d_kenv::Box2DBodyPtr;
 using box2d_kenv::Box2DLinkPtr;
 using box2d_kenv::Box2DJointPtr;
 using box2d_kenv::Box2DWorld;
 using box2d_kenv::Box2DWorldPtr;
+using box2d_kenv::Box2DSensorPtr;
 using box2d_kenv::Box2DVisualizer;
+using box2d_kenv::Box2DSensorMonitor;
 
 static void SetInertiaRecursive(Box2DBodyPtr const &body,
                                 double mass, double rotational_inertia)
@@ -42,10 +46,11 @@ int main(int argc, char **argv)
 
     // Setup the physics simulator.
     Box2DWorldPtr const world = boost::make_shared<Box2DWorld>(physics_scale);
+    Box2DSensorMonitor const sensor_monitor(world);
     Box2DBodyPtr const ground_body = world->CreateEmptyBody("ground");
     Box2DBodyPtr const object_body = world->CreateBody("object", object_path);
     Box2DBodyPtr const hand_body = world->CreateBody("hand", hand_path);
-    world->CreateSensors(hand_body, "data/barretthand_fingertip.sensors.yaml");
+    hand_body->CreateSensors("data/barretthand_fingertip.sensors.yaml");
 
     Eigen::Affine2d object_pose = Eigen::Affine2d::Identity();
     object_pose.pretranslate(Eigen::Vector2d(-0.2, 0.15));
@@ -94,6 +99,15 @@ int main(int argc, char **argv)
         object_body->set_twist(Eigen::Vector3d::Zero());
         b2_world->Step(physics_period.asSeconds(), position_iterations,
                        velocity_iterations);
+
+        std::cout << "sensors:";
+        BOOST_FOREACH (Box2DSensorPtr const &sensor, hand_body->sensors()) {
+            bool const is_active = sensor_monitor.IsSensorActive(sensor);
+            std::cout << " Link[" << sensor->parent_link()->name() << "]"
+                      << ".Sensor[0x" << sensor.get() << "]"
+                      << " = " << is_active;
+        }
+        std::cout << std::endl;
 
         // Update the viewer.
         if (iteration % render_skip == 0) {

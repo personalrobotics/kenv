@@ -57,10 +57,11 @@ Box2DBodyPtr Box2DFactory::CreateEmptyBody(std::string const &name)
     return body;
 }
 
-void Box2DFactory::CreateSensors(Box2DBodyPtr const &body,
-                                 YAML::Node const &node)
+std::vector<Box2DSensorPtr> Box2DFactory::CreateSensors(
+        Box2DBodyPtr const &body, YAML::Node const &node)
 {
     static Eigen::Affine2d const identity = Eigen::Affine2d::Identity();
+    double const scale = world_->scale();
 
     std::vector<Box2DSensorPtr> all_sensors;
 
@@ -75,8 +76,14 @@ void Box2DFactory::CreateSensors(Box2DBodyPtr const &body,
         Box2DLinkPtr const parent_link = body->GetLink(parent_link_name);
         b2Body *const b2_body = parent_link->b2_body();
 
-        // Load the sensor geometry.
-        GeometryPtr const geometry(wkt_reader_.read(geometry_wkt));
+        // Load the sensor geometry. If the sensor is a LineString, convert it
+        // to a Polygon that will be accepted by Box2D.
+        GeometryPtr geometry(wkt_reader_.read(geometry_wkt));
+        if (geometry->getGeometryTypeId() == geos::geom::GEOS_LINESTRING) {
+            // TODO: In theory, (2 * b2_linearSlop + epsilon) should work. Why
+            // do I need such a large value here?
+            geometry.reset(geometry->buffer(100. * b2_linearSlop / scale, 1));
+        }
         if (geometry->getGeometryTypeId() != geos::geom::GEOS_POLYGON) {
             throw std::runtime_error(boost::str(
                 boost::format("Sensor for link '%s' has type '%s'; only polygons"
@@ -109,6 +116,8 @@ void Box2DFactory::CreateSensors(Box2DBodyPtr const &body,
         parent_link->AddSensor(sensor);
         all_sensors.push_back(sensor);
     }
+
+    return all_sensors;
 }
 
 Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
@@ -170,6 +179,7 @@ Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
     b2Body *b2_body = b2_world_->CreateBody(&b2_bodydef);
     std::vector<b2PolygonShape> const b2_shapes
         = ConvertGeometry(polygon, relative_pose);
+    std::vector<b2Fixture *> b2_fixtures;
 
     BOOST_FOREACH (b2PolygonShape const &b2_shape, b2_shapes) {
         // TODO: Load these properties from YAML.
@@ -187,11 +197,13 @@ Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
         // if this is desirable.
         b2_fixturedef.restitution = restitution;
 
-        b2_body->CreateFixture(&b2_fixturedef);
+        b2Fixture *const b2_fixture = b2_body->CreateFixture(&b2_fixturedef);
+        b2_fixtures.push_back(b2_fixture);
     }
 
     // Create this link.
     Box2DLinkPtr const link = make_shared<Box2DLink>(parent_body, name, b2_body);
+
     // Recursively construct this link's children.
     for (size_t i = 0; i < node["joints"].size(); ++i) {
         YAML::Node const &joint_node = node["joints"][i];

@@ -27,7 +27,8 @@ public:
 
     Box2DBodyPtr CreateEmptyBody(std::string const &name);
 
-    void CreateSensors(Box2DBodyPtr const &body, YAML::Node const &node);
+    std::vector<Box2DSensorPtr> CreateSensors(
+        Box2DBodyPtr const &body, YAML::Node const &node);
 
 private:
     Box2DWorldPtr world_;

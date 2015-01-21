@@ -80,30 +80,4 @@ Box2DBodyPtr Box2DWorld::CreateEmptyBody(std::string const &name)
     return body;
 }
 
-void Box2DWorld::CreateSensors(Box2DBodyPtr const &body, std::istream &stream)
-{
-#ifdef YAMLCPP_NEWAPI
-    YAML::Node node = YAML::Load(stream);
-#else
-    YAML::Parser parser(stream);
-    YAML::Node node;
-    parser.GetNextDocument(node);
-#endif
-
-    Box2DFactory factory(shared_from_this());
-    factory.CreateSensors(body, node);
-}
-
-void Box2DWorld::CreateSensors(Box2DBodyPtr const &body, std::string const &path)
-{
-    std::ifstream stream(path.c_str());
-
-    if (!stream.good()) {
-        throw std::runtime_error(
-            str(format("Unable to read sensors for body '%s' from '%s'.")
-                % body->name() % path));
-    }
-    return CreateSensors(body, stream);
-}
-
 }

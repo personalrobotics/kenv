@@ -1,13 +1,17 @@
 #ifndef BOX2DBODY_H_
 #define BOX2DBODY_H_
 #include <vector>
+#include <boost/enable_shared_from_this.hpp>
 #include <boost/unordered_map.hpp>
+#include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
 #include "box2d_kenv.hh"
+#include "Box2DBody.h"
+#include "Box2DFactory.h"
 
 namespace box2d_kenv {
 
-class Box2DBody {
+class Box2DBody : public boost::enable_shared_from_this<Box2DBody> {
 public:
     Box2DBody(Box2DWorldPtr const &world, std::string const &name);
     Box2DWorldPtr world() const;
@@ -27,8 +31,11 @@ public:
 
     std::vector<Box2DLinkPtr> links();
     std::vector<Box2DJointPtr> joints();
+    std::vector<Box2DSensorPtr> sensors();
 
     void Initialize(Box2DLinkPtr const &root_link);
+    void CreateSensors(std::istream &stream);
+    void CreateSensors(std::string const &path);
 
 private:
     std::string name_;
@@ -36,8 +43,10 @@ private:
     Box2DLinkPtr root_link_;
     std::vector<Box2DLinkPtr> links_;
     std::vector<Box2DJointPtr> joints_;
+    std::vector<Box2DSensorPtr> sensors_;
     boost::unordered_map<std::string, Box2DLinkPtr> links_map_;
     boost::unordered_map<std::string, Box2DJointPtr> joints_map_;
+    // TODO: Allow for named sensors.
 
     void CheckInitialized() const;
 

@@ -23,6 +23,16 @@ Box2DLink::Box2DLink(Box2DBodyPtr body, std::string const &name,
 {
     BOOST_ASSERT(body);
     BOOST_ASSERT(b2_body_);
+
+    // Setup back-references from Box2D.
+    b2_body->SetUserData(this);
+
+    for (b2Fixture *b2_fixture = b2_body->GetFixtureList();
+         b2_fixture != NULL;
+         b2_fixture = b2_fixture->GetNext())
+    {
+        b2_fixture->SetUserData(this);
+    }
 }
 
 Box2DWorldPtr Box2DLink::world() const
