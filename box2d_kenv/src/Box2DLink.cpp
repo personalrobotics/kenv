@@ -14,11 +14,14 @@ using boost::str;
 
 namespace box2d_kenv {
 
-Box2DLink::Box2DLink(Box2DBodyPtr body, std::string const &name,
+Box2DLink::Box2DLink(Box2DBodyPtr body,
+                     std::string const &name,
+                     GeometryConstPtr const &geometry,
                      b2Body *b2_body)
     : parent_body_(body)
     , name_(name)
     , b2_body_(b2_body)
+    , geometry_(geometry)
     , b2_friction_(NULL)
 {
     BOOST_ASSERT(body);
@@ -79,6 +82,11 @@ b2Body const *Box2DLink::b2_body() const
 std::string Box2DLink::name() const
 {
     return name_;
+}
+
+GeometryConstPtr Box2DLink::geometry() const
+{
+    return geometry_;
 }
 
 std::vector<b2Fixture const *> Box2DLink::fixtures() const

@@ -14,7 +14,10 @@ namespace box2d_kenv {
 
 class Box2DLink {
 public:
-    Box2DLink(Box2DBodyPtr body, std::string const &name, b2Body *b2_body);
+    Box2DLink(Box2DBodyPtr body,
+        std::string const &name,
+        GeometryConstPtr const &geometry,
+        b2Body *b2_body);
 
     Box2DWorldPtr world() const;
     Box2DBodyPtr parent_body() const;
@@ -27,6 +30,7 @@ public:
     b2Body const *b2_body() const;
 
     std::string name() const;
+    GeometryConstPtr geometry() const;
 
     Eigen::Affine2d pose() const;
     void set_pose(Eigen::Affine2d const &pose);
@@ -53,6 +57,7 @@ private:
     std::set<Box2DSensorPtr> child_sensors_;
 
     std::string name_;
+    GeometryConstPtr geometry_;
     b2Body *b2_body_;
     b2FrictionJoint *b2_friction_;
 };

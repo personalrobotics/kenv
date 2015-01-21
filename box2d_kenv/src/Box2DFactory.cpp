@@ -50,8 +50,14 @@ Box2DBodyPtr Box2DFactory::CreateEmptyBody(std::string const &name)
     b2_bodydef.type = b2_staticBody;
     b2Body *b2_body = b2_world_->CreateBody(&b2_bodydef);
 
+    GeometryPtr const empty_geometry(
+        geos::geom::GeometryFactory::getDefaultInstance()
+            ->createEmptyGeometry()
+    );
+
     Box2DBodyPtr const body = make_shared<Box2DBody>(world_, name);
-    Box2DLinkPtr const link = make_shared<Box2DLink>(body, "", b2_body);
+    Box2DLinkPtr const link
+        = make_shared<Box2DLink>(body, "empty", empty_geometry, b2_body);
     body->Initialize(link);
 
     return body;
@@ -206,7 +212,8 @@ Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
     }
 
     // Create this link.
-    Box2DLinkPtr const link = make_shared<Box2DLink>(parent_body, name, b2_body);
+    Box2DLinkPtr const link
+        = make_shared<Box2DLink>(parent_body, name, geometry, b2_body);
 
     // Recursively construct this link's children.
     for (size_t i = 0; i < node["joints"].size(); ++i) {
