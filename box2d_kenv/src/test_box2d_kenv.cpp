@@ -44,27 +44,27 @@ int main(int argc, char **argv)
     std::string hand_path = "data/barretthand_twofinger.object.yaml";
     std::string object_path = "data/ricepilaf.object.yaml";
 
+    Eigen::Affine2d initial_hand_pose = Eigen::Affine2d::Identity();
+    Eigen::Vector3d hand_twist(-0.01, 0., 0.);
+    double hand_finger_velocity = 0.3;
+
+    Eigen::Affine2d initial_object_pose = Eigen::Affine2d::Identity();
+    initial_object_pose.pretranslate(Eigen::Vector2d(-0.2, 0.1));
+
     // Setup the physics simulator.
     Box2DWorldPtr const world = boost::make_shared<Box2DWorld>(physics_scale);
     Box2DSensorMonitor const sensor_monitor(world);
     Box2DBodyPtr const ground_body = world->CreateEmptyBody("ground");
     Box2DBodyPtr const object_body = world->CreateBody("object", object_path);
     Box2DBodyPtr const hand_body = world->CreateBody("hand", hand_path);
+
     hand_body->CreateSensors("data/barretthand_fingertip.sensors.yaml");
+    //SetInertiaRecursive(hand_body, 1000., 10000.);
 
-    Eigen::Affine2d object_pose = Eigen::Affine2d::Identity();
-    object_pose.pretranslate(Eigen::Vector2d(-0.2, 0.15));
-    object_body->set_pose(object_pose);
-
+    object_body->set_pose(initial_object_pose);
     object_body->root_link()->enable_friction(ground_body->root_link());
     object_body->root_link()->set_friction(0.5, 0.05);
-
-    //SetInertiaRecursive(hand_body, 1000., 10000.);
-    //SetInertiaRecursive(hand_body, 0.1, 0.1);
-
-    // Close the hand at a constant velocity.
-    hand_body->GetJoint("J01")->set_desired_velocity(0.3);
-    hand_body->GetJoint("J21")->set_desired_velocity(0.3);
+    //SetInertiaRecursive(object_body, 0.1, 0.1);
 
     // Create a window.
     unsigned int const bit_depth = sf::VideoMode::getDesktopMode().bitsPerPixel;
@@ -84,6 +84,7 @@ int main(int argc, char **argv)
 
     sf::Clock clock;
     unsigned int iteration = 0;
+    double t = 0.;
 
     while (window.isOpen()) {
         sf::Event event;
@@ -93,12 +94,21 @@ int main(int argc, char **argv)
             }
         }
 
+        // Manually advance the hand to prevent drift.
+        // TODO: This ignores the angular component of the twist.
+        Eigen::Affine2d hand_pose = initial_hand_pose;
+        hand_pose.pretranslate(t * hand_twist.head<2>());
+        hand_body->set_pose(hand_pose);
+        hand_body->set_twist(hand_twist);
+        hand_body->GetJoint("J01")->set_desired_velocity(hand_finger_velocity);
+        hand_body->GetJoint("J21")->set_desired_velocity(hand_finger_velocity);
+
         // Run a physics timestep.
-        // TODO: Also set the hand pose to prevent drift.
-        hand_body->set_twist(Eigen::Vector3d(-0.01, 0., 0.));
         object_body->set_twist(Eigen::Vector3d::Zero());
         b2_world->Step(physics_period.asSeconds(), position_iterations,
                        velocity_iterations);
+
+        t += physics_period.asSeconds();
 
         std::cout << "sensors:";
         BOOST_FOREACH (Box2DSensorPtr const &sensor, hand_body->sensors()) {
