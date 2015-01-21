@@ -11,16 +11,20 @@ namespace box2d_kenv {
 class Box2DSensor {
 public:
     Box2DSensor(Box2DLinkPtr const &parent_link,
+                std::string const &name,
                 std::vector<b2Fixture *> const &b2_fixtures);
 
     Box2DBodyPtr parent_body() const;
     Box2DLinkPtr parent_link() const;
+
+    std::string name() const;
 
     std::vector<b2Fixture *> b2_fixtures();
     std::vector<b2Fixture const *> b2_fixtures() const;
 
 private:
     Box2DLinkWeakPtr parent_link_;
+    std::string name_;
     std::vector<b2Fixture *> b2_fixtures_;
 };
 

@@ -103,9 +103,7 @@ int main(int argc, char **argv)
         std::cout << "sensors:";
         BOOST_FOREACH (Box2DSensorPtr const &sensor, hand_body->sensors()) {
             bool const is_active = sensor_monitor.IsSensorActive(sensor);
-            std::cout << " Link[" << sensor->parent_link()->name() << "]"
-                      << ".Sensor[0x" << sensor.get() << "]"
-                      << " = " << is_active;
+            std::cout << " " << sensor->name() << " = " << is_active;
         }
         std::cout << std::endl;
 

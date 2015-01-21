@@ -7,8 +7,10 @@
 namespace box2d_kenv {
 
 Box2DSensor::Box2DSensor(Box2DLinkPtr const &parent_link,
+                         std::string const &name,
                          std::vector<b2Fixture *> const &b2_fixtures)
     : parent_link_(parent_link)
+    , name_(name)
     , b2_fixtures_(b2_fixtures)
 {
     BOOST_ASSERT(parent_link);
@@ -27,6 +29,11 @@ Box2DBodyPtr Box2DSensor::parent_body() const
 Box2DLinkPtr Box2DSensor::parent_link() const
 {
     return parent_link_.lock();
+}
+
+std::string Box2DSensor::name() const
+{
+    return name_;
 }
 
 std::vector<b2Fixture *> Box2DSensor::b2_fixtures()

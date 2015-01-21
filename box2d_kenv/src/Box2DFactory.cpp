@@ -67,6 +67,7 @@ std::vector<Box2DSensorPtr> Box2DFactory::CreateSensors(
 
     for (size_t i = 0; i < node.size(); ++i) {
         YAML::Node const &sensor_node = node[i];
+        std::string const name = sensor_node["name"].as<std::string>();
         std::string const geometry_wkt
             = sensor_node["geometry"].as<std::string>();
         
@@ -112,7 +113,7 @@ std::vector<Box2DSensorPtr> Box2DFactory::CreateSensors(
 
         // Create the wrapper object.
         Box2DSensorPtr const sensor = boost::make_shared<Box2DSensor>(
-            parent_link, b2_fixtures);
+            parent_link, name, b2_fixtures);
         parent_link->AddSensor(sensor);
         all_sensors.push_back(sensor);
     }
