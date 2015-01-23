@@ -106,7 +106,7 @@ public:
 
     virtual Handle drawPlane( const Eigen::Affine3d& origin, float width, float height,
     						const boost::multi_array<float,3>& texture);
-    
+    physics::PhysicsEnginePtr getPhysicsEngine();
     void addType(std::string const &type, std::string const &kinbody_path);
 
     static void setupServer();

@@ -301,7 +301,9 @@ namespace kenv {
       }
       return Object::Ptr();
   }
-  
+  physics::PhysicsEnginePtr GazeboEnvironment::getPhysicsEngine(){
+    return env_->GetPhysicsEngine();
+  }
   Object::Ptr GazeboEnvironment::createObject(std::string const &type, std::string const &name, bool anonymous)
   {
     // InsertModelFile returns void and doesn't throw an exception if loading
