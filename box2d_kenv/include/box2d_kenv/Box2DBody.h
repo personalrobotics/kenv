@@ -27,11 +27,19 @@ public:
     void set_twist(Eigen::Vector3d const &twist);
 
     Box2DLinkPtr GetLink(std::string const &name);
+    Box2DLinkConstPtr GetLink(std::string const &name) const;
+
     Box2DJointPtr GetJoint(std::string const &name);
+    Box2DJointConstPtr GetJoint(std::string const &name) const;
 
     std::vector<Box2DLinkPtr> links();
+    std::vector<Box2DLinkConstPtr> links() const;
+
     std::vector<Box2DJointPtr> joints();
+    std::vector<Box2DJointConstPtr> joints() const;
+
     std::vector<Box2DSensorPtr> sensors();
+    std::vector<Box2DSensorConstPtr> sensors() const;
 
     void Initialize(Box2DLinkPtr const &root_link);
     void CreateSensors(std::istream &stream);

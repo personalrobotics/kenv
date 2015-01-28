@@ -105,13 +105,13 @@ std::vector<b2Fixture const *> Box2DLink::fixtures() const
 Eigen::Affine2d Box2DLink::pose() const
 {
     double const scale = world()->scale();
-    b2Vec2 const &position = b2_body_->GetPosition();
+    b2Vec2 const position = b2_body_->GetPosition();
     float32 const angle = b2_body_->GetAngle();
 
-    Eigen::Affine2d pose;
+    Eigen::Affine2d pose = Eigen::Affine2d::Identity();
     pose.rotate(Eigen::Rotation2Dd(angle));
-    pose.translation()[0] = scale * position.x;
-    pose.translation()[1] = scale * position.y;
+    pose.translation()[0] = position.x / scale;
+    pose.translation()[1] = position.y / scale;
 
     return pose;
 }
@@ -138,8 +138,8 @@ Eigen::Vector3d Box2DLink::twist() const
     float32 const angular_velocity = b2_body_->GetAngularVelocity();
 
     return Eigen::Vector3d(
-        scale * linear_velocity.x,
-        scale * linear_velocity.y,
+        linear_velocity.x / scale,
+        linear_velocity.y / scale,
         angular_velocity
     );
 }

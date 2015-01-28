@@ -141,6 +141,7 @@ Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
     std::string geometry_wkt;
     Eigen::Affine2d relative_pose;
     double density, friction, restitution;
+    double const scale = parent_body->world()->scale();
 
     try {
 #ifdef YAMLCPP_NEWAPI

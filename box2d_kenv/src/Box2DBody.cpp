@@ -12,6 +12,24 @@
 using boost::format;
 using boost::str;
 
+namespace {
+
+template <typename T>
+std::vector<boost::shared_ptr<T const> > ToConst(
+    std::vector<boost::shared_ptr<T> > const &v)
+{
+    std::vector<boost::shared_ptr<T const> > v_const;
+    v_const.resize(v.size());
+    
+    for (size_t i = 0; i < v.size(); ++i) {
+        v_const[i] = v[i];
+    }
+
+    return v_const;
+}
+
+}
+
 namespace box2d_kenv {
 
 Box2DBody::Box2DBody(Box2DWorldPtr const &world, std::string const &name)
@@ -75,7 +93,29 @@ Box2DLinkPtr Box2DBody::GetLink(std::string const &name)
     }
 }
 
+Box2DLinkConstPtr Box2DBody::GetLink(std::string const &name) const
+{
+    BOOST_AUTO(it, links_map_.find(name));
+    if (it != links_map_.end()) {
+        return it->second;
+    } else {
+        throw std::runtime_error(
+            str(format("There is no link named '%s'.") % name));
+    }
+}
+
 Box2DJointPtr Box2DBody::GetJoint(std::string const &name)
+{
+    BOOST_AUTO(it, joints_map_.find(name));
+    if (it != joints_map_.end()) {
+        return it->second;
+    } else {
+        throw std::runtime_error(
+            str(format("There is no joint named '%s'.") % name));
+    }
+}
+
+Box2DJointConstPtr Box2DBody::GetJoint(std::string const &name) const
 {
     BOOST_AUTO(it, joints_map_.find(name));
     if (it != joints_map_.end()) {
@@ -93,11 +133,25 @@ std::vector<Box2DLinkPtr> Box2DBody::links()
     return links_;
 }
 
+std::vector<Box2DLinkConstPtr> Box2DBody::links() const
+{
+    CheckInitialized();
+
+    return ToConst(links_);
+}
+
 std::vector<Box2DJointPtr> Box2DBody::joints()
 {
     CheckInitialized();
 
     return joints_;
+}
+
+std::vector<Box2DJointConstPtr> Box2DBody::joints() const
+{
+    CheckInitialized();
+
+    return ToConst(joints_);
 }
 
 std::vector<Box2DSensorPtr> Box2DBody::sensors()
@@ -107,6 +161,12 @@ std::vector<Box2DSensorPtr> Box2DBody::sensors()
     return sensors_;
 }
 
+std::vector<Box2DSensorConstPtr> Box2DBody::sensors() const
+{
+    CheckInitialized();
+
+    return ToConst(sensors_);
+}
 
 void Box2DBody::Initialize(Box2DLinkPtr const &root_link)
 {
@@ -126,6 +186,7 @@ void Box2DBody::Initialize(Box2DLinkPtr const &root_link)
     // Generate a list of all links and joints attached to this body.:w
     links_.clear();
     joints_.clear();
+    sensors_.clear();
     links_map_.clear();
     joints_map_.clear();
     GetChildren(root_link);

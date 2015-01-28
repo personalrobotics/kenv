@@ -65,6 +65,20 @@ double Box2DJoint::value() const
     return direction_ * b2_joint_->GetJointAngle();
 }
 
+void Box2DJoint::set_value(double value)
+{
+    b2Vec2 const anchor = b2_joint_->GetLocalAnchorA();
+    double const scale = parent_link()->world()->scale();
+
+    Eigen::Affine2d relative = Eigen::Affine2d::Identity();
+    relative.rotate(Eigen::Rotation2Dd(b2_joint_->GetReferenceAngle()
+                                       + direction_ * value));
+    relative.pretranslate(Eigen::Vector2d(anchor.x / scale, anchor.y / scale));
+
+    Eigen::Affine2d const child_pose = parent_link()->pose() * relative;
+    child_link()->set_pose(child_pose);
+}
+
 double Box2DJoint::velocity() const
 {
     return direction_ * b2_joint_->GetJointSpeed();

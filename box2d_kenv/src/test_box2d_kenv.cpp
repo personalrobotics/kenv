@@ -100,6 +100,17 @@ int main(int argc, char **argv)
         hand_pose.pretranslate(t * hand_twist.head<2>());
         hand_body->set_pose(hand_pose);
         hand_body->set_twist(hand_twist);
+
+        BOOST_FOREACH (Box2DJointPtr const &joint, hand_body->joints()) {
+            b2RevoluteJoint *const b2_joint = joint->b2_joint();
+            double const min_limit = std::min(
+                std::max(b2_joint->GetJointAngle(), b2_joint->GetLowerLimit()),
+                b2_joint->GetUpperLimit()
+            );
+            double const max_limit = b2_joint->GetUpperLimit();
+            b2_joint->SetLimits(min_limit, max_limit);
+        }
+
         hand_body->GetJoint("J01")->set_desired_velocity(hand_finger_velocity);
         hand_body->GetJoint("J21")->set_desired_velocity(hand_finger_velocity);
 

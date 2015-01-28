@@ -26,6 +26,8 @@ public:
     b2RevoluteJoint const *b2_joint() const;
 
     double value() const;
+    void set_value(double value);
+
     double velocity() const;
 
     void set_desired_velocity(double velocity);

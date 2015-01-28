@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(box2d_kenv)
 
+set(CMAKE_CXX_FLAGS -Wall)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 find_package(catkin REQUIRED COMPONENTS cmake_modules kenv)
