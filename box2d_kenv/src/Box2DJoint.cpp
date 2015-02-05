@@ -23,6 +23,11 @@ Box2DJoint::Box2DJoint(std::string const &name,
     BOOST_ASSERT(direction == -1. || direction == 0. || direction == 1.);
 }
 
+Box2DJoint::~Box2DJoint()
+{
+    b2_joint_->GetBodyA()->GetWorld()->DestroyJoint(b2_joint_);
+}
+
 Eigen::Affine2d Box2DJoint::origin() const
 {
     b2Vec2 const anchor = b2_joint_->GetLocalAnchorA();
@@ -83,6 +88,17 @@ double Box2DJoint::velocity() const
 {
     return direction_ * b2_joint_->GetJointSpeed();
 }
+
+#if 0
+void Box2DJoint::set_velocity(double velocity)
+{
+    // Get the twist of the parent frame.
+    Eigen::Vector3d const parent_twist = parent_link()->twist();
+
+    // TODO: Compute the velocity induced by the rotation of this joint.
+    // TODO: Set the velocitiy of the child links.
+}
+#endif
 
 void Box2DJoint::set_desired_velocity(double velocity)
 {

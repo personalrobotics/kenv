@@ -14,6 +14,8 @@ namespace box2d_kenv {
 class Box2DBody : public boost::enable_shared_from_this<Box2DBody> {
 public:
     Box2DBody(Box2DWorldPtr const &world, std::string const &name);
+    virtual ~Box2DBody();
+
     Box2DWorldPtr world() const;
 
     Box2DLinkPtr root_link();

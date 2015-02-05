@@ -184,7 +184,8 @@ Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
     b2BodyDef b2_bodydef;
     b2_bodydef.active = true;
     b2_bodydef.awake = true;
-    b2_bodydef.allowSleep = true;
+    //b2_bodydef.allowSleep = true;
+    b2_bodydef.allowSleep = false;
     b2_bodydef.type = b2_dynamicBody;
 
     b2Body *b2_body = b2_world_->CreateBody(&b2_bodydef);

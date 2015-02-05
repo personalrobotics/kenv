@@ -21,6 +21,12 @@ Box2DWorld::Box2DWorld(double scale)
     BOOST_ASSERT(scale > 0.);
 }
 
+Box2DWorld::~Box2DWorld()
+{
+    // Force destruction of bodies before b2_world_ is destructed.
+    bodies_.clear();
+}
+
 b2World *Box2DWorld::b2_world()
 {
     return &b2_world_;
@@ -78,6 +84,11 @@ Box2DBodyPtr Box2DWorld::CreateEmptyBody(std::string const &name)
             str(format("There is already a body named '%s'.") % name));
     }
     return body;
+}
+
+void Box2DWorld::RemoveBody(std::string const &name)
+{
+    bodies_.erase(name);
 }
 
 }

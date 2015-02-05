@@ -14,6 +14,7 @@ public:
                Box2DLinkPtr child_link,
                b2RevoluteJoint *b2_joint,
                double direction = 1.);
+    virtual ~Box2DJoint();
 
     std::string name() const;
 

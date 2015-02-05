@@ -10,6 +10,7 @@ namespace box2d_kenv {
 class Box2DWorld : public boost::enable_shared_from_this<Box2DWorld> {
 public:
     Box2DWorld(double scale);
+    virtual ~Box2DWorld();
 
     b2World *b2_world();
     double scale() const;
@@ -17,6 +18,8 @@ public:
     Box2DBodyPtr CreateBody(std::string const &name, std::istream &stream);
     Box2DBodyPtr CreateBody(std::string const &name, std::string const &path);
     Box2DBodyPtr CreateEmptyBody(std::string const &name);
+
+    void RemoveBody(std::string const &name);
 
 private:
     b2World b2_world_;

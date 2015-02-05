@@ -38,6 +38,14 @@ Box2DLink::Box2DLink(Box2DBodyPtr body,
     }
 }
 
+Box2DLink::~Box2DLink()
+{
+    // Joints must be destroyed before the bodies they attach to.
+    child_joints_.clear();
+
+    b2_body_->GetWorld()->DestroyBody(b2_body_);
+}
+
 Box2DWorldPtr Box2DLink::world() const
 {
     return parent_body_.lock()->world();

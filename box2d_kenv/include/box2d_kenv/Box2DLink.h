@@ -4,6 +4,7 @@
 #include <set>
 #include <string>
 #include <Eigen/Dense>
+#include <Box2D/Dynamics/b2Body.h>
 #include "box2d_kenv.hh"
 
 class b2Body;
@@ -18,6 +19,7 @@ public:
         std::string const &name,
         GeometryConstPtr const &geometry,
         b2Body *b2_body);
+    virtual ~Box2DLink();
 
     Box2DWorldPtr world() const;
     Box2DBodyPtr parent_body() const;

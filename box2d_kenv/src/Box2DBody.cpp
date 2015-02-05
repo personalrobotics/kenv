@@ -39,6 +39,17 @@ Box2DBody::Box2DBody(Box2DWorldPtr const &world, std::string const &name)
     BOOST_ASSERT(world);
 }
 
+Box2DBody::~Box2DBody()
+{
+    joints_.clear();
+    joints_map_.clear();
+
+    root_link_.reset();
+    links_.clear();
+    links_map_.clear();
+    sensors_.clear();
+}
+
 Box2DWorldPtr Box2DBody::world() const
 {
     return world_.lock();
@@ -65,7 +76,12 @@ void Box2DBody::set_pose(Eigen::Affine2d const &pose)
 {
     CheckInitialized();
 
-    return root_link_->set_pose(pose);
+    root_link_->set_pose(pose);
+
+    // Fix the joint constraints.
+    BOOST_FOREACH(Box2DJointPtr const &joint, joints_) {
+        joint->set_value(joint->value());
+    }
 }
 
 Eigen::Vector3d Box2DBody::twist() const
