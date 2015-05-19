@@ -8,6 +8,7 @@ catkin_package(
     DEPENDS eigen
 )
 
+find_package(cmake_modules REQUIRED)
 find_package(Eigen REQUIRED)
 
 include_directories(

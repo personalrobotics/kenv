@@ -18,4 +18,5 @@
   <run_depend>yamlcpp</run_depend>
   <run_depend>kenv</run_depend>
   <run_depend>openrave</run_depend>
+  <run_depend>cmake_modules</run_depend>
 </package>

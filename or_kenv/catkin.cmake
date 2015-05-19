@@ -13,6 +13,7 @@ catkin_package(
 )
 catkin_python_setup()
 
+find_package(cmake_modules REQUIRED)
 find_package(Boost REQUIRED COMPONENTS python system)
 find_package(Eigen REQUIRED)
 find_package(OpenRAVE REQUIRED)
