@@ -15,6 +15,13 @@ catkin_package(
 catkin_python_setup()
 
 include(FindPkgConfig)
+pkg_check_modules(YamlCpp REQUIRED yaml-cpp)
+if (${YamlCpp_VERSION} VERSION_LESS 0.5.0)
+  message(STATUS "Using the old-style yaml-cpp (< 0.5.0) API.")
+else ()
+  add_definitions(-DYAMLCPP_NEWAPI)
+  message(STATUS "Using the new-style yaml-cpp (>= 0.5.0) API.")
+endif ()
 
 find_package(cmake_modules REQUIRED)
 find_package(Boost REQUIRED COMPONENTS python system)

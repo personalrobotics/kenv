@@ -10,7 +10,7 @@
 #include <geos/geom/GeometryFactory.h>
 #include <geos/io/WKTReader.h>
 
-#include "eigen_yaml.h"
+#include <kenv/eigen_yaml.h>
 #include "AffineTransformFilter.h"
 #include "PolygonalLink.h"
 
@@ -115,12 +115,21 @@ void PolygonalLink::deserialize(YAML::Node const &node)
     geos::geom::GeometryFactory const *geom_factory = geos::geom::GeometryFactory::getDefaultInstance();
     geos::io::WKTReader geom_reader(geom_factory);
 
+#ifdef YAMLCPP_NEWAPI
+    name_ = node["name"].as<std::string>();
+    relative_pose_ = node["relative_pose"].as<Eigen::Affine2d>();
+#else
     node["name"] >> name_;
     node["relative_pose"] >> relative_pose_;
+#endif
 
     // Load the link's geometry from its WKT serialization.
     std::string relative_geometry_wkt;
+#ifdef YAMLCPP_NEWAPI
+    relative_geometry_wkt = node["relative_geometry"].as<std::string>();
+#else
     node["relative_geometry"] >> relative_geometry_wkt;
+#endif
     relative_geometry_.reset(geom_reader.read(relative_geometry_wkt));
     BOOST_ASSERT(relative_geometry_);
 
@@ -135,6 +144,20 @@ void PolygonalLink::deserialize(YAML::Node const &node)
 
     pose_ = Eigen::Affine2d::Identity();
 }
+
+#ifdef YAMLCPP_NEWAPI
+YAML::Node PolygonalLink::serialize() const {
+    YAML::Node node;
+    node["name"] = name_;
+    node["pose"] = pose_;
+    node["relative_pose"] = relative_pose_;
+    node["relative_geometry"] = relative_geometry_->toString();
+    BOOST_FOREACH (PolygonalJoint::Ptr const &joint, joints_) {
+        node["joints"].push_back(joint->serialize());
+    }
+}
+
+#else
 
 void PolygonalLink::serialize(YAML::Emitter &emitter) const
 {
@@ -153,6 +176,7 @@ void PolygonalLink::serialize(YAML::Emitter &emitter) const
             << YAML::EndMap;
 }
 
+#endif
 /*
  * PolygonalJoint
  */
@@ -215,16 +239,37 @@ void PolygonalJoint::set_angle(double angle)
 
 void PolygonalJoint::deserialize(PolygonalLink::Ptr parent_link, YAML::Node const &node)
 {
+#ifdef YAMLCPP_NEWAPI
+    name_ = node["name"].as<std::string>();
+    relative_origin_ = node["relative_origin"].as<Eigen::Affine2d>();
+    direction_ = node["direction"].as<int>();
+    angle_ = node["angle"].as<double>();
+#else
     node["name"] >> name_;
     node["relative_origin"] >> relative_origin_;
     node["direction"] >> direction_;
     node["angle"] >> angle_;
+#endif
     parent_link_ = parent_link;
 
     // Recursively deserialize the child link.
     child_link_ = boost::make_shared<PolygonalLink>();
     child_link_->deserialize(node["child_link"]);
 }
+
+#ifdef YAMLCPP_NEWAPI
+
+YAML::Node PolygonalJoint::serialize() const {
+    YAML::Node node;
+    node["name"] = name_;
+    node["relative_origin"] = relative_origin_;
+    node["direction"] = direction_;
+    node["angle"] = angle_;
+    node["child_link"] = child_link_->serialize();
+    return node;
+}
+
+#else
 
 void PolygonalJoint::serialize(YAML::Emitter &emitter) const
 {
@@ -236,6 +281,8 @@ void PolygonalJoint::serialize(YAML::Emitter &emitter) const
             << YAML::Key << "child_link"      << YAML::Value << *child_link_
             << YAML::EndMap;
 }
+
+#endif
 
 void PolygonalJoint::update()
 {
@@ -251,6 +298,8 @@ void PolygonalJoint::update()
 /*
  * Misc
  */
+#ifndef YAMLCPP_NEWAPI
+
 YAML::Emitter &operator<<(YAML::Emitter &emitter, PolygonalLink const &link)
 {
     link.serialize(emitter);
@@ -262,3 +311,5 @@ YAML::Emitter &operator<<(YAML::Emitter &emitter, PolygonalJoint const &joint)
     joint.serialize(emitter);
     return emitter;
 }
+
+#endif
