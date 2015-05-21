@@ -21,7 +21,11 @@ inline void deserialize(YAML::Node const &node, Eigen::MatrixBase<Derived> &matr
         matrix.resize(rows, 1);
 
         for (size_t i = 0; i < rows; ++i) {
+#ifdef YAMLCPP_NEWAPI
             matrix(i, 0) = node[i].as<typename Derived::Scalar>();
+#else
+            node[i] >> matrix(i,0);
+#endif
         }
     } else if (node.Tag() == "!Matrix") {
         size_t const cols = node[0].size();
@@ -42,7 +46,11 @@ inline void deserialize(YAML::Node const &node, Eigen::MatrixBase<Derived> &matr
             }
 
             for (size_t c = 0; c < cols; ++c) {
+#ifdef YAMLCPP_NEWAPI
                 matrix(r, c) = node[r][c].as<typename Derived::Scalar>();
+#else
+                node[r][c] >> matrix(r,c);
+#endif
             }
         }
     } else {
