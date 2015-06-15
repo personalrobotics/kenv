@@ -9,7 +9,7 @@ namespace box2d_kenv {
 namespace util {
 
 template <class Derived>
-inline void operator>>(YAML::Node const &node, Eigen::MatrixBase<Derived> &matrix)
+inline void deserialize(YAML::Node const &node, Eigen::MatrixBase<Derived> &matrix)
 {
     if (node.Type() != YAML::NodeType::Sequence) {
         throw std::runtime_error("Matrix or vector must be a sequence.");
@@ -24,7 +24,11 @@ inline void operator>>(YAML::Node const &node, Eigen::MatrixBase<Derived> &matri
         matrix.resize(rows, 1);
 
         for (size_t i = 0; i < rows; ++i) {
-            node[i] >> matrix(i, 0);
+#ifdef YAMLCPP_NEWAPI
+            matrix(i, 0) = node[i].as<typename Derived::Scalar>();
+#else
+            matrix(i, 0) = node[i].to<typename Derived::Scalar>();
+#endif
         }
     } else if (node.Tag() == "!Matrix") {
         size_t const cols = node[0].size();
@@ -45,7 +49,11 @@ inline void operator>>(YAML::Node const &node, Eigen::MatrixBase<Derived> &matri
             }
 
             for (size_t c = 0; c < cols; ++c) {
-                node[r][c] >> matrix(r, c);
+#ifdef YAMLCPP_NEWAPI
+                matrix(r, c) = node[r][c].as<typename Derived::Scalar>();
+#else
+                matrix(r, c) = node[r][c].to<typename Derived::Scalar>();
+#endif
             }
         }
     } else {
@@ -53,6 +61,71 @@ inline void operator>>(YAML::Node const &node, Eigen::MatrixBase<Derived> &matri
             boost::format("Unknown type of matrix '%s'.") % node.Tag()));
     }
 }
+
+
+// TODO: I should really specialize the YAML::convert class.
+#ifdef YAMLCPP_NEWAPI
+
+template <class Derived>
+inline YAML::Node serialize(Eigen::MatrixBase<Derived> const &matrix)
+{
+    YAML::Node node;
+
+    if (Eigen::MatrixBase<Derived>::IsVectorAtCompileTime) {
+        node.SetTag("Vector");
+
+        for (int i = 0; i < matrix.size(); ++i) {
+            node.push_back(matrix(i, 0));
+        }
+    } else {
+        node.SetTag("Matrix");
+
+        for (int r = 0; r < matrix.rows(); ++r) {
+            YAML::Node subnode;
+
+            for (int c = 0; c < matrix.cols(); ++c) {
+                subnode.push_back(matrix(r, c));
+            }
+
+            node.push_back(subnode);
+        }
+    }
+    return node;
+}
+
+namespace YAML {
+
+template<>
+struct convert<Eigen::Affine2d> {
+    static Node encode(Eigen::Affine2d const &pose)
+    {
+        return serialize(pose.matrix());
+    }
+
+    static bool decode(YAML::Node const &node, Eigen::Affine2d &pose)
+    {
+        deserialize(node, pose.matrix());
+        return true;
+    }
+};
+
+template<>
+struct convert<Eigen::Affine3d> {
+    static Node encode(Eigen::Affine3d const &pose)
+    {
+        return serialize(pose.matrix());
+    }
+
+    static bool decode(YAML::Node const &node, Eigen::Affine3d &pose)
+    {
+        deserialize(node, pose.matrix());
+        return true;
+    }
+};
+
+}
+
+#else
 
 template <class Derived>
 inline YAML::Emitter &operator<<(YAML::Emitter &emitter, Eigen::MatrixBase<Derived> const &matrix)
@@ -86,21 +159,28 @@ inline YAML::Emitter &operator<<(YAML::Emitter &emitter, Eigen::MatrixBase<Deriv
     return emitter;
 }
 
-template <class Scalar, int Dim, int Mode, int Options>
-inline YAML::Emitter &operator<<(YAML::Emitter &emitter,
-                                 Eigen::Transform<Scalar, Dim, Mode, Options> const &pose)
+inline YAML::Emitter &operator<<(YAML::Emitter &emitter, Eigen::Affine2d const &pose)
 {
     return emitter << pose.matrix();
 }
 
-template <class Scalar, int Dim, int Mode, int Options>
-inline void operator>>(YAML::Node const &node,
-                        Eigen::Transform<Scalar, Dim, Mode, Options> &pose)
+inline YAML::Emitter &operator<<(YAML::Emitter &emitter, Eigen::Affine3d const &pose)
 {
-    node >> pose.matrix();
+    return emitter << pose.matrix();
 }
 
+inline void operator>>(YAML::Node const &node, Eigen::Affine2d &pose)
+{
+    deserialize(node, pose.matrix());
 }
+
+inline void operator>>(YAML::Node const &node, Eigen::Affine3d &pose)
+{
+    deserialize(node, pose.matrix());
 }
+#endif
+
+} // namespace util
+} // namespace box2d_kenv
 
 #endif

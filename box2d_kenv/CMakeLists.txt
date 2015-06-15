@@ -6,15 +6,34 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 find_package(catkin REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(Box2D REQUIRED)
-find_package(CGAL REQUIRED)
 find_package(GEOS REQUIRED)
 find_package(Eigen REQUIRED)
 find_package(SFML REQUIRED COMPONENTS graphics system window)
-find_package(YAMLCpp REQUIRED)
+
+# CGAL requires the -frounding-math option.
+# TODO: What should we do for CLang? It doesn't support -frounding-math.
+find_package(CGAL REQUIRED)
+set(CMAKE_C_FLAGS -frounding-math)
+set(CMAKE_CXX_FLAGS -frounding-math)
+
+# The YamlCpp API dramatically changed in version 0.5.
+pkg_check_modules(YamlCpp REQUIRED yaml-cpp)
+
+if (${YamlCpp_VERSION} VERSION_LESS 0.5.0)
+  message(STATUS "Using the old-style yaml-cpp API. (${YamlCpp_VERSION} < 0.5.0)")
+else ()
+  add_definitions(-DYAMLCPP_NEWAPI)
+  message(STATUS "Using the new-style yaml-cpp API (${YamlCpp_VERSION} >= 0.5.0).")
+endif ()
 
 # GMP is a transitive dependency is CGAL that is not correctly specified in the
 # current FindCGAL.cmake file.
 find_package(GMP REQUIRED)
+
+message(STATUS "Box2D_LIBRARIES = ${Box2D_LIBRARIES}")
+message(STATUS "BOX2D_LIBRARIES = ${BOX2D_LIBRARIES}")
+message(STATUS "Box2D_LIBRARY = ${Box2D_LIBRARY}")
+message(STATUS "BOX2D_LIBRARY = ${BOX2D_LIBRARY}")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -43,7 +62,7 @@ include_directories(
   ${GEOS_INCLUDE_DIRS}
   ${CGAL_INCLUDE_DIRS}
   ${SFML_INCLUDE_DIRS}
-  ${YAMLCPP_INCLUDE_DIR}
+  ${YamlCpp_INCLUDE_DIR}
 )
 
 add_library(${PROJECT_NAME}
@@ -56,11 +75,11 @@ add_library(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME}
   ${BOOST_LIBRARIES}
-  ${BOX2D_LIBRARIES}
+  ${BOX2D_LIBRARY}
   ${CGAL_LIBRARIES}
   ${GMP_LIBRARIES}
   ${GEOS_LIBRARIES}
-  ${YAMLCPP_LIBRARY}
+  ${YamlCpp_LIBRARIES}
 )
 
 add_library(${PROJECT_NAME}_visualizer
@@ -68,7 +87,7 @@ add_library(${PROJECT_NAME}_visualizer
 )
 target_link_libraries(${PROJECT_NAME}_visualizer
   ${BOOST_LIBRARIES}
-  ${BOX2D_LIBRARIES}
+  ${BOX2D_LIBRARY}
   ${SFML_LIBRARIES}
 )
 
@@ -79,7 +98,7 @@ target_link_libraries(${PROJECT_NAME}_demo
   ${PROJECT_NAME}
   ${PROJECT_NAME}_visualizer
   ${BOOST_LIBRARIES}
-  ${BOX2D_LIBRARIES}
+  ${BOX2D_LIBRARY}
   ${SFML_LIBRARIES}
 )
 
