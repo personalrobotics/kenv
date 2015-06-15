@@ -4,7 +4,7 @@ project(box2d_kenv)
 set(CMAKE_CXX_FLAGS -Wall)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-find_package(catkin REQUIRED COMPONENTS cmake_modules kenv)
+find_package(catkin REQUIRED COMPONENTS cmake_modules)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(Box2D REQUIRED)
 find_package(CGAL REQUIRED)
@@ -18,8 +18,9 @@ set(BOX2D_LIBRARIES Box2D)
 
 # GMP is a transitive dependency is CGAL that is not correctly specified in the
 # current FindCGAL.cmake file.
-# TODO: This should be handled by find_package(CGAL)
 find_package(GMP REQUIRED)
+
+# TODO: This should be handled by find_package(CGAL)
 add_definitions(-frounding-math)
 
 # This is necessary for the yaml_utils.h header.
@@ -38,8 +39,6 @@ endif ()
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 # catkin_python_setup()
-
-message(STATUS "BOX2D_LIBRARIES = ${BOX2D_LIBRARIES}")
 
 ###################################
 ## catkin specific configuration ##
