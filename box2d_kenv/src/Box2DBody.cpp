@@ -77,11 +77,6 @@ void Box2DBody::set_pose(Eigen::Affine2d const &pose)
     CheckInitialized();
 
     root_link_->set_pose(pose);
-
-    // Fix the joint constraints.
-    BOOST_FOREACH(Box2DJointPtr const &joint, joints_) {
-        joint->set_value(joint->value());
-    }
 }
 
 Eigen::Vector3d Box2DBody::twist() const

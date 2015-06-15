@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <Box2D/Dynamics/b2Body.h>
 #include <Box2D/Dynamics/b2Fixture.h>
@@ -136,6 +137,11 @@ void Box2DLink::set_pose(Eigen::Affine2d const &pose)
                scale * pose.translation()[1]),
         rotation.angle()
     );
+
+    // Update joint constraints.
+    BOOST_FOREACH (Box2DJointPtr const &joint, child_joints_) {
+        joint->set_value(joint->value());
+    }
 }
 
 Eigen::Vector3d Box2DLink::twist() const
