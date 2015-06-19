@@ -1,5 +1,5 @@
 joints: []
-name: base_link
+name: wam7
 pose: !Matrix
 - [1.0, 0.0, 0.0]
 - [0.0, 1.0, 0.0]
@@ -15,3 +15,6 @@ relative_pose: !Matrix
 - [0.0, 0.0, 1.0]
 relative_sensors: [*id001]
 symmetry: 0
+density: 1
+friction: 1
+restitution: 1

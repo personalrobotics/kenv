@@ -41,8 +41,8 @@ int main(int argc, char **argv)
     unsigned int window_height = 720;
     double window_scale = 1000.;
     std::string window_name = "Box2D Test";
-    std::string hand_path = "data/barretthand_twofinger.object.yaml";
-    std::string object_path = "data/ricepilaf.object.yaml";
+    std::string hand_path = "src/kenv/box2d_kenv/data/barretthand.object.yaml";
+    std::string object_path = "src/kenv/box2d_kenv/data/ricepilaf.object.yaml";
 
     Eigen::Affine2d initial_hand_pose = Eigen::Affine2d::Identity();
     Eigen::Vector3d hand_twist(-0.01, 0., 0.);

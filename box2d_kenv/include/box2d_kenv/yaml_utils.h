@@ -13,10 +13,6 @@ inline void deserialize(YAML::Node const &node, Eigen::MatrixBase<Derived> &matr
 {
     if (node.Type() != YAML::NodeType::Sequence) {
         throw std::runtime_error("Matrix or vector must be a sequence.");
-    } else if (node.size() < 1) {
-        throw std::runtime_error(boost::str(
-            boost::format("Matrix or vector must have one or more rows; has %d.")
-                % node.size()));
     }
 
     size_t const rows = node.size();
@@ -32,12 +28,8 @@ inline void deserialize(YAML::Node const &node, Eigen::MatrixBase<Derived> &matr
         }
     } else if (node.Tag() == "!Matrix") {
         size_t const cols = node[0].size();
-        if (cols < 1) {
-            throw std::runtime_error(boost::str(
-                boost::format("Matrix must have one or more columns; has %d.") % cols));
-        }
-
         matrix.resize(rows, cols);
+
         for (size_t r = 0; r < node.size(); ++r) {
             if (node[r].Type() != YAML::NodeType::Sequence) {
                 throw std::runtime_error(boost::str(
@@ -60,6 +52,13 @@ inline void deserialize(YAML::Node const &node, Eigen::MatrixBase<Derived> &matr
         throw std::runtime_error(boost::str(
             boost::format("Unknown type of matrix '%s'.") % node.Tag()));
     }
+}
+
+template <class Derived, int Dim, int Mode, int _Options>
+inline void deserialize(YAML::Node const &node,
+                        Eigen::Transform<Derived, Dim, Mode, _Options> &pose)
+{
+  deserialize(node, pose.matrix());
 }
 
 
