@@ -5,8 +5,51 @@
 #include <Eigen/Dense>
 #include <yaml-cpp/yaml.h>
 
+namespace YAML {
+
+template <class Derived>
+struct convert<Eigen::MatrixBase<Derived> > {
+    static Node encode(Eigen::MatrixBase<Derived> const &matrix)
+    {
+        return Node();
+    }
+
+    static bool decode(YAML::Node const &node, Eigen::MatrixBase<Derived> &matrix)
+    {
+        return true;
+    }
+};
+
+template <typename _Scalar, int _Dim, int _Mode, int _Options>
+struct convert<Eigen::Transform<_Scalar, _Dim, _Mode, _Options> > {
+    static Node encode(
+        Eigen::Transform<_Scalar, _Dim, _Mode, _Options> const &matrix)
+    {
+        return YAML::Node();
+    }
+
+    static bool decode(
+        Node const &node,
+        Eigen::Transform<_Scalar, _Dim, _Mode, _Options> const &matrix)
+    {
+        return true;
+    }
+};
+
+} // namespace YAML
+
 namespace box2d_kenv {
 namespace util {
+
+template <class T>
+inline void deserialize(YAML::Node const &node, T &output)
+{
+#ifdef YAMLCPP_NEWAPI
+    output = node.as<T>();
+#else
+    output = node.to<T>();
+#endif
+}
 
 template <class Derived>
 inline void deserialize(YAML::Node const &node, Eigen::MatrixBase<Derived> &matrix)
@@ -61,10 +104,7 @@ inline void deserialize(YAML::Node const &node,
   deserialize(node, pose.matrix());
 }
 
-
 // TODO: I should really specialize the YAML::convert class.
-#ifdef YAMLCPP_NEWAPI
-
 template <class Derived>
 inline YAML::Node serialize(Eigen::MatrixBase<Derived> const &matrix)
 {
@@ -92,39 +132,13 @@ inline YAML::Node serialize(Eigen::MatrixBase<Derived> const &matrix)
     return node;
 }
 
+} // namespace util
+} // namespace box2d_kenv
+
 namespace YAML {
 
-template<>
-struct convert<Eigen::Affine2d> {
-    static Node encode(Eigen::Affine2d const &pose)
-    {
-        return serialize(pose.matrix());
-    }
 
-    static bool decode(YAML::Node const &node, Eigen::Affine2d &pose)
-    {
-        deserialize(node, pose.matrix());
-        return true;
-    }
-};
-
-template<>
-struct convert<Eigen::Affine3d> {
-    static Node encode(Eigen::Affine3d const &pose)
-    {
-        return serialize(pose.matrix());
-    }
-
-    static bool decode(YAML::Node const &node, Eigen::Affine3d &pose)
-    {
-        deserialize(node, pose.matrix());
-        return true;
-    }
-};
-
-}
-
-#else
+#ifndef YAMLCPP_NEWAPI
 
 template <class Derived>
 inline YAML::Emitter &operator<<(YAML::Emitter &emitter, Eigen::MatrixBase<Derived> const &matrix)
@@ -177,9 +191,9 @@ inline void operator>>(YAML::Node const &node, Eigen::Affine3d &pose)
 {
     deserialize(node, pose.matrix());
 }
+
 #endif
 
-} // namespace util
-} // namespace box2d_kenv
+} // namespace YAML
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef BOX2DFACTORY_H_
-#define BOX2DFACTORY_H_
+#ifndef BOX2dKENV_BOX2DFACTORY_H_
+#define BOX2dKENV_BOX2DFACTORY_H_
 #include <Eigen/Dense>
 #include <geos/io/WKTReader.h>
 #include "box2d_kenv.hh"
@@ -7,14 +7,19 @@
 class b2PolygonShape;
 class b2World;
 
-namespace geos { namespace geom {
+namespace geos {
+namespace geom {
+
 class Polygon;
-}
-}
+
+} // namespace geom
+} // namespace geos
 
 namespace YAML {
+
 class Node;
-}
+
+} // namespace YAML
 
 namespace box2d_kenv {
 
@@ -49,6 +54,6 @@ private:
         geos::geom::Polygon const &geom, Eigen::Affine2d const &transform);
 };
 
-}
+} // namespace box2d_kenv
 
 #endif

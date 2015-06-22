@@ -10,13 +10,13 @@
 #include <geos/io/WKTReader.h>
 #include <yaml-cpp/yaml.h>
 #include "geometry_utils.h"
-#include "Box2DBody.h"
-#include "Box2DFactory.h"
-#include "Box2DJoint.h"
-#include "Box2DLink.h"
-#include "Box2DSensor.h"
-#include "Box2DWorld.h"
-#include "yaml_utils.h"
+#include <box2d_kenv/Box2DBody.h>
+#include <box2d_kenv/Box2DFactory.h>
+#include <box2d_kenv/Box2DJoint.h>
+#include <box2d_kenv/Box2DLink.h>
+#include <box2d_kenv/Box2DSensor.h>
+#include <box2d_kenv/Box2DWorld.h>
+#include <box2d_kenv/yaml_utils.h>
 
 using boost::format;
 using boost::make_shared;

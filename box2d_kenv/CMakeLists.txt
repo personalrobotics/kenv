@@ -55,6 +55,7 @@ catkin_package(
 ###########
 
 include_directories(SYSTEM
+  include
   include/${PROJECT_NAME}
   ${BOOST_INCLUDE_DIRS}
   ${BOX2D_INCLUDE_DIRS}
