@@ -5,51 +5,8 @@
 #include <Eigen/Dense>
 #include <yaml-cpp/yaml.h>
 
-namespace YAML {
-
-template <class Derived>
-struct convert<Eigen::MatrixBase<Derived> > {
-    static Node encode(Eigen::MatrixBase<Derived> const &matrix)
-    {
-        return Node();
-    }
-
-    static bool decode(YAML::Node const &node, Eigen::MatrixBase<Derived> &matrix)
-    {
-        return true;
-    }
-};
-
-template <typename _Scalar, int _Dim, int _Mode, int _Options>
-struct convert<Eigen::Transform<_Scalar, _Dim, _Mode, _Options> > {
-    static Node encode(
-        Eigen::Transform<_Scalar, _Dim, _Mode, _Options> const &matrix)
-    {
-        return YAML::Node();
-    }
-
-    static bool decode(
-        Node const &node,
-        Eigen::Transform<_Scalar, _Dim, _Mode, _Options> const &matrix)
-    {
-        return true;
-    }
-};
-
-} // namespace YAML
-
 namespace box2d_kenv {
 namespace util {
-
-template <class T>
-inline void deserialize(YAML::Node const &node, T &output)
-{
-#ifdef YAMLCPP_NEWAPI
-    output = node.as<T>();
-#else
-    output = node.to<T>();
-#endif
-}
 
 template <class Derived>
 inline void deserialize(YAML::Node const &node, Eigen::MatrixBase<Derived> &matrix)
@@ -132,13 +89,91 @@ inline YAML::Node serialize(Eigen::MatrixBase<Derived> const &matrix)
     return node;
 }
 
+template <class T>
+inline bool has_child(YAML::Node const &node, T const &key)
+{
+#ifdef YAMLCPP_NEWAPI
+    return node[key].IsDefined();
+#else // ifdef YAMLCPP_NEWAPI
+    return !!node.FindValue(key);
+#endif // ifndef YAMLCPP_NEWAPI
+}
+
 } // namespace util
 } // namespace box2d_kenv
 
 namespace YAML {
 
+#ifdef YAMLCPP_NEWAPI
 
-#ifndef YAMLCPP_NEWAPI
+template <typename _Scalar, int _Dim, int _Mode, int _Options>
+struct convert<Eigen::Matrix<_Scalar, _Dim, _Mode, _Options> > {
+    typedef Eigen::Matrix<_Scalar, _Dim, _Mode, _Options> MatrixType;
+
+    static Node encode(MatrixType const &matrix)
+    {
+        YAML::Node node(NodeType::Sequence);
+
+        if (MatrixType::IsVectorAtCompileTime) {
+            node.SetTag("Vector");
+
+            for (int i = 0; i < matrix.size(); ++i) {
+                node.push_back(Node(matrix[i]));
+            }
+        } else {
+            node.SetTag("Matrix");
+
+            for (int r = 0; r < matrix.rows(); ++r) {
+                Node row(NodeType::Sequence);
+
+                for (int c = 0; c < matrix.cols(); ++c) {
+                    row.push_back(matrix(r, c));
+                }
+
+                node.push_back(row);
+            }
+        }
+
+        return node;
+    }
+
+    static bool decode(
+        YAML::Node const &node,
+        Eigen::Matrix<_Scalar, _Dim, _Mode, _Options> &matrix)
+    {
+        if (node.Tag() == "Vector" || node.Tag() == "Matrix") {
+            box2d_kenv::util::deserialize(node, matrix);
+            return true;
+        } else {
+            return false;
+        }
+    }
+};
+
+template <typename _Scalar, int _Dim, int _Mode, int _Options>
+struct convert<Eigen::Transform<_Scalar, _Dim, _Mode, _Options> > {
+    typedef Eigen::Transform<_Scalar, _Dim, _Mode, _Options> TransformType;
+    typedef typename TransformType::MatrixType MatrixType;
+
+    static Node encode(TransformType const &transform)
+    {
+        return convert<MatrixType>::encode(transform.matrix());
+    }
+
+    static bool decode(Node const &node, TransformType &transform)
+    {
+        // TODO: Should I change the tag to !Transform?
+        return convert<MatrixType>::decode(node, transform.matrix());
+    }
+};
+
+template <class T>
+inline void operator>>(Node const &node, T &value)
+{
+    value = node.as<T>();
+}
+
+#else // ifdef YAMLCPP_NEWAPI
 
 template <class Derived>
 inline YAML::Emitter &operator<<(YAML::Emitter &emitter, Eigen::MatrixBase<Derived> const &matrix)
@@ -192,8 +227,8 @@ inline void operator>>(YAML::Node const &node, Eigen::Affine3d &pose)
     deserialize(node, pose.matrix());
 }
 
-#endif
+#endif // ifndef YAMLCPP_NEWAPI
 
 } // namespace YAML
 
-#endif
+#endif // ifndef YAML_UTILS_H_
