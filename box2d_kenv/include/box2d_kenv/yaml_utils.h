@@ -8,49 +8,75 @@
 namespace box2d_kenv {
 namespace util {
 
-template <class Derived>
-inline void deserialize(YAML::Node const &node, Eigen::MatrixBase<Derived> &matrix)
+template <class _Scalar,
+          int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+inline void deserialize(
+    YAML::Node const &node,
+    Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> &matrix)
 {
+    typedef Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> MatrixType;
+    typedef typename MatrixType::Index Index;
+    typedef typename MatrixType::Scalar Scalar;
+
+    using boost::format;
+    using boost::str;
+    using std::runtime_error;
+
     if (node.Type() != YAML::NodeType::Sequence) {
-        throw std::runtime_error("Matrix or vector must be a sequence.");
+        throw runtime_error("Matrix or vector must be a sequence.");
     }
 
-    size_t const rows = node.size();
+    Index const rows = node.size();
+    if (MatrixType::RowsAtCompileTime != Eigen::Dynamic 
+     && rows != MatrixType::RowsAtCompileTime) {
+        throw runtime_error(str(
+            format("Matrix has incorrect number of rows: expected %d; got %d.")
+            % MatrixType::RowsAtCompileTime % rows));
+    }
+
     if (node.Tag() == "!Vector") {
         matrix.resize(rows, 1);
 
-        for (size_t i = 0; i < rows; ++i) {
+        for (Index i = 0; i < rows; ++i) {
 #ifdef YAMLCPP_NEWAPI
-            matrix(i, 0) = node[i].as<typename Derived::Scalar>();
+            matrix(i, 0) = node[i].as<Scalar>();
 #else
-            matrix(i, 0) = node[i].to<typename Derived::Scalar>();
+            node[i] >> matrix(i, 0);
 #endif
         }
     } else if (node.Tag() == "!Matrix") {
-        size_t const cols = node[0].size();
+        Index const cols = node[0].size();
+
+        if (MatrixType::ColsAtCompileTime != Eigen::Dynamic 
+         && cols != MatrixType::ColsAtCompileTime) {
+            throw runtime_error(str(
+                format("Matrix has incorrect number of cols: expected %d; got %d.")
+                % MatrixType::ColsAtCompileTime % cols));
+        }
+
         matrix.resize(rows, cols);
 
-        for (size_t r = 0; r < node.size(); ++r) {
+        for (Index r = 0; r < node.size(); ++r) {
             if (node[r].Type() != YAML::NodeType::Sequence) {
-                throw std::runtime_error(boost::str(
-                    boost::format("Row %d of the matrix must be a sequence.") % r));
+                throw runtime_error(str(
+                    format("Row %d of the matrix must be a sequence.") % r));
             } else if (node[r].size() != cols) {
-                throw std::runtime_error(boost::str(
-                    boost::format("Expected row %d to have %d columns; got %d.")
+                throw runtime_error(boost::str(
+                    format("Expected row %d to have %d columns; got %d.")
                         % r % cols % node[r].size()));
             }
 
-            for (size_t c = 0; c < cols; ++c) {
+            for (Index c = 0; c < cols; ++c) {
 #ifdef YAMLCPP_NEWAPI
-                matrix(r, c) = node[r][c].as<typename Derived::Scalar>();
+                matrix(r, c) = node[r][c].as<Scalar>();
 #else
-                matrix(r, c) = node[r][c].to<typename Derived::Scalar>();
+                node[r][c] >> matrix(r, c);
 #endif
             }
         }
     } else {
-        throw std::runtime_error(boost::str(
-            boost::format("Unknown type of matrix '%s'.") % node.Tag()));
+        throw runtime_error(str(
+            format("Unknown type of matrix '%s'.") % node.Tag()));
     }
 }
 
@@ -147,34 +173,41 @@ inline void operator>>(Node const &node, T &value)
 
 #else // ifdef YAMLCPP_NEWAPI
 
-template <class Derived>
-inline YAML::Emitter &operator<<(YAML::Emitter &emitter, Eigen::MatrixBase<Derived> const &matrix)
+template <class _Scalar,
+          int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+inline Emitter &operator<<(
+    Emitter &emitter,
+    Eigen::Matrix<_Scalar,
+        _Rows, _Cols, _Options, _MaxRows, _MaxCols> const &matrix)
 {
-    if (Eigen::MatrixBase<Derived>::IsVectorAtCompileTime) {
-        emitter << YAML::LocalTag("Vector")
-                << YAML::Flow
-                << YAML::BeginSeq;
+    typedef Eigen::Matrix<_Scalar, _Rows, _Cols, _Options,
+                          _MaxRows, _MaxCols> MatrixType;
+
+    if (MatrixType::IsVectorAtCompileTime) {
+        emitter << LocalTag("Vector")
+                << Flow
+                << BeginSeq;
 
         for (int i = 0; i < matrix.size(); ++i) {
             emitter << matrix(i, 0);
         }
 
-        emitter << YAML::EndSeq;
+        emitter << EndSeq;
     } else {
-        emitter << YAML::LocalTag("Matrix")
-                << YAML::BeginSeq;
+        emitter << LocalTag("Matrix")
+                << BeginSeq;
 
         for (int r = 0; r < matrix.rows(); ++r) {
-            emitter << YAML::Flow
-                    << YAML::BeginSeq;
+            emitter << Flow
+                    << BeginSeq;
             for (int c = 0; c < matrix.cols(); ++c) {
                 emitter << matrix(r, c);
             }
 
-            emitter << YAML::EndSeq;
+            emitter << EndSeq;
         }
 
-        emitter << YAML::EndSeq;
+        emitter << EndSeq;
     }
     return emitter;
 }
@@ -186,8 +219,12 @@ inline Emitter &operator<<(Emitter &emitter,
     return emitter << tf.matrix();
 }
 
-template <class Derived>
-inline void operator>>(Node const &node,  Eigen::MatrixBase<Derived> const &m)
+template <class _Scalar,
+          int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+inline void operator>>(
+    Node const &node,
+    Eigen::Matrix<_Scalar, _Rows, _Cols, _Options,
+                  _MaxRows, _MaxCols> const &m)
 {
     box2d_kenv::util::deserialize(node, m);
 }
