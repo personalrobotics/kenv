@@ -54,39 +54,11 @@ inline void deserialize(YAML::Node const &node, Eigen::MatrixBase<Derived> &matr
     }
 }
 
-template <class Derived, int Dim, int Mode, int _Options>
+template <class _Scalar, int Dim, int Mode, int _Options>
 inline void deserialize(YAML::Node const &node,
-                        Eigen::Transform<Derived, Dim, Mode, _Options> &pose)
+                        Eigen::Transform<_Scalar, Dim, Mode, _Options> &pose)
 {
-  deserialize(node, pose.matrix());
-}
-
-// TODO: I should really specialize the YAML::convert class.
-template <class Derived>
-inline YAML::Node serialize(Eigen::MatrixBase<Derived> const &matrix)
-{
-    YAML::Node node;
-
-    if (Eigen::MatrixBase<Derived>::IsVectorAtCompileTime) {
-        node.SetTag("Vector");
-
-        for (int i = 0; i < matrix.size(); ++i) {
-            node.push_back(matrix(i, 0));
-        }
-    } else {
-        node.SetTag("Matrix");
-
-        for (int r = 0; r < matrix.rows(); ++r) {
-            YAML::Node subnode;
-
-            for (int c = 0; c < matrix.cols(); ++c) {
-                subnode.push_back(matrix(r, c));
-            }
-
-            node.push_back(subnode);
-        }
-    }
-    return node;
+    deserialize(node, pose.matrix());
 }
 
 template <class T>
@@ -207,24 +179,24 @@ inline YAML::Emitter &operator<<(YAML::Emitter &emitter, Eigen::MatrixBase<Deriv
     return emitter;
 }
 
-inline YAML::Emitter &operator<<(YAML::Emitter &emitter, Eigen::Affine2d const &pose)
+template <class _Scalar, int Dim, int Mode, int _Options>
+inline Emitter &operator<<(Emitter &emitter,
+                           Eigen::Transform<_Scalar, Dim, Mode, _Options> &tf)
 {
-    return emitter << pose.matrix();
+    return emitter << tf.matrix();
 }
 
-inline YAML::Emitter &operator<<(YAML::Emitter &emitter, Eigen::Affine3d const &pose)
+template <class Derived>
+inline void operator>>(Node const &node,  Eigen::MatrixBase<Derived> const &m)
 {
-    return emitter << pose.matrix();
+    box2d_kenv::util::deserialize(node, m);
 }
 
-inline void operator>>(YAML::Node const &node, Eigen::Affine2d &pose)
+template <class _Scalar, int Dim, int Mode, int _Options>
+inline void operator>>(Node const &node,
+                       Eigen::Transform<_Scalar, Dim, Mode, _Options> &tf)
 {
-    deserialize(node, pose.matrix());
-}
-
-inline void operator>>(YAML::Node const &node, Eigen::Affine3d &pose)
-{
-    deserialize(node, pose.matrix());
+    box2d_kenv::util::deserialize(node, tf.matrix());
 }
 
 #endif // ifndef YAMLCPP_NEWAPI
