@@ -1,8 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(box2d_kenv)
 
-set(CMAKE_CXX_FLAGS -Wall)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
+include(FindPkgConfig)
+
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+  set(CMAKE_BUILD_TYPE RelWithDebInfo)
+  message(STATUS "Defaulting to CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+endif ()
 
 find_package(catkin REQUIRED COMPONENTS cmake_modules)
 find_package(Boost REQUIRED COMPONENTS system)
@@ -13,19 +19,12 @@ find_package(Eigen REQUIRED)
 find_package(SFML REQUIRED COMPONENTS graphics system window)
 find_package(YAMLCpp REQUIRED)
 
-# TODO: This should be handled by find_package(Box2D)
-set(BOX2D_LIBRARIES Box2D)
-
 # GMP is a transitive dependency is CGAL that is not correctly specified in the
 # current FindCGAL.cmake file.
 find_package(GMP REQUIRED)
 
-# TODO: This should be handled by find_package(CGAL)
-add_definitions(-frounding-math)
-
 # This is necessary for the yaml_utils.h header.
 # TODO: Move this into kenv.
-include(FindPkgConfig)
 pkg_check_modules(YamlCpp REQUIRED yaml-cpp)
 
 if (${YamlCpp_VERSION} VERSION_LESS 0.5.0)
@@ -35,10 +34,37 @@ else ()
   message(STATUS "Using the new-style yaml-cpp (>= 0.5.0) API.")
 endif ()
 
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
+# TODO: This should be handled by find_package(Box2D)
+set(BOX2D_LIBRARIES Box2D)
+
+include_directories(SYSTEM
+  include
+  include/${PROJECT_NAME}
+  ${BOOST_INCLUDE_DIRS}
+  ${BOX2D_INCLUDE_DIRS}
+  ${Eigen_INCLUDE_DIRS}
+  ${GEOS_INCLUDE_DIRS}
+  ${CGAL_INCLUDE_DIRS}
+  ${SFML_INCLUDE_DIRS}
+  ${YAMLCPP_INCLUDE_DIR}
+  ${catkin_INCLUDE_DIRS}
+)
+link_directories(
+  ${BOOST_LIBRARY_DIRS}
+  ${BOX2D_LIBRARY_DIRS}
+  ${Eigen_LIBRARY_DIRS}
+  ${GEOS_LIBRARY_DIRS}
+  ${CGAL_LIBRARY_DIRS}
+  ${SFML_LIBRARY_DIRS}
+  ${YAMLCPP_LIBRARY_DIR}
+  ${catkin_LIBRARY_DIRS}
+)
+
+# TODO: This should be handled by find_package(CGAL)
+add_definitions(-frounding-math)
+
+set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
 ###################################
 ## catkin specific configuration ##
@@ -53,20 +79,6 @@ catkin_package(
 ###########
 ## Build ##
 ###########
-
-include_directories(SYSTEM
-  include
-  include/${PROJECT_NAME}
-  ${BOOST_INCLUDE_DIRS}
-  ${BOX2D_INCLUDE_DIRS}
-  ${Eigen_INCLUDE_DIRS}
-  ${GEOS_INCLUDE_DIRS}
-  ${CGAL_INCLUDE_DIRS}
-  ${SFML_INCLUDE_DIRS}
-  ${YAMLCPP_INCLUDE_DIR}
-  ${catkin_INCLUDE_DIRS}
-)
-
 add_library(${PROJECT_NAME}
   src/Box2DBody.cpp
   src/Box2DFactory.cpp
