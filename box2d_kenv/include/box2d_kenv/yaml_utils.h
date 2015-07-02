@@ -39,7 +39,7 @@ inline void deserialize(
 
         for (Index i = 0; i < rows; ++i) {
 #ifdef YAMLCPP_NEWAPI
-            matrix(i, 0) = node[i].as<Scalar>();
+            matrix(i, 0) = node[i].template as< _Scalar >();
 #else
             node[i] >> matrix(i, 0);
 #endif
@@ -68,7 +68,7 @@ inline void deserialize(
 
             for (Index c = 0; c < cols; ++c) {
 #ifdef YAMLCPP_NEWAPI
-                matrix(r, c) = node[r][c].as<Scalar>();
+                matrix(r, c) = node[r][c].template as<_Scalar>();
 #else
                 node[r][c] >> matrix(r, c);
 #endif
