@@ -151,21 +151,12 @@ Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
     double const scale = parent_body->world()->scale();
 
     try {
-#ifdef YAMLCPP_NEWAPI
-        name = node["name"].as<std::string>();
-        geometry_wkt = node["relative_geometry"].as<std::string>();
-        relative_pose = node["relative_pose"].as<Eigen::Affine2d>();
-        density = node["density"].as<double>();
-        friction = node["friction"].as<double>();
-        restitution = node["restitution"].as<double>();
-#else
         node["name"] >> name;
         node["relative_geometry"] >> geometry_wkt;
         node["relative_pose"] >> relative_pose;
         node["density"] >> density;
         node["friction"] >> friction;
         node["restitution"] >> restitution;
-#endif
     } catch (YAML::Exception const &e) {
         throw std::runtime_error(
             str(format("Failed loading link '%s': %s") % name % e.what())

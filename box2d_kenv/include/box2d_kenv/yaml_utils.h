@@ -110,21 +110,23 @@ struct convert<Eigen::Matrix<_Scalar, _Dim, _Mode, _Options> > {
 
     static Node encode(MatrixType const &matrix)
     {
+        typedef typename MatrixType::Index Index;
+
         YAML::Node node(NodeType::Sequence);
 
         if (MatrixType::IsVectorAtCompileTime) {
             node.SetTag("Vector");
 
-            for (int i = 0; i < matrix.size(); ++i) {
+            for (Index i = 0; i < matrix.size(); ++i) {
                 node.push_back(Node(matrix[i]));
             }
         } else {
             node.SetTag("Matrix");
 
-            for (int r = 0; r < matrix.rows(); ++r) {
+            for (Index r = 0; r < matrix.rows(); ++r) {
                 Node row(NodeType::Sequence);
 
-                for (int c = 0; c < matrix.cols(); ++c) {
+                for (Index c = 0; c < matrix.cols(); ++c) {
                     row.push_back(matrix(r, c));
                 }
 
@@ -139,7 +141,7 @@ struct convert<Eigen::Matrix<_Scalar, _Dim, _Mode, _Options> > {
         YAML::Node const &node,
         Eigen::Matrix<_Scalar, _Dim, _Mode, _Options> &matrix)
     {
-        if (node.Tag() == "Vector" || node.Tag() == "Matrix") {
+        if (node.Tag() == "!Vector" || node.Tag() == "!Matrix") {
             box2d_kenv::util::deserialize(node, matrix);
             return true;
         } else {
@@ -182,13 +184,14 @@ inline Emitter &operator<<(
 {
     typedef Eigen::Matrix<_Scalar, _Rows, _Cols, _Options,
                           _MaxRows, _MaxCols> MatrixType;
+    typedef typename MatrixType::Index Index;
 
     if (MatrixType::IsVectorAtCompileTime) {
         emitter << LocalTag("Vector")
                 << Flow
                 << BeginSeq;
 
-        for (int i = 0; i < matrix.size(); ++i) {
+        for (Index i = 0; i < matrix.size(); ++i) {
             emitter << matrix(i, 0);
         }
 
@@ -197,10 +200,10 @@ inline Emitter &operator<<(
         emitter << LocalTag("Matrix")
                 << BeginSeq;
 
-        for (int r = 0; r < matrix.rows(); ++r) {
+        for (Index r = 0; r < matrix.rows(); ++r) {
             emitter << Flow
                     << BeginSeq;
-            for (int c = 0; c < matrix.cols(); ++c) {
+            for (Index c = 0; c < matrix.cols(); ++c) {
                 emitter << matrix(r, c);
             }
 
@@ -219,24 +222,7 @@ inline Emitter &operator<<(Emitter &emitter,
     return emitter << tf.matrix();
 }
 
-template <class _Scalar,
-          int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-inline void operator>>(
-    Node const &node,
-    Eigen::Matrix<_Scalar, _Rows, _Cols, _Options,
-                  _MaxRows, _MaxCols> const &m)
-{
-    box2d_kenv::util::deserialize(node, m);
-}
-
-template <class _Scalar, int Dim, int Mode, int _Options>
-inline void operator>>(Node const &node,
-                       Eigen::Transform<_Scalar, Dim, Mode, _Options> &tf)
-{
-    box2d_kenv::util::deserialize(node, tf.matrix());
-}
-
-#endif // ifndef YAMLCPP_NEWAPI
+#endif // else ifdef YAMLCPP_NEWAPI
 
 } // namespace YAML
 
