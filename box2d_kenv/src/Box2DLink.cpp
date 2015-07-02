@@ -21,8 +21,8 @@ Box2DLink::Box2DLink(Box2DBodyPtr body,
                      b2Body *b2_body)
     : parent_body_(body)
     , name_(name)
-    , b2_body_(b2_body)
     , geometry_(geometry)
+    , b2_body_(b2_body)
     , b2_friction_(NULL)
 {
     BOOST_ASSERT(body);
