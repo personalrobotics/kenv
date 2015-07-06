@@ -41,12 +41,10 @@
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>gazebo_quasistatic_plugin</build_depend>
-  <build_depend>quasistatic_msgs</build_depend>
   <build_depend>gz_kenv</build_depend>
   <build_depend>kenv</build_depend>
   <build_depend>roscpp</build_depend>
   <run_depend>gazebo_quasistatic_plugin</run_depend>
-  <run_depend>quasistatic_msgs</run_depend>
   <run_depend>gz_kenv</run_depend>
   <run_depend>kenv</run_depend>
   <run_depend>roscpp</run_depend>
