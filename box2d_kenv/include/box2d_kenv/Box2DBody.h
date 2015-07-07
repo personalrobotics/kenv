@@ -5,9 +5,9 @@
 #include <boost/unordered_map.hpp>
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
-#include "box2d_kenv.hh"
-#include "Box2DBody.h"
-#include "Box2DFactory.h"
+#include <box2d_kenv/box2d_kenv.hh>
+#include <box2d_kenv/Box2DBody.h>
+#include <box2d_kenv/Box2DFactory.h>
 
 namespace box2d_kenv {
 
