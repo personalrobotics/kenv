@@ -104,37 +104,65 @@ namespace YAML {
 
 #ifdef YAMLCPP_NEWAPI
 
+namespace detail {
+
+template <typename MatrixType, bool IsVectorAtCompileTime>
+struct encode_impl {
+  static Node encode(MatrixType const &matrix)
+  {
+    assert(false && "Unknown MatrixType.");
+  }
+};
+
+template <typename MatrixType>
+struct encode_impl<MatrixType, true> {
+  static Node encode(MatrixType const &matrix)
+  {
+    typedef typename MatrixType::Index Index;
+
+    Node node;
+    node.SetTag("Vector");
+
+    for (Index i = 0; i < matrix.size(); ++i) {
+      node.push_back(Node(matrix[i]));
+    }
+    return node;
+  }
+};
+
+template <typename MatrixType>
+struct encode_impl<MatrixType, false> {
+  static Node encode(MatrixType const &matrix)
+  {
+    typedef typename MatrixType::Index Index;
+
+    Node node;
+    node.SetTag("Matrix");
+
+    for (Index r = 0; r < matrix.rows(); ++r) {
+      Node row(NodeType::Sequence);
+
+      for (Index c = 0; c < matrix.cols(); ++c) {
+          row.push_back(matrix(r, c));
+      }
+
+      node.push_back(row);
+    }
+    return node;
+  }
+};
+
+}
+
 template <typename _Scalar, int _Dim, int _Mode, int _Options>
 struct convert<Eigen::Matrix<_Scalar, _Dim, _Mode, _Options> > {
     typedef Eigen::Matrix<_Scalar, _Dim, _Mode, _Options> MatrixType;
 
     static Node encode(MatrixType const &matrix)
     {
-        typedef typename MatrixType::Index Index;
-
         YAML::Node node(NodeType::Sequence);
-
-        if (MatrixType::IsVectorAtCompileTime) {
-            node.SetTag("Vector");
-
-            for (Index i = 0; i < matrix.size(); ++i) {
-                node.push_back(Node(matrix[i]));
-            }
-        } else {
-            node.SetTag("Matrix");
-
-            for (Index r = 0; r < matrix.rows(); ++r) {
-                Node row(NodeType::Sequence);
-
-                for (Index c = 0; c < matrix.cols(); ++c) {
-                    row.push_back(matrix(r, c));
-                }
-
-                node.push_back(row);
-            }
-        }
-
-        return node;
+        return detail::encode_impl<
+          MatrixType, MatrixType::IsVectorAtCompileTime>::encode(matrix);
     }
 
     static bool decode(
