@@ -149,16 +149,29 @@ Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
     double density, friction, restitution;
     double const scale = parent_body->world()->scale();
 
+    std::string current_field;
     try {
+        current_field = "name";
         node["name"] >> name;
+
+        current_field = "relative_geometry";
         node["relative_geometry"] >> geometry_wkt;
+
+        current_field = "relative_pose";
         node["relative_pose"] >> relative_pose;
+
+        current_field = "density";
         node["density"] >> density;
+
+        current_field = "friction";
         node["friction"] >> friction;
+
+        current_field = "restitution";
         node["restitution"] >> restitution;
     } catch (YAML::Exception const &e) {
         throw std::runtime_error(
-            str(format("Failed loading link '%s': %s") % name % e.what())
+            str(format("Failed loading link '%s' field '%s': %s")
+                % name % current_field % e.what())
         );
     }
 

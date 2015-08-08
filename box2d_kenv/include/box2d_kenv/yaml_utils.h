@@ -1,5 +1,6 @@
 #ifndef YAML_UTILS_H_
 #define YAML_UTILS_H_
+#include <iostream>
 #include <boost/format.hpp>
 #include <boost/make_shared.hpp>
 #include <Eigen/Dense>
@@ -19,6 +20,7 @@ inline void deserialize(
     typedef typename MatrixType::Index Index;
     typedef typename MatrixType::Scalar Scalar;
 
+
     using boost::format;
     using boost::str;
     using std::runtime_error;
@@ -35,7 +37,7 @@ inline void deserialize(
             % MatrixType::RowsAtCompileTime % rows));
     }
 
-    if (node.Tag() == "!Vector") {
+    if (node.Tag() == "Vector" || node.Tag() == "!Vector") {
         matrix.resize(rows, 1);
 
         for (Index i = 0; i < rows; ++i) {
@@ -45,7 +47,7 @@ inline void deserialize(
             node[i] >> matrix(i, 0);
 #endif
         }
-    } else if (node.Tag() == "!Matrix") {
+    } else if (node.Tag() == "Matrix" || node.Tag() == "!Matrix") {
         Index const cols = node[0].size();
 
         if (MatrixType::ColsAtCompileTime != Eigen::Dynamic 
@@ -170,7 +172,8 @@ struct convert<Eigen::Matrix<_Scalar, _Dim, _Mode, _Options> > {
         YAML::Node const &node,
         Eigen::Matrix<_Scalar, _Dim, _Mode, _Options> &matrix)
     {
-        if (node.Tag() == "!Vector" || node.Tag() == "!Matrix") {
+        if (node.Tag() == "Vector" || node.Tag() == "!Vector"
+         || node.Tag() == "Matrix" || node.Tag() == "!Matrix") {
             box2d_kenv::util::deserialize(node, matrix);
             return true;
         } else {
@@ -191,7 +194,6 @@ struct convert<Eigen::Transform<_Scalar, _Dim, _Mode, _Options> > {
 
     static bool decode(Node const &node, TransformType &transform)
     {
-        // TODO: Should I change the tag to !Transform?
         return convert<MatrixType>::decode(node, transform.matrix());
     }
 };
