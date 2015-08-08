@@ -19,7 +19,6 @@
 #include <box2d_kenv/yaml_utils.h>
 
 using boost::format;
-using boost::make_shared;
 using boost::str;
 
 typedef boost::shared_ptr<geos::geom::Geometry> GeometryPtr;
@@ -37,7 +36,7 @@ Box2DFactory::Box2DFactory(Box2DWorldPtr const &world)
 Box2DBodyPtr Box2DFactory::CreateBody(std::string const &name,
                                       YAML::Node const &node)
 {
-    Box2DBodyPtr const body = make_shared<Box2DBody>(world_, name);
+    Box2DBodyPtr const body = boost::make_shared<Box2DBody>(world_, name);
     Box2DLinkPtr const root_link = CreateLink(body, node);
     body->Initialize(root_link);
 
@@ -55,9 +54,9 @@ Box2DBodyPtr Box2DFactory::CreateEmptyBody(std::string const &name)
             ->createEmptyGeometry()
     );
 
-    Box2DBodyPtr const body = make_shared<Box2DBody>(world_, name);
-    Box2DLinkPtr const link
-        = make_shared<Box2DLink>(body, "empty", empty_geometry, b2_body);
+    Box2DBodyPtr const body = boost::make_shared<Box2DBody>(world_, name);
+    Box2DLinkPtr const link = boost::make_shared<Box2DLink>(
+        body, "empty", empty_geometry, b2_body);
     body->Initialize(link);
 
     return body;
@@ -213,7 +212,7 @@ Box2DLinkPtr Box2DFactory::CreateLink(Box2DBodyPtr const &parent_body,
 
     // Create this link.
     Box2DLinkPtr const link
-        = make_shared<Box2DLink>(parent_body, name, geometry, b2_body);
+        = boost::make_shared<Box2DLink>(parent_body, name, geometry, b2_body);
 
     // Recursively construct this link's children.
     for (size_t i = 0; i < node["joints"].size(); ++i) {
@@ -293,8 +292,8 @@ Box2DJointPtr Box2DFactory::CreateJoint(Box2DLinkPtr const &parent_link,
     b2RevoluteJoint *b2_joint = static_cast<b2RevoluteJoint *>(
         b2_world_->CreateJoint(&b2_jointdef));
 
-    return make_shared<Box2DJoint>(name, parent_link, child_link,
-                                   b2_joint, direction);
+    return boost::make_shared<Box2DJoint>(
+        name, parent_link, child_link, b2_joint, direction);
 }
 
 std::vector<b2PolygonShape> Box2DFactory::ConvertGeometry(
