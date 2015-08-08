@@ -4,6 +4,7 @@
 #include <boost/make_shared.hpp>
 #include <Eigen/Dense>
 #include <yaml-cpp/yaml.h>
+#include <box2d_kenv/yaml_config.h>
 
 namespace box2d_kenv {
 namespace util {
@@ -248,6 +249,24 @@ inline Emitter &operator<<(Emitter &emitter,
                            Eigen::Transform<_Scalar, Dim, Mode, _Options> &tf)
 {
     return emitter << tf.matrix();
+}
+
+template <class _Scalar, int Dim, int Mode, int _Options>
+inline void operator>>(
+    Node const &node,
+    Eigen::Transform<_Scalar, Dim, Mode, _Options> &tf)
+{
+    box2d_kenv::util::deserialize(node, tf.matrix());
+}
+
+template <class _Scalar,
+          int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+inline void operator>>(
+    Node const &node,
+    Eigen::Matrix<_Scalar,
+        _Rows, _Cols, _Options, _MaxRows, _MaxCols> &matrix)
+{
+    box2d_kenv::util::deserialize(node, matrix);
 }
 
 #endif // else ifdef YAMLCPP_NEWAPI

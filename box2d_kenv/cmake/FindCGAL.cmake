@@ -62,7 +62,7 @@ IF(CGAL_INCLUDE_DIR )
                 PATHS "/opt/local/lib/"
                 DOC "Directory containing the CGAL library"
                ) 
-    list ( APPEND CGAL_LIBRARIES CGAL CGAL_Core CGAL_ImageIO mpfr )
+    list ( APPEND CGAL_LIBRARIES CGAL CGAL_Core mpfr)
     set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -frounding-math")
     set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -frounding-math")
 
@@ -72,7 +72,7 @@ IF(CGAL_INCLUDE_DIR )
               PATHS "/usr/lib/" "/usr/lib64" 
               DOC "Directory containing the CGAL library"
              )
-    list ( APPEND CGAL_LIBRARIES CGAL CGAL_Core CGAL_ImageIO) 
+    list ( APPEND CGAL_LIBRARIES CGAL CGAL_Core) 
     set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -frounding-math")
     set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -frounding-math")
 

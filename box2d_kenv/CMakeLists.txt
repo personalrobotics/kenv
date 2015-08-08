@@ -3,40 +3,55 @@ project(box2d_kenv)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-include(FindPkgConfig)
-
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-  set(CMAKE_BUILD_TYPE RelWithDebInfo)
-  message(STATUS "Defaulting to CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
-endif ()
-
 find_package(catkin REQUIRED COMPONENTS cmake_modules)
 find_package(Boost REQUIRED COMPONENTS system)
-find_package(Box2D REQUIRED)
 find_package(CGAL REQUIRED)
-find_package(GEOS REQUIRED)
 find_package(Eigen REQUIRED)
+find_package(GEOS REQUIRED)
 find_package(SFML REQUIRED COMPONENTS graphics system window)
 find_package(YAMLCpp REQUIRED)
+
+# The FindBox2D.cmake script does not set BOX2D_LIBRARIES.
+find_package(Box2D REQUIRED)
+set(BOX2D_LIBRARIES Box2D)
 
 # GMP is a transitive dependency is CGAL that is not correctly specified in the
 # current FindCGAL.cmake file.
 find_package(GMP REQUIRED)
+set(CGAL_INCLUDE_DIRS ${CGAL_INCLUDE_DIRS} ${GMP_INCLUDE_DIRS})
+set(CGAL_LIBRARIES ${CGAL_LIBRARIES} ${GMP_LIBRARIES})
 
-# This is necessary for the yaml_utils.h header.
-# TODO: Move this into kenv.
+include(FindPkgConfig)
 pkg_check_modules(YamlCpp REQUIRED yaml-cpp)
 
-if (${YamlCpp_VERSION} VERSION_LESS 0.5.0)
+if ("${YamlCpp_VERSION}" VERSION_LESS 0.5.0)
+  set(YAMLCPP_NEWAPI false)
   message(STATUS "Using the old-style yaml-cpp (< 0.5.0) API.")
 else ()
-  add_definitions(-DYAMLCPP_NEWAPI)
+  set(YAMLCPP_NEWAPI true)
   message(STATUS "Using the new-style yaml-cpp (>= 0.5.0) API.")
 endif ()
 
-# TODO: This should be handled by find_package(Box2D)
-set(BOX2D_LIBRARIES Box2D)
+###################################
+## catkin specific configuration ##
+###################################
+catkin_package(
+  INCLUDE_DIRS
+    include
+  LIBRARIES
+    ${PROJECT_NAME}
+  CATKIN_DEPENDS
+  DEPENDS
+    boost
+    box2d-dev
+    cgal
+    eigen
+    sfml-dev
+)
 
+###########
+## Build ##
+###########
 include_directories(SYSTEM
   include
   include/${PROJECT_NAME}
@@ -60,25 +75,26 @@ link_directories(
   ${catkin_LIBRARY_DIRS}
 )
 
-# TODO: This should be handled by find_package(CGAL)
-add_definitions(-frounding-math)
+# CGAL requires full IEEE 754 compliance.
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fp-model strict")
+else ()
+  message(WARNING "Your compiler was not recognized. We were unable to force"
+                  " full IEEE 754 compliance for floating point operations"
+                  " This may cause issues in CGAL.")
+endif ()
 
+# Generate a header that contains the YAMLCPP_NEWAPI flag.
+configure_file(include/${PROJECT_NAME}/yaml_config.h.in
+  ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_INCLUDE_DESTINATION}/yaml_config.h
+)
+
+# Enable warnings.
 set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
-###################################
-## catkin specific configuration ##
-###################################
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS
-  DEPENDS boost eigen box2d-dev cgal sfml-dev
-)
-
-###########
-## Build ##
-###########
 add_library(${PROJECT_NAME}
   src/Box2DBody.cpp
   src/Box2DFactory.cpp
@@ -93,7 +109,6 @@ target_link_libraries(${PROJECT_NAME}
   ${BOOST_LIBRARIES}
   ${BOX2D_LIBRARIES}
   ${CGAL_LIBRARIES}
-  ${GMP_LIBRARIES}
   ${GEOS_LIBRARIES}
   ${YAMLCPP_LIBRARY}
 )
@@ -121,8 +136,10 @@ target_link_libraries(${PROJECT_NAME}_demo
 #############
 ## Install ##
 #############
-
-install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_visualizer ${PROJECT_NAME}_demo
+install(TARGETS
+    ${PROJECT_NAME}
+    ${PROJECT_NAME}_demo
+    ${PROJECT_NAME}_visualizer
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -135,7 +152,6 @@ install(DIRECTORY include/${PROJECT_NAME}/
 #############
 ## Testing ##
 #############
-
 ## Add gtest based cpp test target and link libraries
 # catkin_add_gtest(${PROJECT_NAME}-test test/test_box2d_kenv.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
