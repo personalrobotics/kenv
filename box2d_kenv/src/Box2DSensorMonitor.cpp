@@ -16,12 +16,10 @@ void Box2DSensorState::set_contact(b2Fixture const *b2_fixture,
     if (is_contact) {
         std::pair<iterator, bool> const result
             = active_fixtures.insert(b2_fixture);
-        // TODO: This should never happen.
-        //BOOST_ASSERT(result.second);
+        BOOST_ASSERT(result.second);
     } else {
         size_t const num_erased = active_fixtures.erase(b2_fixture);
-        // TODO: This should never happen.
-        //BOOST_ASSERT(num_erased == 1);
+        BOOST_ASSERT(num_erased == 1);
     }
 }
 

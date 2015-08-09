@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(box2d_kenv)
 
+# Use MACOSX_RPATH by default on OS X.
+if (POLICY CMP0042)
+  cmake_policy(SET CMP0042 NEW)
+endif ()
+
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 find_package(catkin REQUIRED COMPONENTS cmake_modules)
@@ -87,6 +92,7 @@ else ()
 endif ()
 
 # Generate a header that contains the YAMLCPP_NEWAPI flag.
+# TODO: This header isn't found if the output directory does not exist.
 configure_file(include/${PROJECT_NAME}/yaml_config.h.in
   ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_INCLUDE_DESTINATION}/yaml_config.h
 )
@@ -113,41 +119,41 @@ target_link_libraries(${PROJECT_NAME}
   ${YAMLCPP_LIBRARY}
 )
 
-add_library(${PROJECT_NAME}_visualizer
-  src/Box2DVisualizer.cpp
-)
-target_link_libraries(${PROJECT_NAME}_visualizer
-  ${BOOST_LIBRARIES}
-  ${BOX2D_LIBRARIES}
-  ${SFML_LIBRARIES}
-)
-
-add_executable(${PROJECT_NAME}_demo
-  src/test_box2d_kenv.cpp
-)
-target_link_libraries(${PROJECT_NAME}_demo
-  ${PROJECT_NAME}
-  ${PROJECT_NAME}_visualizer
-  ${BOOST_LIBRARIES}
-  ${BOX2D_LIBRARIES}
-  ${SFML_LIBRARIES}
-)
+#add_library(${PROJECT_NAME}_visualizer
+#  src/Box2DVisualizer.cpp
+#)
+#target_link_libraries(${PROJECT_NAME}_visualizer
+#  ${BOOST_LIBRARIES}
+#  ${BOX2D_LIBRARIES}
+#  ${SFML_LIBRARIES}
+#)
+#
+#add_executable(${PROJECT_NAME}_demo
+#  src/test_box2d_kenv.cpp
+#)
+#target_link_libraries(${PROJECT_NAME}_demo
+#  ${PROJECT_NAME}
+#  ${PROJECT_NAME}_visualizer
+#  ${BOOST_LIBRARIES}
+#  ${BOX2D_LIBRARIES}
+#  ${SFML_LIBRARIES}
+#)
 
 #############
 ## Install ##
 #############
-install(TARGETS
-    ${PROJECT_NAME}
-    ${PROJECT_NAME}_demo
-    ${PROJECT_NAME}_visualizer
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
-install(DIRECTORY include/${PROJECT_NAME}/
-   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
- )
+#install(TARGETS
+#    ${PROJECT_NAME}
+#    ${PROJECT_NAME}_demo
+#    ${PROJECT_NAME}_visualizer
+#  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#)
+#
+#install(DIRECTORY include/${PROJECT_NAME}/
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+# )
 
 #############
 ## Testing ##
