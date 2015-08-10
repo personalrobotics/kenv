@@ -4,6 +4,7 @@
 #include <boost/format.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <Box2D/Dynamics/Joints/b2FrictionJoint.h>
+#include <box2d_kenv/yaml_config.h>
 #include "Box2DBody.h"
 #include "Box2DLink.h"
 #include "Box2DJoint.h"

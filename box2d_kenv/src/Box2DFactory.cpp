@@ -10,6 +10,7 @@
 #include <geos/io/WKTReader.h>
 #include <yaml-cpp/yaml.h>
 #include "geometry_utils.h"
+#include <box2d_kenv/yaml_config.h>
 #include <box2d_kenv/Box2DBody.h>
 #include <box2d_kenv/Box2DFactory.h>
 #include <box2d_kenv/Box2DJoint.h>
@@ -73,7 +74,7 @@ std::vector<Box2DSensorPtr> Box2DFactory::CreateSensors(
     for (size_t i = 0; i < node.size(); ++i) {
         YAML::Node const &sensor_node = node[i];
 
-#if YAMLCPP_NEWAPI
+#ifdef YAMLCPP_NEWAPI
         std::string const name = sensor_node["name"].as<std::string>();
         std::string const geometry_wkt
             = sensor_node["geometry"].as<std::string>();

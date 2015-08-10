@@ -2,6 +2,7 @@
 #include <boost/format.hpp>
 #include <boost/make_shared.hpp>
 #include <yaml-cpp/yaml.h>
+#include <box2d_kenv/yaml_config.h>
 #include "Box2DBody.h"
 #include "Box2DFactory.h"
 #include "Box2DWorld.h"
