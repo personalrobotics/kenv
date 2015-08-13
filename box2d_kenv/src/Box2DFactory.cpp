@@ -10,7 +10,6 @@
 #include <geos/io/WKTReader.h>
 #include <yaml-cpp/yaml.h>
 #include "geometry_utils.h"
-#include <box2d_kenv/yaml_config.h>
 #include <box2d_kenv/Box2DBody.h>
 #include <box2d_kenv/Box2DFactory.h>
 #include <box2d_kenv/Box2DJoint.h>
@@ -74,18 +73,10 @@ std::vector<Box2DSensorPtr> Box2DFactory::CreateSensors(
     for (size_t i = 0; i < node.size(); ++i) {
         YAML::Node const &sensor_node = node[i];
 
-#ifdef YAMLCPP_NEWAPI
-        std::string const name = sensor_node["name"].as<std::string>();
-        std::string const geometry_wkt
-            = sensor_node["geometry"].as<std::string>();
-        std::string const parent_link_name
-            = sensor_node["parent_link"].as<std::string>();
-#else
         std::string name, geometry_wkt, parent_link_name;
         sensor_node["name"] >> name;
         sensor_node["geometry"] >> geometry_wkt;
         sensor_node["parent_link"] >> parent_link_name;
-#endif
         
         Box2DLinkPtr const parent_link = body->GetLink(parent_link_name);
         b2Body *const b2_body = parent_link->b2_body();
@@ -258,15 +249,9 @@ Box2DJointPtr Box2DFactory::CreateJoint(Box2DLinkPtr const &parent_link,
     double direction;
 
     try {
-#ifdef YAMLCPP_NEWAPI
-        name = node["name"].as<std::string>();
-        relative_origin = node["relative_origin"].as<Eigen::Affine2d>();
-        direction = node["direction"].as<double>();
-#else
         node["name"] >> name;
         node["relative_origin"] >> relative_origin;
         node["direction"] >> direction;
-#endif
     } catch (YAML::Exception const &e) {
         throw std::runtime_error(
             str(format("Failed loading joint '%s' <-> '%s': %s")
