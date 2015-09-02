@@ -94,9 +94,9 @@ std::vector<Box2DSensorPtr> Box2DFactory::CreateSensors(
         }
         if (modified_geometry->getGeometryTypeId() != geos::geom::GEOS_POLYGON) {
             throw std::runtime_error(boost::str(
-                boost::format("Sensor for link '%s' has type '%s'; only polygons"
-                              " are supported.")
-                    % parent_link_name % geometry->getGeometryType()
+                boost::format("Sensor '%s' for link '%s' has type '%s'; only"
+                              "polygons are supported.")
+                    % name % parent_link_name % geometry->getGeometryType()
             ));
         }
         geos::geom::Polygon const &polygon
