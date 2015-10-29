@@ -69,6 +69,13 @@ include_directories(SYSTEM
   ${YAMLCPP_INCLUDE_DIR}
   ${catkin_INCLUDE_DIRS}
 )
+
+# Workaround so CMake will find the generated yaml_config.h header.
+include_directories(
+  ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+  ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+
 link_directories(
   ${BOOST_LIBRARY_DIRS}
   ${BOX2D_LIBRARY_DIRS}
