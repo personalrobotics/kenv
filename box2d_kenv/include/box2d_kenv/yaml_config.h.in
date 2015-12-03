@@ -1,0 +1,6 @@
+#ifndef YAML_CONFIG_H_
+#define YAML_CONFIG_H_
+
+#cmakedefine YAMLCPP_NEWAPI
+
+#endif // ifndef YAML_CONFIG_H_

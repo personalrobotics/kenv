@@ -9,8 +9,10 @@ find_package(catkin REQUIRED COMPONENTS cmake_modules kenv)
 catkin_package(
     INCLUDE_DIRS "include/"
     LIBRARIES "${PROJECT_NAME}"
-    CATKIN_DEPENDS kenv
-    DEPENDS cgal eigen
+    CATKIN_DEPENDS
+    DEPENDS
+        cgal
+        eigen
 )
 catkin_python_setup()
 
@@ -22,6 +24,13 @@ find_package(GEOS REQUIRED)
 find_package(Eigen REQUIRED)
 find_package(PythonLibs REQUIRED)
 pkg_check_modules(YamlCpp REQUIRED yaml-cpp)
+
+if (${YamlCpp_VERSION} VERSION_LESS 0.5.0)
+    message(STATUS "Using the old-style yaml-cpp (< 0.5.0) API.")
+else ()
+    add_definitions(-DYAMLCPP_NEWAPI)
+    message(STATUS "Using the new-style yaml-cpp (>= 0.5.0) API.")
+endif ()
 
 include(DetectCXX11Flags)
 

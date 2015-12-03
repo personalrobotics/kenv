@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>box2d_kenv</name>
+  <version>0.0.1</version>
+  <description>Wrapper for the Box2D physics engine.</description>
+  <maintainer email="mkoval@cs.cmu.edu">Michael Koval</maintainer>
+  <author email="mkoval@cs.cmu.edu">Michael Koval</author>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>cmake_modules</build_depend>
+  <depend>boost</depend>
+  <depend>eigen</depend>
+  <depend>box2d-dev</depend>
+  <depend>cgal</depend>
+  <depend>sfml-dev</depend>
+</package>

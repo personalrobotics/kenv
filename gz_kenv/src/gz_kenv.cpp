@@ -138,10 +138,8 @@ namespace kenv {
           {
             Contact contact;
             int count = engine->GetContactManager()->GetContact(i)->count;
-            math::Vector3 n[32] 
-              = engine->GetContactManager()->GetContact(i)->normals;
-            math::Vector3 pos[32] 
-              = engine->GetContactManager()->GetContact(i)->positions;    
+            math::Vector3 *n = engine->GetContactManager()->GetContact(i)->normals;
+            math::Vector3 *pos = engine->GetContactManager()->GetContact(i)->positions;    
             for(int j = 0; j < count; j++)
             {
               contact.normal = -1*toEigen(n[j]);

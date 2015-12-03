@@ -39,7 +39,11 @@ public:
                                                Eigen::Vector2d const &origin, int direction);
 
     void deserialize(YAML::Node const &node);
+#ifdef YAMLCPP_NEWAPI
+    YAML::Node serialize() const;
+#else
     void serialize(YAML::Emitter &emitter) const;
+#endif
 
 private:
     std::string name_;
@@ -73,7 +77,11 @@ public:
     void set_angle(double angle);
 
     void deserialize(PolygonalLink::Ptr parent_link, YAML::Node const &node);
+#ifdef YAMLCPP_NEWAPI
+    YAML::Node serialize() const;
+#else
     void serialize(YAML::Emitter &emitter) const;
+#endif
 
 private:
     std::string name_;

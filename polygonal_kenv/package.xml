@@ -13,11 +13,11 @@
   <build_depend>cgal</build_depend>
   <build_depend>geos</build_depend>
   <build_depend>boost</build_depend>
-  <build_depend>yamlcpp</build_depend>
+  <build_depend>yaml-cpp</build_depend>
   <build_depend>kenv</build_depend>
   <run_depend>cgal</run_depend>
   <run_depend>geos</run_depend>
   <run_depend>boost</run_depend>
-  <run_depend>yamlcpp</run_depend>
+  <run_depend>yaml-cpp</run_depend>
   <run_depend>kenv</run_depend>
 </package>
