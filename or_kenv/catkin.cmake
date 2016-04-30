@@ -5,6 +5,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g -O3")
 
 find_package(catkin REQUIRED COMPONENTS cmake_modules kenv)
+find_package(Boost REQUIRED COMPONENTS python system)
+find_package(Eigen REQUIRED)
+find_package(OpenRAVE REQUIRED)
+find_package(PythonLibs REQUIRED)
+pkg_check_modules(YamlCpp QUIET yaml-cpp)
+
 catkin_package(
     INCLUDE_DIRS "include/"
     LIBRARIES "${PROJECT_NAME}"
@@ -12,12 +18,6 @@ catkin_package(
     DEPENDS boost eigen openrave
 )
 catkin_python_setup()
-
-find_package(Boost REQUIRED COMPONENTS python system)
-find_package(Eigen REQUIRED)
-find_package(OpenRAVE REQUIRED)
-find_package(PythonLibs REQUIRED)
-pkg_check_modules(YamlCpp QUIET yaml-cpp)
 
 # TODO: The headers should be in "or_kenv", not "kenv".
 include_directories(
@@ -51,20 +51,4 @@ target_link_libraries("${PROJECT_NAME}"
     ${OpenRAVE_LIBRARIES}
     ${YamlCpp_LIBRARIES}
     "openrave${OpenRAVE_LIBRARY_SUFFIX}-core"
-)
-
-add_library("${PROJECT_NAME}_ext"
-    src/python/python.cpp
-    src/python/python_OREnvironment.cpp
-)
-target_link_libraries("${PROJECT_NAME}_ext"
-    "${PROJECT_NAME}"
-    boost_numpy_eigen
-    ${Boost_LIBRARIES}
-    ${OpenRAVE_LIBRARIES}
-    "openrave${OpenRAVE_LIBRARY_SUFFIX}-core"
-)
-set_target_properties("${PROJECT_NAME}_ext" PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}"
-    PREFIX ""
 )

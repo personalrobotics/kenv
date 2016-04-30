@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
 
 find_package(catkin REQUIRED COMPONENTS cmake_modules kenv)
+find_package(Eigen REQUIRED)
+
 catkin_package(
     INCLUDE_DIRS "include/"
     LIBRARIES "${PROJECT_NAME}"
     CATKIN_DEPENDS kenv
-    DEPENDS eigen
+    DEPENDS Eigen
 )
-
-find_package(Eigen REQUIRED)
 
 include_directories(
     "include/quasistatic_pushing"

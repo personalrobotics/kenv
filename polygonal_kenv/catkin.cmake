@@ -5,19 +5,10 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g -O3")
 
-find_package(catkin REQUIRED COMPONENTS cmake_modules kenv)
-catkin_package(
-    INCLUDE_DIRS "include/"
-    LIBRARIES "${PROJECT_NAME}"
-    CATKIN_DEPENDS
-    DEPENDS
-        cgal
-        eigen
-)
-catkin_python_setup()
-
+include(DetectCXX11Flags)
 include(FindPkgConfig)
 
+find_package(catkin REQUIRED COMPONENTS cmake_modules kenv)
 find_package(Boost REQUIRED COMPONENTS python system)
 find_package(CGAL REQUIRED)
 find_package(GEOS REQUIRED)
@@ -32,7 +23,15 @@ else ()
     message(STATUS "Using the new-style yaml-cpp (>= 0.5.0) API.")
 endif ()
 
-include(DetectCXX11Flags)
+catkin_package(
+    INCLUDE_DIRS "include/"
+    LIBRARIES "${PROJECT_NAME}"
+    CATKIN_DEPENDS
+    DEPENDS
+        cgal
+        eigen
+)
+catkin_python_setup()
 
 include_directories(
     "${PROJECT_SOURCE_DIR}/include/polygonal_kenv"
@@ -61,19 +60,4 @@ target_link_libraries("${PROJECT_NAME}"
     ${CGAL_LIBRARIES}
     ${Boost_LIBRARIES}
     ${YamlCpp_LIBRARIES}
-)
-
-add_library("${PROJECT_NAME}_ext" SHARED
-    src/python/python.cpp
-    src/python/python_PolygonalEnvironment.cpp
-)
-target_link_libraries("${PROJECT_NAME}_ext"
-    "${PROJECT_NAME}"
-    ${catkin_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${PYTHON_LIBRARIES}
-)
-set_target_properties("${PROJECT_NAME}_ext" PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}"
-    PREFIX ""
 )
